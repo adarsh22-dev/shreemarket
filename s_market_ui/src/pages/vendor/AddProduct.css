@@ -1,0 +1,351 @@
+/* Add Product specific styles */
+.add-product-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+/* Top Nav (Back Button & Breadcrumbs) */
+.add-product-top-nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-back {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    color: #666;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.btn-back:hover {
+    color: #111;
+}
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.breadcrumb-item {
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.breadcrumb-item:hover {
+    color: #111;
+}
+
+.breadcrumb-item.active {
+    color: #111;
+    font-weight: 500;
+    cursor: default;
+}
+
+/* Header Action Row */
+.add-product-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.add-product-header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #111;
+}
+
+.add-product-header p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: #f5f5f5;
+}
+
+.btn-primary {
+    background-color: #E03E1A;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #c83214;
+}
+
+/* Form Sections */
+.form-section {
+    background-color: white;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    padding: 2rem;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    padding: 0;
+}
+
+.step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: #E03E1A;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 5px;
+}
+
+.section-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+/* Form Inputs */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #333;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    border-color: #E03E1A;
+}
+
+.form-control::placeholder {
+    color: #aaa;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.form-col {
+    flex: 1;
+}
+
+/* Specific grids */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.attributes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+/* Checkbox specific */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.checkbox-group label {
+    font-weight: 400;
+    color: #555;
+    cursor: pointer;
+}
+
+/* Media Upload Section */
+.upload-zone {
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #fafafa;
+    text-align: center;
+    transition: all 0.2s;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+}
+
+.upload-zone:hover {
+    border-color: #bbb;
+    background-color: #f5f5f5;
+}
+
+.upload-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    background-color: #ffeee8;
+    color: #E03E1A;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.upload-zone h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 0.25rem;
+}
+
+.upload-zone p {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 1.5rem;
+}
+
+.btn-file {
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+    pointer-events: none;
+    /* Let the zone handle clicks conceptually */
+}
+
+/* Image Thumbnails */
+.image-preview-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.image-thumbnail-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    overflow: hidden;
+    background-color: white;
+}
+
+.image-thumbnail-wrapper.primary {
+    border: 2px solid #E03E1A;
+}
+
+.image-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Using contain to show whole image like the table */
+}
+
+.primary-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #E03E1A;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 0.2rem 0;
+}
+
+.add-thumbnail-btn {
+    width: 100px;
+    height: 100px;
+    border-radius: 8px;
+    border: 1px dashed #ddd;
+    background-color: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-thumbnail-btn:hover {
+    border-color: #aaa;
+    color: #888;
+    background-color: #f0f0f0;
+}
+
+/* Footer Actions */
+.form-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}

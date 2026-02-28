@@ -1,0 +1,225 @@
+/* RegisterPage.css */
+/* ... Previous styles ... */
+
+.register-page {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    /* Optional: Add a subtle background color if centered */
+    background-color: #f9fafb;
+}
+
+/* Left Panel - Hero */
+.register-hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: 40%;
+    /* Slightly narrower for register page to give form more room */
+    padding: 3rem;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    color: white;
+}
+
+/* Colored Overlay */
+.register-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(224, 62, 26, 0.2);
+    /* Slight orange tint mix */
+    background-blend-mode: multiply;
+    z-index: 1;
+}
+
+/* Dark Gradient Overlay for text readability */
+.register-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 60%);
+    z-index: 2;
+}
+
+.register-hero>* {
+    position: relative;
+    z-index: 3;
+}
+
+.register-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.register-hero p {
+    font-size: 1.125rem;
+    color: #f3f3f3;
+    max-width: 32rem;
+}
+
+/* Right Panel - Form */
+.register-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 2rem;
+    /* Reduced top/bottom padding */
+    background-color: transparent;
+    /* Changed to transparent or keep white if wrapped in card */
+    /* overflow-y: auto; Removed auto scroll to try to fit */
+    justify-content: center;
+    /* Center vertically if space allows */
+}
+
+/* Top Navigation Bar */
+.register-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    /* Reduced */
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: var(--text-main);
+}
+
+.nav-brand-icon {
+    color: var(--primary-orange);
+}
+
+.nav-actions {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* Form Container */
+.register-container {
+    width: 100%;
+    max-width: 36rem;
+    /* Wider for 2-column fields */
+    margin: 0 auto;
+}
+
+.register-header {
+    margin-bottom: 1.5rem;
+    /* Reduced */
+}
+
+.register-header h2 {
+    font-size: 1.75rem;
+    /* Slightly smaller */
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: var(--text-main);
+}
+
+.register-header p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    /* Reduced gap */
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-row>* {
+    flex: 1;
+}
+
+.password-requirements {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: -0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.newsletter-section {
+    margin: 1rem 0;
+}
+
+/* Divider */
+.divider-container {
+    position: relative;
+    margin: 1.5rem 0;
+    text-align: center;
+}
+
+.divider-line {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+}
+
+.divider-line::before {
+    content: '';
+    width: 100%;
+    border-top: 1px solid var(--border-color);
+}
+
+.divider-text {
+    position: relative;
+    background-color: white;
+    padding: 0 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+/* Social Buttons */
+.social-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.facebook-icon {
+    color: #1877F2;
+}
+
+/* Footer */
+.register-footer {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.register-footer a {
+    margin: 0 0.5rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+    .register-hero {
+        display: none;
+    }
+
+    .register-content {
+        width: 100%;
+        padding: 1.5rem;
+    }
+}

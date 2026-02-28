@@ -1,0 +1,294 @@
+/* CreateRolePage.css */
+.create-role-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+.role-content {
+    max-width: 1000px;
+    /* Constraints width for better readability */
+    margin: 2rem auto;
+    padding: 0 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Cards */
+.role-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem 2rem;
+    border: 1px solid #eaeaea;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.back-link-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    /* Remove align-self since parent handles it or default is stretch using width fit-content */
+    width: fit-content;
+    margin-bottom: -1rem;
+    /* Keeping structure but fixing potential flex issues */
+    transition: color 0.2s;
+    padding-left: 0.25rem;
+    /* Slight adjustment */
+}
+
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-header-flex .card-header {
+    margin-bottom: 0;
+}
+
+.header-icon {
+    color: #FF5722;
+}
+
+.role-card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Form */
+.form-row {
+    display: flex;
+    gap: 2rem;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.form-group input {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #FF5722;
+}
+
+/* Permissions Table */
+.permissions-table-container {
+    background-color: #fcfcfc;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.permissions-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.permissions-table th {
+    text-align: left;
+    padding: 1rem 1.5rem;
+    background-color: #f5f5f5;
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 1px solid #eee;
+}
+
+.permissions-table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.permissions-table tr:last-child td {
+    border-bottom: none;
+}
+
+.col-module {
+    width: 40%;
+}
+
+.col-action {
+    width: 15%;
+    text-align: center;
+}
+
+/* Module Info */
+.module-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.module-icon-placeholder {
+    width: 24px;
+    height: 24px;
+    /* Placeholder icons could be added here */
+}
+
+.module-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.module-desc {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+/* Checkbox Customization */
+.checkbox-container {
+    display: block;
+    position: relative;
+    padding-left: 24px;
+    /* Space for checkmark */
+    margin: 0 auto;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 24px;
+    width: 24px;
+    background-color: white;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.checkbox-container:hover input~.checkmark {
+    border-color: #FF5722;
+}
+
+.checkbox-container input:checked~.checkmark {
+    background-color: #FF5722;
+    border-color: #FF5722;
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-container input:checked~.checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    left: 8px;
+    top: 4px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+/* Footer */
+.role-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    margin-bottom: 2rem;
+    border-top: 1px solid #ddd;
+}
+
+.footer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.footer-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-text-danger {
+    background: none;
+    border: none;
+    color: #FF5722;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.btn-secondary {
+    background-color: white;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.text-center {
+    text-align: center;
+}

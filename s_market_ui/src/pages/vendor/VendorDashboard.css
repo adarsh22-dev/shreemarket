@@ -1,0 +1,541 @@
+.vendor-dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+/* Sidebar Styling */
+.vendor-sidebar {
+    width: 250px;
+    background-color: #fff;
+    border-right: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    z-index: 10;
+}
+
+.sidebar-logo {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #111;
+}
+
+.logo-icon {
+    background-color: #E03E1A;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    flex: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.550rem 1rem;
+    border-radius: 8px;
+    color: #555;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.nav-item:hover {
+    background-color: #f4f4f4;
+    color: #111;
+}
+
+.nav-item.active {
+    background-color: #fff0ed;
+    color: #E03E1A;
+    position: relative;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10%;
+    bottom: 10%;
+    width: 4px;
+    background-color: #E03E1A;
+    border-radius: 0 4px 4px 0;
+}
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-footer .nav-item {
+    color: #666;
+}
+
+/* Main Content Area */
+.vendor-main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Top Header */
+.vendor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.header-title-section h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #111;
+}
+
+.header-title-section p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    width: 250px;
+}
+
+.search-bar input {
+    border: none;
+    background: transparent;
+    outline: none;
+    padding-left: 0.5rem;
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+.btn-add-product {
+    background-color: #E03E1A;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-add-product:hover {
+    background-color: #C93414;
+}
+
+.icon-btn {
+    background-color: #f0f0f0;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.icon-btn:hover {
+    background-color: #e4e4e4;
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e0d5c1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+
+/* Top Dashboard Layout Grid */
+.dashboard-top-grid {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr;
+    gap: 1.5rem;
+}
+
+.metrics-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.metric-card {
+    background-color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.metric-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: #fff0ed;
+    color: #E03E1A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.metric-badge {
+    background-color: #e6f7eb;
+    color: #2e7d32;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.metric-title {
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+.metric-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111;
+}
+
+/* Chart Container */
+.chart-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.chart-title h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.chart-title p {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.chart-filters {
+    display: flex;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    padding: 0.25rem;
+}
+
+.chart-filter-btn {
+    padding: 0.4rem 1rem;
+    border: none;
+    background: transparent;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.chart-filter-btn.active {
+    background-color: white;
+    color: #E03E1A;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chart-area {
+    height: 200px;
+    position: relative;
+    margin-top: 1rem;
+    overflow: hidden;
+    /* Added to prevent overflow */
+}
+
+.chart-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    /* SVGs naturally overflow visible, handled by container now */
+}
+
+.chart-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    color: #888;
+    font-size: 0.8rem;
+    padding: 0 1rem;
+}
+
+/* Top Products Sidebar */
+.top-products-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+}
+
+.top-products-card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    flex: 1;
+}
+
+.product-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.product-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    background-color: #f4f4f4;
+}
+
+.product-info {
+    flex: 1;
+}
+
+.product-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 0.1rem;
+}
+
+.product-sales {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.product-meta {
+    text-align: right;
+}
+
+.product-price {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #111;
+    margin-bottom: 0.2rem;
+}
+
+.stock-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.stock-in {
+    color: #2e7d32;
+}
+
+.stock-low {
+    color: #E03E1A;
+}
+
+.btn-view-all {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: transparent;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    color: #555;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    transition: all 0.2s;
+}
+
+.btn-view-all:hover {
+    background-color: #f9f9f9;
+    color: #111;
+}
+
+/* Recent Orders Table */
+.orders-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.orders-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.orders-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.link-view-all {
+    color: #E03E1A;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th {
+    text-align: left;
+    padding: 1rem 0.5rem;
+    color: #888;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-bottom: 1px solid #eee;
+}
+
+.orders-table td {
+    padding: 1.25rem 0.5rem;
+    border-bottom: 1px solid #f5f5f5;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.orders-table tr:last-child td {
+    border-bottom: none;
+}
+
+.order-id {
+    font-weight: 600;
+    color: #111;
+}
+
+.customer-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.customer-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ffe8e4;
+    color: #E03E1A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-processing {
+    background-color: #fff4e5;
+    color: #d18b14;
+}
+
+.status-shipped {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-delivered {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.action-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.action-btn:hover {
+    color: #111;
+}

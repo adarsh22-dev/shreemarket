@@ -1,0 +1,614 @@
+.shipping-container {
+    padding: 24px 32px;
+    background-color: #f8f9fa;
+    /* Light grey background */
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #333;
+}
+
+/* Header Section */
+.shipping-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.shipping-header-row h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #1a1a1a;
+}
+
+.shipping-header-row p {
+    font-size: 0.95rem;
+    color: #666;
+    margin: 0;
+}
+
+.btn-ship-order {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: #e54c38;
+    /* Branding Orange/Red */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(229, 76, 56, 0.2);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-ship-order:hover {
+    background-color: #d14231;
+}
+
+/* KPI Cards Row */
+.shipping-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.shipping-kpi-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f0f0f0;
+    position: relative;
+    /* For the red border edge */
+}
+
+.shipping-kpi-card.border-alert {
+    border-left: 4px solid #e74c3c;
+}
+
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.kpi-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Color palettes */
+.bg-blue {
+    background-color: #e5f0fa;
+}
+
+.icon-blue {
+    color: #3498db;
+}
+
+.bg-orange {
+    background-color: #fef0e3;
+}
+
+.icon-orange {
+    color: #f39c12;
+}
+
+.bg-green {
+    background-color: #e6f7ec;
+}
+
+.icon-green {
+    color: #27ae60;
+}
+
+.bg-red {
+    background-color: #fde8e5;
+}
+
+.icon-red {
+    color: #e74c3c;
+}
+
+.text-red {
+    color: #e74c3c !important;
+}
+
+/* Green Positive Trend */
+.kpi-trend {
+    font-size: 0.75rem;
+    font-weight: 700;
+    background-color: #e6f7ec;
+    color: #27ae60;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Small status tags top right of KPI */
+.kpi-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.badge-orange {
+    color: #e67e22;
+    background: transparent;
+}
+
+.badge-green {
+    color: #2ecc71;
+    background: #e6f7ec;
+}
+
+.badge-red {
+    color: #e74c3c;
+    background: #fde8e5;
+}
+
+.kpi-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.kpi-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+/* Tracking Table Card */
+.shipping-tracking-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f0f0f0;
+    margin-bottom: 24px;
+}
+
+.tracking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.tracking-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1a1a1a;
+}
+
+.tracking-controls {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-filter-dropdown {
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    color: #333;
+    cursor: pointer;
+}
+
+.tracking-table-responsive {
+    overflow-x: auto;
+}
+
+.tracking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tracking-table th {
+    background-color: #fbfbfb;
+    padding: 12px 24px;
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.tracking-table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.tracking-table tbody tr:hover {
+    background-color: #fafafa;
+}
+
+/* Table Specific Cell Styles */
+.cell-order-id {
+    font-weight: 700;
+    color: #e54c38;
+}
+
+.customer-name {
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+.customer-location {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.carrier-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.carrier-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: white;
+}
+
+.logo-fedex {
+    background-color: #6f42c1;
+}
+
+/* Purple mock for FX */
+.logo-ups {
+    background-color: #d35400;
+    color: #fff;
+}
+
+/* Orange/Brown mock for UPS */
+.logo-dhl {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+/* Red/Yellow mock for DHL */
+
+.carrier-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Status Pills */
+.status-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.status-transit {
+    background-color: #e5f0fa;
+    color: #3498db;
+}
+
+.status-delivered {
+    background-color: #e6f7ec;
+    color: #27ae60;
+}
+
+.status-delayed {
+    background-color: #fde8e5;
+    color: #e74c3c;
+}
+
+.status-shipped {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.cell-date {
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-orange {
+    color: #e54c38;
+}
+
+.text-grey {
+    color: #888;
+}
+
+
+/* Tracking Footer */
+.tracking-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background-color: #fff;
+    border-radius: 0 0 12px 12px;
+}
+
+.tracking-hint {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.tracking-pagination {
+    display: flex;
+    gap: 4px;
+}
+
+.page-btn {
+    padding: 6px 12px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #333;
+}
+
+.page-btn.number.active {
+    background-color: #e54c38;
+    color: #fff;
+    border-color: #e54c38;
+}
+
+.page-btn:hover:not(.active) {
+    background-color: #f5f5f5;
+}
+
+/* Carriers Section */
+.carriers-section {
+    margin-top: 32px;
+    margin-bottom: 24px;
+}
+
+.carriers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.carriers-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.link-manage {
+    color: #e54c38;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.link-manage:hover {
+    text-decoration: underline;
+}
+
+.carriers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.carrier-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 140px;
+}
+
+.carrier-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    padding-right: 20px;
+}
+
+.carrier-logo-lg {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-purple-light {
+    background: #f3eafa;
+}
+
+.bg-orange-light {
+    background: #fef0e3;
+}
+
+.carrier-title {
+    font-weight: 700;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+}
+
+.carrier-status {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.status-dot.green {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #2ecc71;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.carrier-card-bottom {
+    margin-top: 20px;
+}
+
+.methods-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #aaa;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.methods-tags {
+    display: flex;
+    gap: 8px;
+}
+
+.method-tag {
+    padding: 2px 8px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #666;
+}
+
+/* Dashed Add Card */
+.carrier-card-dashed {
+    border: 2px dashed #f5c6c0;
+    /* Subtle red dash */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fffaf9;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    min-height: 140px;
+}
+
+.carrier-card-dashed:hover {
+    background-color: #fde8e5;
+}
+
+.add-carrier-content {
+    text-align: center;
+}
+
+.add-icon-circle {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.add-title {
+    font-weight: 700;
+    color: #e54c38;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.add-desc {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* FedEx/UPS abstract internal icons created with basic CSS forms */
+.fedex-icon-mock {
+    position: relative;
+    width: 24px;
+    height: 24px;
+}
+
+.ups-icon-mock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+
+    .shipping-kpi-row,
+    .carriers-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+
+    .shipping-kpi-row,
+    .carriers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .shipping-header-row {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+}

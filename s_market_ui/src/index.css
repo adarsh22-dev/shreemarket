@@ -1,0 +1,61 @@
+:root {
+  --primary-orange: #E03E1A;
+  --primary-orange-hover: #C93414;
+  --text-main: #1A1A1A;
+  --text-muted: #666666;
+  --text-light: #FFFFFF;
+  --border-color: #E5E5E5;
+  --bg-light: #FFFFFF;
+  --bg-dark-overlay: rgba(0, 0, 0, 0.4);
+  
+  --font-family: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--text-main);
+  background-color: var(--bg-light);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input {
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Utilities */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.min-h-screen { min-height: 100vh; }
+.text-center { text-align: center; }
+.cursor-pointer { cursor: pointer; }
+
+/* Custom Scrollbar if needed */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+::-webkit-scrollbar-thumb {
+  background: #888; 
+  border-radius: 4px;
+}

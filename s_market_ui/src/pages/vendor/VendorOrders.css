@@ -1,0 +1,331 @@
+/* VendorOrders.css */
+
+.vendor-orders-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+/* Header Section */
+.orders-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.orders-header-row h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #111;
+}
+
+.orders-header-row p {
+    /* Pale orange subtitle */
+    font-size: 0.95rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-export {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: transparent;
+    border: 1px solid #ddd;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-export:hover {
+    background-color: #f5f5f5;
+}
+
+.btn-create-order {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #E03E1A;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-create-order:hover {
+    background-color: #c83214;
+}
+
+/* Main Content Area */
+/* .orders-content-area { */
+/* Very light orange tint background */
+
+/* } */
+
+/* Control Bar (Tabs & Search) */
+.orders-control-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.order-tabs {
+    display: flex;
+    gap: 2rem;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #E68A75;
+    /* Pale orange text for inactive */
+    cursor: pointer;
+    padding-bottom: 0.75rem;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.tab-btn:hover {
+    color: #E03E1A;
+}
+
+/* .tab-btn.active {} */
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    /* Aligned with the padding-bottom of the parent container border */
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #E03E1A;
+    border-radius: 3px 3px 0 0;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 350px;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background-color: white;
+    font-size: 0.95rem;
+    color: #333;
+    outline: none;
+}
+
+.search-wrapper input::placeholder {
+    color: #aaa;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #E68A75;
+}
+
+/* Data Table */
+.orders-table-container {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+}
+
+.orders-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-data-table th {
+    text-align: left;
+    padding: 1.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    /* Pale orange headers */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.orders-data-table td {
+    padding: 1.5rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f8f8f8;
+}
+
+.orders-data-table tbody tr:hover {
+    background-color: #fafafa;
+}
+
+/* Specific Cell Styles */
+.order-id {
+    font-weight: 700;
+}
+
+.customer-name {
+    font-weight: 500;
+    color: #111;
+}
+
+.date-cell {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.total-amount {
+    font-weight: 700;
+    color: #111;
+}
+
+.location-cell,
+.delivery-cell {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.status-pending {
+    background-color: #FFF8E1;
+    color: #B8860B;
+    /* Golden/Yellow text */
+}
+
+.status-shipped {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    /* Green text */
+}
+
+.status-processing {
+    background-color: #E3F2FD;
+    color: #1565C0;
+    /* Blue text */
+}
+
+.status-delivered {
+    background-color: transparent;
+    color: #607D8B;
+    /* Slate grey text */
+    padding: 0;
+}
+
+/* Row Actions */
+.order-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.icon-action-btn {
+    background: transparent;
+    border: none;
+    color: #E68A75;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    transition: color 0.2s;
+}
+
+.icon-action-btn:hover {
+    color: #E03E1A;
+}
+
+.btn-mark-shipped {
+    background-color: #FFF0ED;
+    /* Very light red/orange background */
+    color: #E03E1A;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-mark-shipped:hover {
+    background-color: #FFE4DE;
+}
+
+/* Pagination Footer */
+.orders-pagination-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background-color: white;
+}
+
+.pagination-text {
+    font-size: 0.9rem;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.page-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: #E68A75;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+    background-color: #f5f5f5;
+}
+
+.page-btn.active {
+    background-color: #E03E1A;
+    color: white;
+}
+
+.page-btn:disabled {
+    color: #f0f0f0;
+    cursor: not-allowed;
+}

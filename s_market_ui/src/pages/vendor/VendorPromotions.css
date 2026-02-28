@@ -1,0 +1,389 @@
+/* VendorPromotions.css */
+
+.vendor-promotions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+/* Header Section */
+.promo-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.promo-header-row h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    color: #111;
+}
+
+.promo-header-row p {
+    color: #888;
+    font-size: 0.95rem;
+}
+
+.btn-create-promo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #E03E1A;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-create-promo:hover {
+    background-color: #c83214;
+}
+
+/* KPI Cards Row */
+.promo-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.promo-kpi-card {
+    background-color: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.kpi-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kpi-icon-wrapper.blue {
+    background-color: #f0f7ff;
+    color: #3b82f6;
+}
+
+.kpi-icon-wrapper.orange {
+    background-color: #fffaf5;
+    color: #E03E1A;
+}
+
+.kpi-icon-wrapper.purple {
+    background-color: #f8f5ff;
+    color: #8b5cf6;
+}
+
+.kpi-trend {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+}
+
+.kpi-trend.positive {
+    background-color: #e6f6ee;
+    color: #059669;
+}
+
+.kpi-trend.negative {
+    background-color: #ffeef0;
+    color: #dc2626;
+}
+
+.kpi-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111;
+}
+
+/* Main Content Area */
+.promo-content-area {
+    background-color: white;
+    /* Not tinted in this view */
+    border-radius: 12px;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+/* Control Bar */
+.promo-control-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.promo-search-wrapper {
+    position: relative;
+    width: 400px;
+}
+
+.promo-search-wrapper input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fafafa;
+    font-size: 0.95rem;
+    color: #333;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.promo-search-wrapper input:focus {
+    background-color: white;
+    border-color: #E03E1A;
+}
+
+.promo-search-wrapper input::placeholder {
+    color: #aaa;
+}
+
+.promo-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.promo-filters {
+    display: flex;
+    gap: 1rem;
+}
+
+.filter-select {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fafafa;
+    font-size: 0.95rem;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    /* Hide default arrow */
+    min-width: 140px;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23888%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem top 50%;
+    background-size: 0.65rem auto;
+}
+
+.btn-more-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: transparent;
+    border: none;
+    color: #555;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 0 0.5rem;
+}
+
+.btn-more-filters:hover {
+    color: #111;
+}
+
+/* Data Table */
+.promo-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.promo-data-table th {
+    text-align: left;
+    padding: 1.25rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #eee;
+}
+
+.promo-data-table td {
+    padding: 1.5rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #eee;
+}
+
+.promo-data-table tr:hover {
+    background-color: #fbfbfb;
+}
+
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.clickable-row:hover {
+    background-color: #f5f5f5 !important;
+}
+
+/* Specific Cell Styles */
+.promo-name-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.promo-name-title {
+    font-weight: 600;
+    color: #111;
+    font-size: 0.95rem;
+}
+
+.promo-id {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.promo-type {
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.promo-discount {
+    font-weight: 700;
+    color: #E03E1A;
+    /* Red text for discounts */
+}
+
+.promo-duration {
+    color: #555;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.promo-usage {
+    font-weight: 700;
+    color: #111;
+    font-size: 0.95rem;
+}
+
+/* Status Pill Badges */
+.promo-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.status-active-pill {
+    background-color: #e6f6ee;
+    color: #059669;
+    /* Green text */
+}
+
+.status-active-pill .status-dot {
+    background-color: #059669;
+}
+
+.status-scheduled-pill {
+    background-color: #fff8e1;
+    color: #b8860b;
+    /* Yellow/Gold text */
+}
+
+.status-scheduled-pill .status-dot {
+    background-color: #b8860b;
+}
+
+.status-expired-pill {
+    background-color: #f5f5f5;
+    color: #666;
+    /* Gray text */
+}
+
+.status-expired-pill .status-dot {
+    background-color: #888;
+}
+
+/* Row Actions */
+.promo-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.action-icon-btn {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    transition: color 0.2s;
+}
+
+.action-icon-btn:hover {
+    color: #555;
+}
+
+.action-icon-btn.delete:hover {
+    color: #dc2626;
+}
+
+/* Pagination Footer */
+.promo-pagination-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+}
+
+.pagination-text {
+    font-size: 0.9rem;
+    color: #888;
+}
