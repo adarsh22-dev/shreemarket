@@ -1,0 +1,44 @@
+# Maven target directory
+target/
+
+# IntelliJ IDEA
+.idea/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# VS Code
+.vscode/
+
+# Log files
+*.log
+
+# Test files
+test-image.jpg
+test-policy.pdf
+test-product.json
+cookies.txt
+
+# Uploaded files
+uploads/
+
+# Node modules (if any)
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

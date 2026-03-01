@@ -1,0 +1,226 @@
+.our-story-page {
+    font-family: 'Inter', sans-serif;
+    background-color: 'white';
+    /* Matching the cream background from other pages */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.story-content-wrapper {
+    max-width: 1440px;
+    margin: 0 auto;
+    width: 100%;
+    flex: 1;
+}
+
+.story-hero {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    /* Adjust as needed */
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    border-radius: 12px;
+    margin-top: 2rem;
+}
+
+.story-hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.story-hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0) 100%);
+    z-index: 2;
+}
+
+.story-hero-content {
+    position: relative;
+    z-index: 3;
+    padding: 3rem;
+    color: white;
+    width: 100%;
+}
+
+.story-hero-tag {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #FF6B35;
+    background-color: white;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+.story-hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+    max-width: 800px;
+}
+
+.story-caption {
+    text-align: center;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #888;
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+}
+
+.story-article {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 2rem 5rem 2rem;
+}
+
+.story-author-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #E5E0DA;
+}
+
+.story-author-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.story-author-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.story-author-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.story-author-name {
+    font-weight: 700;
+    color: #111;
+    font-size: 1rem;
+}
+
+.story-author-role {
+    font-size: 0.75rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.story-author-actions {
+    display: flex;
+    gap: 1rem;
+    color: #666;
+}
+
+.story-author-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.story-author-actions button:hover {
+    color: #FF6B35;
+}
+
+/* Article Typography */
+.story-paragraph {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.story-drop-cap::first-letter {
+    font-size: 3.5rem;
+    font-weight: 700;
+    float: left;
+    color: #FF6B35;
+    line-height: 1;
+    margin-right: 0.5rem;
+    margin-top: -0.2rem;
+}
+
+.story-subheading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+.story-blockquote {
+    margin: 3rem 0;
+    padding: 1.5rem 2rem;
+    background-color: rgba(255, 107, 53, 0.05);
+    /* Very faint orange */
+    border-left: 4px solid #FF6B35;
+    border-radius: 0 8px 8px 0;
+}
+
+.story-quote-icon {
+    color: #FF6B35;
+    opacity: 0.5;
+    margin-bottom: 1rem;
+}
+
+.story-quote-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-style: italic;
+    color: #111;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.story-quote-author {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+}
+
+.story-image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 3rem 0;
+}
+
+.story-grid-image {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 8px;
+}

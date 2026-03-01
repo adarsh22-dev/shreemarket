@@ -1,0 +1,378 @@
+/* === Base Layout === */
+.vr-page {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8fafc;
+    font-family: 'Inter', -apple-system, sans-serif;
+    overflow-x: hidden;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* === Card Container === */
+.vr-card {
+    display: flex;
+    width: 100%;
+    max-width: 1200px;
+    background-color: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-height: 750px;
+}
+
+/* === Left Panel === */
+.vr-left-panel {
+    width: 42%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 4rem;
+    overflow: hidden;
+}
+
+.vr-image-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Using a placeholder geometric or dark office image since the exact one is unavailable */
+    background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1470');
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+}
+
+.vr-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 50%, rgba(15, 23, 42, 0.2) 100%);
+    z-index: 2;
+}
+
+.vr-left-content {
+    position: relative;
+    z-index: 3;
+    color: white;
+    max-width: 480px;
+}
+
+.vr-left-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+}
+
+.vr-left-content p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+    margin-bottom: 2.5rem;
+    font-weight: 400;
+}
+
+/* Community Avatars */
+.vr-community {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.vr-avatars {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 70px;
+    height: 32px;
+}
+
+.vr-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    position: absolute;
+    top: 0;
+}
+
+.vr-avatar:nth-child(1) {
+    z-index: 3;
+    left: 0;
+}
+
+.vr-avatar:nth-child(2) {
+    z-index: 2;
+}
+
+.vr-avatar:nth-child(3) {
+    z-index: 1;
+}
+
+.vr-join-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+/* === Right Panel (Form area) === */
+.vr-right-panel {
+    width: 58%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    background-color: #ffffff;
+}
+
+.vr-form-wrapper {
+    display: flex;
+    width: 100%;
+    max-width: 700px;
+    gap: 3rem;
+}
+
+/* === Stepper === */
+.vr-stepper-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.vr-step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.vr-step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.vr-step-circle.active {
+    background-color: #ea580c;
+    /* Orange */
+    color: #ffffff;
+}
+
+.vr-step-line {
+    width: 2px;
+    height: 100px;
+    background-color: #f1f5f9;
+    margin: 8px 0;
+}
+
+.vr-step-line.active-line {
+    background-color: #ea580c;
+}
+
+/* === Form Column === */
+.vr-form-col {
+    flex: 1;
+}
+
+.vr-header {
+    margin-bottom: 2.5rem;
+}
+
+.vr-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.vr-login-text {
+    font-size: 0.95rem;
+    color: #64748b;
+}
+
+.vr-login-link {
+    color: #ea580c;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 0.25rem;
+}
+
+.vr-login-link:hover {
+    text-decoration: underline;
+}
+
+/* Form Layout */
+.vr-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.vr-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.vr-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.vr-form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+/* Customizing Input Component Styles */
+.vr-form .input-container {
+    background-color: #f8fafc;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+}
+
+.vr-form .input-container:focus-within {
+    border-color: #ea580c;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.1);
+}
+
+.vr-form input {
+    background-color: transparent;
+    color: #334155;
+    font-weight: 500;
+}
+
+.vr-form input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+.vr-password-hint {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-style: italic;
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Submit Button */
+.vr-submit-btn {
+    background-color: #ea580c !important;
+    color: white !important;
+    border-radius: 30px !important;
+    padding: 1rem 2rem !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    width: auto !important;
+    align-self: flex-start;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+}
+
+.vr-submit-btn:hover {
+    background-color: #c2410c !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+}
+
+.vr-button-icon {
+    display: flex;
+    align-items: center;
+}
+
+/* Footer Links */
+.vr-footer-links {
+    margin-top: 4rem;
+    display: flex;
+    gap: 2rem;
+}
+
+.vr-footer-links a {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.vr-footer-links a:hover {
+    color: #475569;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .vr-left-panel {
+        width: 35%;
+        padding: 2rem;
+    }
+
+    .vr-right-panel {
+        width: 65%;
+        padding: 2rem;
+    }
+
+    .vr-form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .vr-card {
+        flex-direction: column;
+    }
+
+    .vr-page {
+        padding: 1rem;
+    }
+
+    .vr-left-panel {
+        width: 100%;
+        height: 300px;
+        padding: 2rem;
+    }
+
+    .vr-right-panel {
+        width: 100%;
+        padding: 2rem 1rem;
+    }
+
+    .vr-form-wrapper {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .vr-stepper-col {
+        flex-direction: row;
+        justify-content: center;
+        padding-top: 0;
+        margin-bottom: 2rem;
+    }
+
+    .vr-step-line {
+        width: 40px;
+        height: 2px;
+        margin: 0 8px;
+    }
+}
