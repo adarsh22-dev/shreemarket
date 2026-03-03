@@ -56,7 +56,7 @@ const CartDropdown = () => {
                                         {item.details?.material} • {item.details?.size || 'Standard'}
                                     </p>
                                     <div className="cart-item-footer">
-                                        <span className="cart-item-price">₹{item.price.toFixed(2)}</span>
+                                        <span className="cart-item-price">₹{(item.price || 0).toFixed(2)}</span>
                                         <div className="cart-qty-control">
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant)}
@@ -85,7 +85,7 @@ const CartDropdown = () => {
                         <p className="shipping-note">Shipping and taxes calculated at checkout.</p>
 
                         <div className="cart-actions">
-                            <button className="btn-checkout">Checkout</button>
+                            <Link to="/checkout" className="btn-checkout" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }} onClick={closeCart}>Checkout</Link>
                             <Link to="/cart" className="btn-view-cart" onClick={closeCart} style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>View Cart</Link>
                         </div>
                     </div>

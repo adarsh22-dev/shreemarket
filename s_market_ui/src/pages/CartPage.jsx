@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCart } from '../context/CartContext';
-import { Heart, ShieldCheck, Award, Lock, ArrowRight, Minus, Plus } from 'lucide-react';
+import { Heart, ShieldCheck, Award, Lock, ArrowRight, Minus, Plus, Loader2 } from 'lucide-react';
+import { getAllProducts, BACKEND_URL } from '../api/api';
 import './CartPage.css';
 
 const CartPage = () => {
@@ -16,14 +17,56 @@ const CartPage = () => {
         moveToCart,
         removeFromSaved,
         cartTotal,
-        cartCount
+        cartCount,
+        recentlyViewed
     } = useCart();
     const navigate = useNavigate();
+
+    const [suggestedProducts, setSuggestedProducts] = React.useState([]);
+    const [loadingSuggestions, setLoadingSuggestions] = React.useState(true);
 
     // Scroll to the top when the page loads
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, []);
+
+        const fetchSuggestions = async () => {
+            setLoadingSuggestions(true);
+            try {
+                const allProducts = await getAllProducts();
+                const cartIds = new Set(cartItems.map(item => item.id));
+
+                // 1. Get recently viewed that aren't in cart
+                let suggestions = recentlyViewed.filter(p => !cartIds.has(p.id));
+
+                // 2. If we need more, get random products from catalog
+                if (suggestions.length < 4) {
+                    const otherProducts = allProducts
+                        .filter(p => !cartIds.has(p.id) && !suggestions.some(s => s.id === p.id))
+                        .map(p => ({
+                            id: p.id,
+                            name: p.name,
+                            price: p.discountPrice || p.regularPrice,
+                            image: p.media && p.media.length > 0
+                                ? `${BACKEND_URL}/uploads/products/${p.media.find(m => m.isPrimary)?.fileName || p.media[0].fileName}`
+                                : "https://via.placeholder.com/400x400",
+                            category: p.category
+                        }));
+
+                    // Shuffle other products
+                    const shuffled = otherProducts.sort(() => 0.5 - Math.random());
+                    suggestions = [...suggestions, ...shuffled].slice(0, 4);
+                }
+
+                setSuggestedProducts(suggestions.slice(0, 4));
+            } catch (error) {
+                console.error("Failed to fetch suggested products:", error);
+            } finally {
+                setLoadingSuggestions(false);
+            }
+        };
+
+        fetchSuggestions();
+    }, [recentlyViewed, cartItems]);
 
     // In a real app, these values would come from context or props based on actual items
     const taxRate = 0.08;
@@ -47,12 +90,12 @@ const CartPage = () => {
                         {/* Social Impact Banner */}
                         <div className="social-impact-banner">
                             <div className="impact-icon">
-                                <Heart fill="#FF5722" size={20} />
+                                <Heart fill="#FF5722" size={20} strokeWidth={3} />
                             </div>
                             <div className="impact-content">
-                                <h3>Spread smile!!! :)</h3>
+                                <h3>Your Social Impact Summary</h3>
                                 <p>
-                                    Happy to have you shop with us<strong>.</strong>
+                                    This order supports <strong>5 days of fair wages</strong> for women in Mexico and Kenya, contributing to local community education funds.
                                 </p>
                             </div>
 
@@ -176,9 +219,15 @@ const CartPage = () => {
                                 <span className="total-value">₹{finalTotal.toFixed(2)}</span>
                             </div>
 
-                            <button className="btn-checkout" disabled={cartCount === 0}>
-                                <Lock size={16} /> Proceed to Checkout
-                            </button>
+                            {cartCount === 0 ? (
+                                <button className="btn-checkout disabled" disabled style={{ width: '100%', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                    <Lock size={16} /> Proceed to Checkout
+                                </button>
+                            ) : (
+                                <Link to="/checkout" className="btn-checkout" style={{ textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                    Proceed to Checkout
+                                </Link>
+                            )}
                             <Link to="/shop" className="btn-continue">
                                 Continue Shopping
                             </Link>
@@ -214,45 +263,28 @@ const CartPage = () => {
                     </div>
 
                     <div className="suggestions-grid">
-                        <Link to="/product/101" className="suggestion-card">
-                            <div className="suggestion-image">
-                                <button className="favorite-btn" onClick={(e) => { e.preventDefault(); /* handle save */ }}><Heart size={16} fill="#ccc" /></button>
-                                <img src="https://images.unsplash.com/photo-1602873117565-d41c49b4af6b?q=80&w=600&auto=format&fit=crop" alt="Beeswax Candle Set" />
+                        {loadingSuggestions ? (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem' }}>
+                                <Loader2 size={32} className="animate-spin" color="#FF5722" style={{ margin: '0 auto' }} />
+                                <p>Finding things you'll love...</p>
                             </div>
-                            <h4 className="suggestion-title">Beeswax Candle Set</h4>
-                            <p className="suggestion-author">Hand-poured by Maria, Guatemala</p>
-                            <p className="suggestion-price">₹34.00</p>
-                        </Link>
-
-                        <Link to="/product/102" className="suggestion-card">
-                            <div className="suggestion-image">
-                                <button className="favorite-btn" onClick={(e) => { e.preventDefault(); /* handle save */ }}><Heart size={16} fill="#111" color="#111" /></button>
-                                <img src="https://images.unsplash.com/photo-1599696848652-f0ff23bc911f?q=80&w=600&auto=format&fit=crop" alt="Woven Rattan Coasters" />
-                            </div>
-                            <h4 className="suggestion-title">Woven Rattan Coasters</h4>
-                            <p className="suggestion-author">By Artisans of the Philippines</p>
-                            <p className="suggestion-price">₹22.00</p>
-                        </Link>
-
-                        <Link to="/product/103" className="suggestion-card">
-                            <div className="suggestion-image">
-                                <button className="favorite-btn" onClick={(e) => { e.preventDefault(); /* handle save */ }}><Heart size={16} fill="#111" color="#111" /></button>
-                                <img src="https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=600&auto=format&fit=crop" alt="Indigo Dyed Linen Cover" />
-                            </div>
-                            <h4 className="suggestion-title">Indigo Dyed Linen Cover</h4>
-                            <p className="suggestion-author">By Kirti in Jaipur, India</p>
-                            <p className="suggestion-price">₹45.00</p>
-                        </Link>
-
-                        <Link to="/product/104" className="suggestion-card">
-                            <div className="suggestion-image">
-                                <button className="favorite-btn" onClick={(e) => { e.preventDefault(); /* handle save */ }}><Heart size={16} fill="#ccc" /></button>
-                                <img src="https://images.unsplash.com/photo-1485955900006-10f4d324d411?q=80&w=600&auto=format&fit=crop" alt="Terracotta Planter" />
-                            </div>
-                            <h4 className="suggestion-title">Terracotta Planter</h4>
-                            <p className="suggestion-author">By Sofia in Algarve, Portugal</p>
-                            <p className="suggestion-price">₹38.00</p>
-                        </Link>
+                        ) : suggestedProducts.length > 0 ? (
+                            suggestedProducts.map((product) => (
+                                <Link key={product.id} to={`/product/${product.id}`} className="suggestion-card">
+                                    <div className="suggestion-image">
+                                        <button className="favorite-btn" onClick={(e) => { e.preventDefault(); }}>
+                                            <Heart size={16} fill="#ccc" />
+                                        </button>
+                                        <img src={product.image} alt={product.name} />
+                                    </div>
+                                    <h4 className="suggestion-title">{product.name}</h4>
+                                    <p className="suggestion-author">in {product.category || "General"}</p>
+                                    <p className="suggestion-price">₹{product.price.toFixed(2)}</p>
+                                </Link>
+                            ))
+                        ) : (
+                            <p style={{ gridColumn: '1 / -1', textAlign: 'center' }}>No suggestions available at the moment.</p>
+                        )}
                     </div>
                 </section>
 

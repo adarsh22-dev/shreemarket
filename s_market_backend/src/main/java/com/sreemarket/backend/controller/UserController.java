@@ -5,7 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.sreemarket.backend.service.VendorService;
+import com.sreemarket.backend.service.UserService;
 import com.sreemarket.backend.model.Vendor;
+import com.sreemarket.backend.model.User;
 
 import java.util.Map;
 
@@ -16,6 +18,9 @@ public class UserController {
 
     @Autowired
     private VendorService vendorService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/vendors")
     public ResponseEntity<?> getVendors(
@@ -52,6 +57,36 @@ public class UserController {
         try {
             vendorService.deleteVendor(id);
             return ResponseEntity.ok(Map.of("message", "Vendor deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/vendors/{id}")
+    public ResponseEntity<?> getVendorById(@PathVariable Long id) {
+        try {
+            Vendor vendor = vendorService.getVendorById(id);
+            return ResponseEntity.ok(vendor);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<?> getUserDetails(@PathVariable Long id) {
+        try {
+            User user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<?> updateUserDetails(@PathVariable Long id, @RequestBody User updatedUser) {
+        try {
+            User savedUser = userService.updateUser(id, updatedUser);
+            return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

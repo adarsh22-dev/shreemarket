@@ -19,7 +19,15 @@ public class VendorService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public Vendor getVendorById(Long id) {
+        return vendorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vendor not found with id: " + id));
+    }
+
     public Vendor registerVendor(Vendor vendor) {
+        System.out.println("Registering vendor: " + vendor.getFullName() + " with " +
+                (vendor.getStores() != null ? vendor.getStores().size() : 0) + " stores.");
+
         if (vendorRepository.existsByEmail(vendor.getEmail())) {
             throw new RuntimeException("Email already in use by another vendor");
         }
@@ -28,7 +36,9 @@ public class VendorService {
             throw new RuntimeException("Phone number already in use by another vendor");
         }
 
-        vendor.setPassword(passwordEncoder.encode(vendor.getPassword()));
+        if (vendor.getPassword() != null) {
+            vendor.setPassword(passwordEncoder.encode(vendor.getPassword()));
+        }
 
         if (vendor.getRoleId() == null) {
             vendor.setRoleId(3L); // Default Vendor Role ID
@@ -39,6 +49,11 @@ public class VendorService {
         }
 
         vendor.setCreatedAt(System.currentTimeMillis());
+
+        // Map stores to this vendor explicitly to ensure vendor_id is saved
+        if (vendor.getStores() != null && !vendor.getStores().isEmpty()) {
+            vendor.getStores().forEach(store -> store.setVendor(vendor));
+        }
 
         return vendorRepository.save(vendor);
     }

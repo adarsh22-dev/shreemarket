@@ -7,12 +7,14 @@ export const useCart = () => useContext(CartContext);
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
     const [savedItems, setSavedItems] = useState([]);
+    const [recentlyViewed, setRecentlyViewed] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
     // Load cart and saved items from local storage on init
     useEffect(() => {
         const savedCart = localStorage.getItem('s_market_cart');
         const savedLaterList = localStorage.getItem('s_market_saved');
+        const savedRecentlyViewed = localStorage.getItem('s_market_recent');
         if (savedCart) {
             try {
                 setCartItems(JSON.parse(savedCart));
@@ -27,6 +29,13 @@ export const CartProvider = ({ children }) => {
                 console.error("Failed to parse saved items from local storage", e);
             }
         }
+        if (savedRecentlyViewed) {
+            try {
+                setRecentlyViewed(JSON.parse(savedRecentlyViewed));
+            } catch (e) {
+                console.error("Failed to parse recently viewed from local storage", e);
+            }
+        }
     }, []);
 
     // Save cart to local storage whenever it changes
@@ -38,6 +47,11 @@ export const CartProvider = ({ children }) => {
     useEffect(() => {
         localStorage.setItem('s_market_saved', JSON.stringify(savedItems));
     }, [savedItems]);
+
+    // Save recently viewed to local storage
+    useEffect(() => {
+        localStorage.setItem('s_market_recent', JSON.stringify(recentlyViewed));
+    }, [recentlyViewed]);
 
     const addToCart = (product, quantity = 1, variant = null, openCartOnAdd = true) => {
         setCartItems(prevItems => {
@@ -104,8 +118,30 @@ export const CartProvider = ({ children }) => {
         ));
     };
 
+    // Add product to recently viewed
+    const addToRecentlyViewed = (product) => {
+        if (!product || !product.id) return;
+        setRecentlyViewed(prev => {
+            // Remove if already exists to move it to the front
+            const filtered = prev.filter(item => item.id !== product.id);
+            // Limit to 10 items
+            const newList = [product, ...filtered].slice(0, 10);
+            return newList;
+        });
+    };
+
+    const clearCart = () => {
+        setCartItems([]);
+    };
+
     const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
-    const cartTotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const cartTotal = cartItems.reduce((total, item) => total + ((item.price || item.discountPrice || item.regularPrice || 0) * item.quantity), 0);
+
+    const isProductInCart = (id, variant = null) => {
+        return cartItems.some(item =>
+            item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant)
+        );
+    };
 
     return (
         <CartContext.Provider value={{
@@ -120,8 +156,12 @@ export const CartProvider = ({ children }) => {
             saveForLater,
             moveToCart,
             removeFromSaved,
+            recentlyViewed,
+            addToRecentlyViewed,
+            clearCart,
             cartCount,
-            cartTotal
+            cartTotal,
+            isProductInCart
         }}>
             {children}
         </CartContext.Provider>

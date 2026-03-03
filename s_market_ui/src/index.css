@@ -1,13 +1,13 @@
 :root {
-  --primary-orange: #E03E1A;
-  --primary-orange-hover: #C93414;
-  --text-main: #1A1A1A;
+  --primary-orange: #FF5722;
+  --primary-orange-hover: #e64a19;
+  --text-main: #000000;
   --text-muted: #666666;
   --text-light: #FFFFFF;
   --border-color: #E5E5E5;
   --bg-light: #FFFFFF;
   --bg-dark-overlay: rgba(0, 0, 0, 0.4);
-  
+
   --font-family: 'Inter', sans-serif;
 }
 
@@ -25,7 +25,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button, input {
+button,
+input {
   font-family: inherit;
 }
 
@@ -35,27 +36,64 @@ a {
 }
 
 /* Utilities */
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.items-center { align-items: center; }
-.justify-center { justify-content: center; }
-.justify-between { justify-content: space-between; }
-.gap-2 { gap: 0.5rem; }
-.gap-4 { gap: 1rem; }
-.w-full { width: 100%; }
-.h-full { height: 100%; }
-.min-h-screen { min-height: 100vh; }
-.text-center { text-align: center; }
-.cursor-pointer { cursor: pointer; }
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
 
 /* Custom Scrollbar if needed */
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; 
+  background: #f1f1f1;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #888; 
+  background: #888;
   border-radius: 4px;
 }

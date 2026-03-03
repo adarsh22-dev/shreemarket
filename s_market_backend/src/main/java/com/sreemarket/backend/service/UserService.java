@@ -47,6 +47,44 @@ public class UserService {
         return user;
     }
 
+    public User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public User updateUser(Long id, User updatedUser) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Validate and update Full Name
+        if (updatedUser.getFullName() == null || updatedUser.getFullName().trim().isEmpty()) {
+            throw new RuntimeException("Full name cannot be empty");
+        }
+        existingUser.setFullName(updatedUser.getFullName().trim());
+
+        // Validate and update Email
+        if (updatedUser.getEmail() != null && !updatedUser.getEmail().trim().isEmpty()
+                && !updatedUser.getEmail().equalsIgnoreCase(existingUser.getEmail())) {
+
+            if (userRepository.existsByEmail(updatedUser.getEmail())) {
+                throw new RuntimeException("Email already in use");
+            }
+            existingUser.setEmail(updatedUser.getEmail().trim());
+        }
+
+        // Validate and update Phone
+        if (updatedUser.getPhone() != null && !updatedUser.getPhone().trim().isEmpty()
+                && !updatedUser.getPhone().equals(existingUser.getPhone())) {
+
+            if (userRepository.existsByPhone(updatedUser.getPhone())) {
+                throw new RuntimeException("Phone number already in use");
+            }
+            existingUser.setPhone(updatedUser.getPhone().trim());
+        }
+
+        return userRepository.save(existingUser);
+    }
+
     public User loginOrRegisterGoogleUser(String idTokenString) {
         try {
             com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier verifier = new com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier.Builder(

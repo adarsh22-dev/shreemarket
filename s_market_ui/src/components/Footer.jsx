@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
 import { Instagram, Camera, Rss } from 'lucide-react'; // Some placeholder icons for social
+import logo from '../assets/smarketlogo.svg';
 
 const Footer = () => {
     return (
@@ -9,12 +10,12 @@ const Footer = () => {
             <div className="footer-top">
                 {/* Brand & Mission */}
                 <div className="footer-brand">
-                    <div className="brand-logo-container">
-                        <div className="brand-icon">
-                            <div className="brand-icon-inner"></div>
-                        </div>
-                        <span className="brand-name">HANDCRAFTED</span>
-                    </div>
+                    <img
+                        src={logo}
+                        alt="SreeMarket"
+                        className="vm-logo-image"
+                        style={{ height: '60px', width: 'auto', marginBottom: '15px' }}
+                    />
                     <p className="brand-desc">
                         Supporting independent artisans and preserving traditional crafts for a more conscious world.
                     </p>
@@ -34,19 +35,19 @@ const Footer = () => {
                             <li><Link to="/support/returns">Returns & Exchanges</Link></li>
                             <li><Link to="/support/contact">Contact Us</Link></li>
                             <li><Link to="/support/faq">Store FAQ</Link></li>
-                            <li><Link to="/shop/gift-cards">Gift Cards</Link></li>
+                            {/* <li><Link to="/shop/gift-cards">Gift Cards</Link></li> */}
                         </ul>
                     </div>
-                    <div className="footer-column">
+                    {/* <div className="footer-column">
                         <h4>About</h4>
                         <ul>
-                            <li><Link to="/about/story">Our Story</Link></li>
+                            <li><Link to="/our-story">Our Story</Link></li>
                             <li><Link to="/about/artisans">Meet the Makers</Link></li>
                             <li><Link to="/about/standards">Artisan Standards</Link></li>
                             <li><Link to="/about/sustainability">Sustainability</Link></li>
                             <li><Link to="/about/press">Press & Media</Link></li>
                         </ul>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Newsletter Section */}
@@ -64,11 +65,11 @@ const Footer = () => {
 
             {/* Bottom Bar */}
             <div className="footer-bottom">
-                <div>&copy; 2026 Handcrafted Marketplaces Inc. All rights reserved.</div>
+                <div>&copy; 2026 Sreemarket. All rights reserved.</div>
                 <div className="footer-bottom-links">
-                    <Link to="/privacy">Privacy Policy</Link>
-                    <Link to="/terms">Terms of Service</Link>
-                    <Link to="/accessibility">Accessibility</Link>
+                    <Link to="/support/privacy">Privacy Policy</Link>
+                    <Link to="/support/terms">Terms of Service</Link>
+                    {/* <Link to="/accessibility">Accessibility</Link> */}
                 </div>
             </div>
         </footer>

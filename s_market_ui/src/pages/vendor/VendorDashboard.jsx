@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Search,
     Plus,
@@ -7,14 +7,87 @@ import {
     ShoppingCart,
     BarChart2,
     MoreVertical,
-    CheckCircle
+    CheckCircle,
+    Loader2
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorDashboard.css';
+import { fetchVendorOrders, getVendorProducts, BACKEND_URL } from '../../api/api';
 
 const VendorDashboard = () => {
     const navigate = useNavigate();
+    const [orders, setOrders] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    const userObj = JSON.parse(userStr);
+                    if (userObj.userId) {
+                        const [ordersData, productsData] = await Promise.all([
+                            fetchVendorOrders(userObj.userId),
+                            getVendorProducts(userObj.userId)
+                        ]);
+                        setOrders(Array.isArray(ordersData) ? ordersData : []);
+                        setProducts(productsData?.content || (Array.isArray(productsData) ? productsData : []));
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch vendor dashboard data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDashboardData();
+    }, []);
+
+    // Calculate Metrics
+    const totalSales = orders
+        .filter(o => o.status !== 'CANCELLED' && o.status !== 'REJECTED')
+        .reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const ordersToday = orders.filter(o => {
+        if (!o.datePlaced) return false;
+        const orderDate = new Date(o.datePlaced);
+        orderDate.setHours(0, 0, 0, 0);
+        return orderDate.getTime() === today.getTime();
+    }).length;
+
+    const avgOrderValue = orders.length > 0 ? (totalSales / orders.length) : 0;
+
+    const formatDate = (epoch) => {
+        if (!epoch) return 'N/A';
+        const date = new Date(epoch);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const getStatusClass = (status) => {
+        if (!status) return '';
+        switch (status.toLowerCase()) {
+            case 'pending': return 'status-pending';
+            case 'shipped': return 'status-shipped';
+            case 'processing': return 'status-processing';
+            case 'delivered': return 'status-delivered';
+            default: return '';
+        }
+    };
+
+    if (loading) {
+        return (
+            <VendorLayout>
+                <div className="orders-loading" style={{ height: '60vh' }}>
+                    <Loader2 className="spinning-loader" size={32} />
+                    <span>Loading dashboard...</span>
+                </div>
+            </VendorLayout>
+        );
+    }
 
     return (
         <VendorLayout>
@@ -37,9 +110,9 @@ const VendorDashboard = () => {
                         <button className="icon-btn">
                             <Bell size={20} />
                         </button>
-                        <div className="profile-avatar">
+                        {/* <div className="profile-avatar">
                             <img src="https://ui-avatars.com/api/?name=Artisan&background=e0d5c1&color=333" alt="Profile" style={{ width: '100%', height: '100%' }} />
-                        </div>
+                        </div> */}
                     </div>
                 </header>
 
@@ -48,40 +121,31 @@ const VendorDashboard = () => {
                     <div className="left-column">
                         {/* KPI Metrics */}
                         <div className="metrics-row">
-                            <div className="metric-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-                                <div className="metric-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', margin: 0 }}>
-                                    <div className="metric-icon" style={{ width: '32px', height: '32px' }}>
-                                        <DollarSign size={18} />
-                                    </div>
-                                    <div className="metric-badge">+12.5%</div>
+                            <div className="metric-card" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
+                                <div className="metric-icon" style={{ margin: 0 }}>
+                                    <DollarSign size={20} />
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div className="metric-title" style={{ margin: 0, marginBottom: '0.25rem', fontSize: '0.85rem' }}>Total Sales</div>
-                                    <div className="metric-value" style={{ fontSize: '1.75rem' }}>$12,450.00</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <div className="metric-value" style={{ fontSize: '1.5rem', lineHeight: '1.1' }}>₹{totalSales.toFixed(2)}</div>
+                                    <div className="metric-title" style={{ marginTop: '0.2rem' }}>Total Sales</div>
                                 </div>
                             </div>
-                            <div className="metric-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-                                <div className="metric-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', margin: 0 }}>
-                                    <div className="metric-icon" style={{ width: '32px', height: '32px' }}>
-                                        <ShoppingCart size={18} />
-                                    </div>
-                                    <div className="metric-badge">+5.2%</div>
+                            <div className="metric-card" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
+                                <div className="metric-icon" style={{ margin: 0 }}>
+                                    <ShoppingCart size={20} />
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div className="metric-title" style={{ margin: 0, marginBottom: '0.25rem', fontSize: '0.85rem' }}>Orders Today</div>
-                                    <div className="metric-value" style={{ fontSize: '1.75rem' }}>18</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <div className="metric-value" style={{ fontSize: '1.5rem', lineHeight: '1.1' }}>{ordersToday}</div>
+                                    <div className="metric-title" style={{ marginTop: '0.2rem' }}>Orders Today</div>
                                 </div>
                             </div>
-                            <div className="metric-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-                                <div className="metric-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', margin: 0 }}>
-                                    <div className="metric-icon" style={{ width: '32px', height: '32px' }}>
-                                        <BarChart2 size={18} />
-                                    </div>
-                                    <div className="metric-badge">+2.1%</div>
+                            <div className="metric-card" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem', padding: '1.25rem' }}>
+                                <div className="metric-icon" style={{ margin: 0 }}>
+                                    <BarChart2 size={20} />
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <div className="metric-title" style={{ margin: 0, marginBottom: '0.25rem', fontSize: '0.85rem' }}>Avg. Order Value</div>
-                                    <div className="metric-value" style={{ fontSize: '1.75rem' }}>$68.50</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                    <div className="metric-value" style={{ fontSize: '1.5rem', lineHeight: '1.1' }}>₹{avgOrderValue.toFixed(2)}</div>
+                                    <div className="metric-title" style={{ marginTop: '0.2rem' }}>Avg. Order Value</div>
                                 </div>
                             </div>
                         </div>
@@ -147,57 +211,39 @@ const VendorDashboard = () => {
 
                     {/* Right Column (Top Products) */}
                     <div className="top-products-card">
-                        <h3>Top Selling Products</h3>
+                        <h3>Your Products</h3>
                         <div className="product-list">
-                            <div className="product-list-item">
-                                <img src="https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=100&q=80" alt="Vase" className="product-thumb" />
-                                <div className="product-info">
-                                    <div className="product-name">Astra Ceramic Vase</div>
-                                    <div className="product-sales">42 sold this month</div>
-                                </div>
-                                <div className="product-meta">
-                                    <div className="product-price">$45.00</div>
-                                    <div className="stock-status stock-in">In Stock</div>
-                                </div>
-                            </div>
+                            {products.slice(0, 4).map(product => {
+                                const primaryMedia = product.media && product.media.length > 0
+                                    ? product.media.find(m => m.isPrimary) || product.media[0]
+                                    : null;
+                                const imageUrl = primaryMedia
+                                    ? `${BACKEND_URL}/uploads/products/${primaryMedia.fileName}`
+                                    : "https://via.placeholder.com/100?text=No+Image";
 
-                            <div className="product-list-item">
-                                <img src="https://images.unsplash.com/photo-1596484552993-3bdfeb50570b?w=100&q=80" alt="Basket" className="product-thumb" />
-                                <div className="product-info">
-                                    <div className="product-name">Seagrass Storage Basket</div>
-                                    <div className="product-sales">38 sold this month</div>
-                                </div>
-                                <div className="product-meta" style={{ textAlign: 'right' }}>
-                                    <div className="product-price">$32.00</div>
-                                    <div className="stock-status stock-low" style={{ fontSize: '0.7rem' }}>Low<br />Stock (5)</div>
-                                </div>
-                            </div>
-
-                            <div className="product-list-item">
-                                <img src="https://images.unsplash.com/photo-1615873968403-89e068629265?w=100&q=80" alt="Throw" className="product-thumb" />
-                                <div className="product-info">
-                                    <div className="product-name">Loomed Cotton Throw</div>
-                                    <div className="product-sales">24 sold this month</div>
-                                </div>
-                                <div className="product-meta">
-                                    <div className="product-price">$78.00</div>
-                                    <div className="stock-status stock-in">In Stock</div>
-                                </div>
-                            </div>
-
-                            <div className="product-list-item">
-                                <img src="https://images.unsplash.com/photo-1602874801007-bd458cb6c04f?w=100&q=80" alt="Tea Lights" className="product-thumb" />
-                                <div className="product-info">
-                                    <div className="product-name">Bamboo Tea Lights</div>
-                                    <div className="product-sales">19 sold this month</div>
-                                </div>
-                                <div className="product-meta">
-                                    <div className="product-price">$18.00</div>
-                                    <div className="stock-status stock-in">In Stock</div>
-                                </div>
-                            </div>
+                                return (
+                                    <div className="product-list-item" key={product.id}>
+                                        <img src={imageUrl} alt={product.name} className="product-thumb" />
+                                        <div className="product-info">
+                                            <div className="product-name">{product.name}</div>
+                                            <div className="product-sales" style={{ color: '#888', fontSize: '12px' }}>{product.category || 'N/A'}</div>
+                                        </div>
+                                        <div className="product-meta">
+                                            <div className="product-price">₹{(product.discountPrice || product.regularPrice || 0).toFixed(2)}</div>
+                                            {product.status === 'ACTIVE' ? (
+                                                <div className="stock-status stock-in">Active</div>
+                                            ) : (
+                                                <div className="stock-status stock-low">{product.status}</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            {products.length === 0 && (
+                                <p style={{ padding: '2rem 0', textAlign: 'center', color: '#888' }}>No products found.</p>
+                            )}
                         </div>
-                        <button className="btn-view-all">View All Products</button>
+                        <button className="btn-view-all" onClick={() => navigate('/vendor/products')}>View All Products</button>
                     </div>
                 </div>
 
@@ -211,64 +257,41 @@ const VendorDashboard = () => {
                     <table className="orders-table">
                         <thead>
                             <tr>
-                                <th>ORDER ID</th>
-                                <th>CUSTOMER</th>
-                                <th>PRODUCT</th>
-                                <th>DATE</th>
-                                <th>TOTAL</th>
-                                <th>STATUS</th>
-                                <th>ACTION</th>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Product</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td className="order-id">#EH-29401</td>
-                                <td>
-                                    <div className="customer-cell">
-                                        <div className="customer-avatar" style={{ backgroundColor: '#fff0e5', color: '#e65100' }}>AM</div>
-                                        Alice Miller
-                                    </div>
-                                </td>
-                                <td>Astra Ceramic Vase</td>
-                                <td>Oct 24, 2023</td>
-                                <td style={{ fontWeight: 600 }}>$45.00</td>
-                                <td><span className="status-badge status-processing">Processing</span></td>
-                                <td>
-                                    <button className="action-btn" style={{ color: '#E03E1A' }}><CheckCircle size={18} /></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="order-id">#EH-29398</td>
-                                <td>
-                                    <div className="customer-cell">
-                                        <div className="customer-avatar" style={{ backgroundColor: '#fff0e5', color: '#e65100' }}>JS</div>
-                                        James Smith
-                                    </div>
-                                </td>
-                                <td>Cotton Throw</td>
-                                <td>Oct 24, 2023</td>
-                                <td style={{ fontWeight: 600 }}>$78.00</td>
-                                <td><span className="status-badge status-shipped">Shipped</span></td>
-                                <td>
-                                    <button className="action-btn"><MoreVertical size={18} /></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="order-id">#EH-29395</td>
-                                <td>
-                                    <div className="customer-cell">
-                                        <div className="customer-avatar" style={{ backgroundColor: '#ffebee', color: '#c62828' }}>KL</div>
-                                        Kate Lee
-                                    </div>
-                                </td>
-                                <td>Seagrass Basket (x2)</td>
-                                <td>Oct 23, 2023</td>
-                                <td style={{ fontWeight: 600 }}>$64.00</td>
-                                <td><span className="status-badge status-delivered">Delivered</span></td>
-                                <td>
-                                    <button className="action-btn"><MoreVertical size={18} /></button>
-                                </td>
-                            </tr>
+                            {orders.slice(0, 5).map(order => (
+                                <tr key={order.id}>
+                                    <td className="order-id">{order.orderNumber || `#${order.id}`}</td>
+                                    <td>
+                                        <div className="customer-cell">
+                                            <div className="customer-avatar">
+                                                {(order.customerName || 'N').charAt(0).toUpperCase()}
+                                            </div>
+                                            {order.customerName || 'N/A'}
+                                        </div>
+                                    </td>
+                                    <td>{order.deliveryLocation || 'N/A'}</td>
+                                    <td>{formatDate(order.datePlaced)}</td>
+                                    <td style={{ fontWeight: 600 }}>₹{(order.totalAmount || 0).toFixed(2)}</td>
+                                    <td>
+                                        <span className={`status-badge ${getStatusClass(order.status)}`}>
+                                            {order.status || 'Pending'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                            {orders.length === 0 && (
+                                <tr>
+                                    <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>No recent orders.</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

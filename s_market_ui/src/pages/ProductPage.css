@@ -116,6 +116,36 @@
     margin-bottom: 1.5rem;
 }
 
+.price-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.discount-price {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #d32f2f;
+    /* Darker red for emphasis */
+}
+
+.regular-price-strike {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.discount-badge-inline {
+    background-color: #ffebee;
+    color: #d32f2f;
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
 .product-description {
     font-size: 0.95rem;
     line-height: 1.6;

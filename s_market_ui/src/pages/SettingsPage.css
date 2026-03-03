@@ -591,4 +591,141 @@ input:checked+.slider:before {
         align-items: flex-start;
         gap: 1.5rem;
     }
+
+    .address-modal {
+        width: 95%;
+        padding: 1.5rem;
+    }
+}
+
+/* Address Modal Styles */
+.address-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.address-modal {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.address-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.address-modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #222;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+
+.close-modal-btn:hover {
+    color: #FF5722;
+}
+
+.address-modal-form .form-group {
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.address-modal-form .form-row {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.address-modal-form input,
+.address-modal-form select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #E0E0E0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #333;
+    background: #FAFAFA;
+    box-sizing: border-box;
+}
+
+.address-modal-form input:focus,
+.address-modal-form select:focus {
+    outline: none;
+    border-color: #FF5722;
+    background: white;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.address-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #EAEAEA;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    background: #F5F5F5;
 }

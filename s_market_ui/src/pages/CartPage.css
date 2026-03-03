@@ -50,19 +50,20 @@
 /* Social Impact Banner */
 .social-impact-banner {
     display: flex;
-    align-items: flex-start;
-    gap: 1rem;
+    align-items: center;
     background-color: #FFF2EF;
-    /* Light orange tint */
-    border-radius: 8px;
-    padding: 1.5rem;
+    /* Very light peach */
+    border: 1px solid #FFDFD6;
+    /* Subtle peach border */
+    border-radius: 12px;
+    padding: 0.25rem 0.5rem;
 }
 
 .impact-icon {
-    background-color: #FFE0D7;
+    background-color: #FFEAE1;
     color: #FF5722;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -70,31 +71,42 @@
     flex-shrink: 0;
 }
 
+.impact-content {
+    flex: 1;
+}
+
 .impact-content h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0 0 0.25rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.15rem 0;
+    color: #333;
 }
 
 .impact-content p {
     font-size: 0.85rem;
-    color: #555;
+    color: #666;
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .impact-content strong {
     font-weight: 700;
-    color: #111;
+    color: #B54724;
+    /* Muted coral for emphasis */
 }
 
 .impact-learn-more {
     margin-left: auto;
     color: #FF5722;
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
     text-decoration: none;
     white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.impact-learn-more:hover {
+    opacity: 0.8;
 }
 
 /* Cart Item Card */
@@ -346,6 +358,13 @@
 
 .btn-checkout:hover {
     background-color: #E64A19;
+}
+
+.btn-checkout:disabled {
+    background-color: #E0E0E0;
+    color: #9E9E9E;
+    cursor: not-allowed;
+    border: 1px solid #D5D5D5;
 }
 
 .btn-continue {

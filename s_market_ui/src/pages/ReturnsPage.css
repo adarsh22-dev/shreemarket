@@ -1,0 +1,226 @@
+/* ReturnsPage.css */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f7f4;
+  color: #2c2c2c;
+}
+
+.returns-page {
+  max-width: 860px;
+  margin: 60px auto;
+  padding: 0 24px 80px;
+}
+
+/* Hero */
+.returns-hero {
+  text-align: center;
+  margin-bottom: 56px;
+  padding-bottom: 40px;
+  border-bottom: 2px solid #e0dbd4;
+}
+
+.returns-hero h1 {
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #1a1a1a;
+  margin-bottom: 14px;
+}
+
+.returns-hero p {
+  font-size: 1.1rem;
+  color: #666;
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* Sections */
+.returns-section {
+  margin-bottom: 48px;
+}
+
+.returns-section h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 18px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0dbd4;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Eligibility grid */
+.eligibility-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.eligibility-card {
+  background: #fff;
+  border: 1px solid #e8e3dc;
+  border-radius: 8px;
+  padding: 18px 20px;
+}
+
+.eligibility-card .label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ff5722;
+  margin-bottom: 6px;
+  font-family: 'Arial', sans-serif;
+}
+
+.eligibility-card p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #444;
+}
+
+/* Ordered steps */
+.steps-list {
+  list-style: none;
+  counter-reset: step-counter;
+}
+
+.steps-list li {
+  counter-increment: step-counter;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.step-number {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2c2c2c;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: 'Arial', sans-serif;
+  margin-top: 2px;
+}
+
+.step-content strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #1a1a1a;
+  font-family: 'Arial', sans-serif;
+}
+
+.step-content p {
+  font-size: 0.93rem;
+  line-height: 1.65;
+  color: #555;
+}
+
+/* Info list (refunds, exceptions) */
+.info-list {
+  list-style: none;
+}
+
+.info-list li {
+  padding: 14px 0;
+  border-bottom: 1px solid #ece8e1;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #444;
+  display: flex;
+  gap: 10px;
+}
+
+.info-list li:last-child {
+  border-bottom: none;
+}
+
+.info-list li::before {
+  content: "—";
+  color: #ff6e40;
+  flex-shrink: 0;
+}
+
+/* Contact box */
+.contact-box {
+  background: #2c2c2c;
+  color: #fff;
+  border-radius: 10px;
+  padding: 32px 36px;
+}
+
+.contact-box h2 {
+  color: #f0ebe3;
+  border-bottom-color: #444;
+  font-family: 'Arial', sans-serif;
+}
+
+.contact-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.contact-method {
+  flex: 1;
+  min-width: 180px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+
+.contact-method .method-label {
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ff5722;
+  margin-bottom: 6px;
+  font-family: 'Arial', sans-serif;
+  font-weight: 700;
+}
+
+.contact-method p {
+  font-size: 0.93rem;
+  color: #d8d0c4;
+  line-height: 1.6;
+}
+
+.contact-method a {
+  color: #d8d0c4;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .returns-hero h1 {
+    font-size: 1.9rem;
+  }
+
+  .eligibility-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-methods {
+    flex-direction: column;
+  }
+}

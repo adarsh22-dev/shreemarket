@@ -1,23 +1,220 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Pencil, Trash2, Plus, Bell, Hash, CreditCard, Home as HomeIcon, Briefcase } from 'lucide-react';
+import { Pencil, Trash2, Plus, Bell, Hash, CreditCard, Home as HomeIcon, Briefcase, MapPin } from 'lucide-react';
+import {
+    getUserDetails, updateUserDetails,
+    fetchUserAddresses, addUserAddress,
+    updateUserAddress, deleteUserAddress, setAddressAsDefault
+} from '../api/api';
 import './SettingsPage.css';
 
 const SettingsPage = () => {
+    const [userDetails, setUserDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [formData, setFormData] = useState({
+        fullName: '',
+        email: '',
+        phone: ''
+    });
+    const [updateStatus, setUpdateStatus] = useState({ loading: false, error: null, success: false });
+
+    // Address State
+    const [addresses, setAddresses] = useState([]);
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [addressForm, setAddressForm] = useState({
+        title: '',
+        fullName: '',
+        phoneNumber: '',
+        streetAddress: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: '',
+        isDefault: false
+    });
+    const [addressLoading, setAddressLoading] = useState(false);
+
     useEffect(() => {
         window.scrollTo(0, 0);
+
+        const fetchUserDetails = async () => {
+            try {
+                const storedUser = JSON.parse(localStorage.getItem('user'));
+                if (storedUser && storedUser.userId) {
+                    const data = await getUserDetails(storedUser.userId);
+                    setUserDetails(data);
+                    setFormData({
+                        fullName: data.fullName || `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+                        email: data.email || '',
+                        phone: data.phone || ''
+                    });
+
+                    // Fetch their addresses
+                    try {
+                        const userAddresses = await fetchUserAddresses(storedUser.userId);
+                        setAddresses(userAddresses);
+                    } catch (addrErr) {
+                        console.error("Failed to fetch addresses:", addrErr);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch user details:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUserDetails();
     }, []);
 
-    const user = JSON.parse(localStorage.getItem('user')) || {
+    const user = userDetails || JSON.parse(localStorage.getItem('user')) || {
         firstName: 'Alex',
         lastName: 'Johnson',
-        email: 'alex.j@example.com'
+        email: 'alex.j@example.com',
+        phone: '+1 (555) 000-0000',
+        fullName: 'Alex Johnson'
     };
 
-    const phoneNumber = '+1 (555) 000-0000';
-    const fullName = `${user.firstName || 'Alex'} ${user.lastName || 'Johnson'}`;
+    const phoneNumber = user.phone || '+1 (555) 000-0000';
+    const fullName = user.fullName || `${user.firstName || 'Alex'} ${user.lastName || 'Johnson'}`;
+    const memberSince = user.createdAt
+        ? new Date(user.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', month: 'long', year: 'numeric' })
+        : 'March 2023';
+
+    if (loading) {
+        return <div className="settings-page-wrapper"><Navbar /><div className="settings-container"><p>Loading...</p></div></div>;
+    }
+
+    const handleInputChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+        // Clear status messages when user starts typing
+        if (updateStatus.error || updateStatus.success) {
+            setUpdateStatus({ loading: false, error: null, success: false });
+        }
+    };
+
+    const handleUpdateProfile = async (e) => {
+        e.preventDefault();
+
+        // Basic frontend validation
+        if (!formData.fullName.trim() || !formData.email.trim() || !formData.phone.trim()) {
+            setUpdateStatus({ loading: false, error: 'All fields are required', success: false });
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setUpdateStatus({ loading: false, error: 'Please enter a valid email address', success: false });
+            return;
+        }
+
+        setUpdateStatus({ loading: true, error: null, success: false });
+
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            if (!storedUser || !storedUser.userId) {
+                throw new Error("User session not found");
+            }
+
+            const updatedData = await updateUserDetails(storedUser.userId, {
+                fullName: formData.fullName,
+                email: formData.email,
+                phone: formData.phone
+            });
+
+            setUserDetails(updatedData);
+            setUpdateStatus({ loading: false, error: null, success: true });
+
+            // Optionally update local storage with new base values
+            localStorage.setItem('user', JSON.stringify({
+                ...storedUser,
+                fullName: updatedData.fullName,
+                firstName: updatedData.fullName.split(' ')[0],
+                lastName: updatedData.fullName.split(' ').slice(1).join(' ') || '',
+                email: updatedData.email
+            }));
+
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                setUpdateStatus(prev => ({ ...prev, success: false }));
+            }, 3000);
+
+        } catch (error) {
+            setUpdateStatus({ loading: false, error: error.message || 'Failed to update user details', success: false });
+        }
+    };
+
+    const handleAddressInputChange = (e) => {
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+        setAddressForm({
+            ...addressForm,
+            [e.target.name]: value
+        });
+    };
+
+    const handleSaveAddress = async (e) => {
+        e.preventDefault();
+        setAddressLoading(true);
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            if (!storedUser || !storedUser.userId) throw new Error("User session not found");
+
+            const payload = {
+                ...addressForm,
+                userId: storedUser.userId,
+                roleId: storedUser.roleId || 1 // Fallback role if undefined
+            };
+
+            const savedAddress = await addUserAddress(payload);
+
+            // Reload addresses from the server to guarantee true state
+            const updatedAddresses = await fetchUserAddresses(storedUser.userId);
+            setAddresses(updatedAddresses);
+
+            setIsAddressModalOpen(false);
+            setAddressForm({
+                title: '', fullName: '', phoneNumber: '',
+                streetAddress: '', city: '', state: '',
+                zipCode: '', country: '', isDefault: false
+            });
+        } catch (error) {
+            console.error("Failed to save address:", error);
+            alert("Failed to save address. Please try again.");
+        } finally {
+            setAddressLoading(false);
+        }
+    };
+
+    const handleDeleteAddress = async (addressId) => {
+        if (!window.confirm("Are you sure you want to delete this address?")) return;
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            await deleteUserAddress(addressId, storedUser.userId);
+
+            const updatedAddresses = await fetchUserAddresses(storedUser.userId);
+            setAddresses(updatedAddresses);
+        } catch (error) {
+            console.error("Failed to delete address:", error);
+            alert("Could not delete address.");
+        }
+    };
+
+    const handleSetDefaultAddress = async (addressId) => {
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            await setAddressAsDefault(addressId, storedUser.userId);
+
+            const updatedAddresses = await fetchUserAddresses(storedUser.userId);
+            setAddresses(updatedAddresses);
+        } catch (error) {
+            console.error("Failed to set default address:", error);
+        }
+    };
 
     return (
         <div className="settings-page-wrapper">
@@ -40,36 +237,63 @@ const SettingsPage = () => {
                     </div>
                     <div className="settings-card">
                         <div className="profile-hero">
-                            <div className="profile-image-container">
+                            {/* <div className="profile-image-container">
                                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150&h=150" alt="Profile avatar" className="profile-avatar" />
                                 <button className="edit-avatar-btn">
                                     <Pencil size={12} color="white" />
                                 </button>
-                            </div>
+                            </div> */}
                             <div className="profile-hero-info">
-                                <h3>{fullName}</h3>
-                                <p>Member since March 2023</p>
+                                <h3>Hi {fullName}</h3>
+                                <p>Member since {memberSince}</p>
                             </div>
                         </div>
 
-                        <form className="personal-info-form" onSubmit={(e) => e.preventDefault()}>
+                        <form className="personal-info-form" onSubmit={handleUpdateProfile}>
+                            {updateStatus.error && <div className="error-message" style={{ color: 'red', marginBottom: '10px' }}>{updateStatus.error}</div>}
+                            {updateStatus.success && <div className="success-message" style={{ color: 'green', marginBottom: '10px' }}>Profile updated successfully!</div>}
+
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>Full Name</label>
-                                    <input type="text" defaultValue={fullName} />
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        value={formData.fullName}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter your full name"
+                                    />
                                 </div>
                                 <div className="form-group">
                                     <label>Email Address</label>
-                                    <input type="email" defaultValue={user.email || 'alex.j@example.com'} />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter your email"
+                                    />
                                 </div>
                             </div>
                             <div className="form-row" style={{ marginBottom: 0 }}>
                                 <div className="form-group">
                                     <label>Phone Number</label>
-                                    <input type="tel" defaultValue={phoneNumber} />
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter your phone number"
+                                    />
                                 </div>
                                 <div className="form-group form-actions-inline">
-                                    <button type="submit" className="btn-save">Save Changes</button>
+                                    <button
+                                        type="submit"
+                                        className="btn-save"
+                                        disabled={updateStatus.loading}
+                                    >
+                                        {updateStatus.loading ? 'Saving...' : 'Save Changes'}
+                                    </button>
                                 </div>
                             </div>
                         </form>
@@ -82,41 +306,42 @@ const SettingsPage = () => {
                             <h2>Address Book</h2>
                             <p>Manage your shipping and billing addresses.</p>
                         </div>
-                        <button className="btn-text-action"><Plus size={14} /> Add New Address</button>
+                        <button className="btn-text-action" onClick={() => setIsAddressModalOpen(true)}>
+                            <Plus size={14} /> Add New Address
+                        </button>
                     </div>
                     <div className="address-grid">
-                        <div className="address-card default-address">
-                            <div className="address-card-header">
-                                <h3><HomeIcon size={16} /> Home</h3>
-                                <span className="badge-default">DEFAULT</span>
-                            </div>
-                            <div className="address-body">
-                                <p>123 Sustainability Way</p>
-                                <p>Eco-Friendly District</p>
-                                <p>Portland, OR 97201</p>
-                                <p>United States</p>
-                            </div>
-                            <div className="address-actions">
-                                <button className="btn-link">EDIT</button>
-                                <button className="btn-link">DELETE</button>
-                            </div>
-                        </div>
-
-                        <div className="address-card">
-                            <div className="address-card-header">
-                                <h3><Briefcase size={16} /> Office</h3>
-                            </div>
-                            <div className="address-body">
-                                <p>456 Innovation Park</p>
-                                <p>Suite 200</p>
-                                <p>Portland, OR 97205</p>
-                                <p>United States</p>
-                            </div>
-                            <div className="address-actions">
-                                <button className="btn-link">EDIT</button>
-                                <button className="btn-link">DELETE</button>
-                            </div>
-                        </div>
+                        {addresses.length === 0 ? (
+                            <p style={{ color: '#777', gridColumn: '1 / -1' }}>No addresses found. Add a new address to get started.</p>
+                        ) : (
+                            addresses.map((addr) => (
+                                <div key={addr.id} className={`address-card ${addr.isDefault ? 'default-address' : ''}`}>
+                                    <div className="address-card-header">
+                                        <h3>
+                                            {addr.title?.toLowerCase() === 'home' ? <HomeIcon size={16} /> :
+                                                addr.title?.toLowerCase() === 'office' ? <Briefcase size={16} /> :
+                                                    <MapPin size={16} />}
+                                            {addr.title || 'Address'}
+                                        </h3>
+                                        {addr.isDefault && <span className="badge-default">DEFAULT</span>}
+                                    </div>
+                                    <div className="address-body">
+                                        <p><strong>{addr.fullName}</strong> {addr.phoneNumber ? `| ${addr.phoneNumber}` : ''}</p>
+                                        <p>{addr.streetAddress}</p>
+                                        <p>{addr.city}, {addr.state} {addr.zipCode}</p>
+                                        <p>{addr.country}</p>
+                                    </div>
+                                    <div className="address-actions">
+                                        {!addr.isDefault && (
+                                            <button className="btn-link" onClick={() => handleSetDefaultAddress(addr.id)}>
+                                                SET AS DEFAULT
+                                            </button>
+                                        )}
+                                        <button className="btn-link" onClick={() => handleDeleteAddress(addr.id)}>DELETE</button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -250,6 +475,75 @@ const SettingsPage = () => {
                 </div>
 
             </div>
+
+            {/* Address Modal */}
+            {isAddressModalOpen && (
+                <div className="address-modal-overlay">
+                    <div className="address-modal">
+                        <div className="address-modal-header">
+                            <h2>Add New Address</h2>
+                            <button className="close-modal-btn" onClick={() => setIsAddressModalOpen(false)}>&times;</button>
+                        </div>
+                        <form className="address-modal-form" onSubmit={handleSaveAddress}>
+                            <div className="form-group">
+                                <label>Address Title (e.g., Home, Office)</label>
+                                <input type="text" name="title" value={addressForm.title} onChange={handleAddressInputChange} placeholder="Enter address title" required />
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" name="fullName" value={addressForm.fullName} onChange={handleAddressInputChange} placeholder="Enter full name" required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="tel" name="phoneNumber" value={addressForm.phoneNumber} onChange={handleAddressInputChange} placeholder="Enter phone number" required />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Street Address</label>
+                                <input type="text" name="streetAddress" value={addressForm.streetAddress} onChange={handleAddressInputChange} placeholder="Enter street address" required />
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>City</label>
+                                    <input type="text" name="city" value={addressForm.city} onChange={handleAddressInputChange} placeholder="City" required />
+                                </div>
+                                <div className="form-group">
+                                    <label>State / Province</label>
+                                    <input type="text" name="state" value={addressForm.state} onChange={handleAddressInputChange} placeholder="State" required />
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Zip / Postal Code</label>
+                                    <input type="text" name="zipCode" value={addressForm.zipCode} onChange={handleAddressInputChange} placeholder="Zip code" required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Country</label>
+                                    <select name="country" value={addressForm.country} onChange={handleAddressInputChange} required>
+                                        <option value="">Select country</option>
+                                        <option value="US">United States</option>
+                                        <option value="IN">India</option>
+                                        <option value="UK">United Kingdom</option>
+                                        <option value="CA">Canada</option>
+                                        <option value="AU">Australia</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="form-group checkbox-group">
+                                <label>
+                                    <input type="checkbox" name="isDefault" checked={addressForm.isDefault} onChange={handleAddressInputChange} /> Set as default address
+                                </label>
+                            </div>
+                            <div className="address-modal-actions">
+                                <button type="button" className="btn-outline" onClick={() => setIsAddressModalOpen(false)} disabled={addressLoading}>Cancel</button>
+                                <button type="submit" className="btn-save" disabled={addressLoading}>{addressLoading ? 'Saving...' : 'Save Address'}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             <Footer />
         </div>
     );

@@ -484,3 +484,96 @@
     color: #888;
     letter-spacing: 2px;
 }
+
+/* Search Input */
+.search-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    color: #999;
+    pointer-events: none;
+}
+
+.shop-search-input {
+    width: 100%;
+    padding: 0.65rem 0.75rem 0.65rem 2.25rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fff;
+}
+
+.shop-search-input:focus {
+    border-color: #FF5722;
+}
+
+/* Price Inputs */
+.price-inputs-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.price-input {
+    flex: 1;
+    min-width: 0;
+    /* Allow input to shrink */
+    width: 100%;
+    padding: 0.55rem 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.price-input:focus {
+    border-color: #FF5722;
+}
+
+.price-separator {
+    color: #ccc;
+    font-size: 0.9rem;
+}
+
+/* Price Row */
+.sp-price-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sp-original-price {
+    font-size: 0.85rem;
+    color: #aaa;
+    text-decoration: line-through;
+    margin: 0;
+}
+
+/* Disabled Pagination */
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-btn.nav-btn:disabled:hover {
+    background-color: #fff;
+}
+
+/* Responsive grid at 3 columns for shop */
+.shop-products.grid {
+    grid-template-columns: repeat(3, 1fr);
+}

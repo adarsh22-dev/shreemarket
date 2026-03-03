@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Search,
     Plus,
@@ -14,68 +14,107 @@ import {
 import { useNavigate } from 'react-router-dom';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorProducts.css';
+import { getVendorProducts, getUserDetails, BACKEND_URL, deleteProduct } from '../../api/api';
+import toast from 'react-hot-toast';
 
 const VendorProducts = () => {
     const navigate = useNavigate();
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(0);
+    const [size] = useState(5);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalElements, setTotalElements] = useState(0);
+    const [search, setSearch] = useState('');
+    const [category, setCategory] = useState('All Categories');
+    const [vendorId, setVendorId] = useState(null);
 
-    // Sample data matching screenshot
-    const products = [
-        {
-            id: 1,
-            name: 'EcoRay Monocrystalline Panel',
-            desc: '400W High Efficiency',
-            sku: 'EH-SP-400-X',
-            category: 'Solar Panels',
-            price: '₹299.00',
-            stock: 42,
-            status: 'in',
-            image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=100&q=80'
-        },
-        {
-            id: 2,
-            name: 'PowerSafe Home Battery',
-            desc: '10kWh Li-ion Storage',
-            sku: 'EH-BAT-10K',
-            category: 'Home Battery',
-            price: '₹4,500.00',
-            stock: 3,
-            status: 'low',
-            image: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?w=100&q=80'
-        },
-        {
-            id: 3,
-            name: 'SmartTemp Pro Hub',
-            desc: 'AI Climate Controller',
-            sku: 'EH-THM-ST-1',
-            category: 'Smart Home',
-            price: '₹189.00',
-            stock: 0,
-            status: 'out',
-            image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=100&q=80'
-        },
-        {
-            id: 4,
-            name: 'SolarTile Premium',
-            desc: 'Textured Black Series',
-            sku: 'EH-TILE-BLK',
-            category: 'Solar Roofing',
-            price: '₹15.50 / unit',
-            stock: 125,
-            status: 'in',
-            image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=100&q=80'
-        },
-        {
-            id: 5,
-            name: 'EH-Bridge Pro',
-            desc: 'Monitoring Gateway',
-            sku: 'EH-GTW-B1',
-            category: 'Smart Home',
-            price: '₹99.00',
-            stock: 15,
-            status: 'in',
-            image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&q=80'
+    // Fetch vendor ID on mount
+    useEffect(() => {
+        const initVendorInfo = async () => {
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            if (userData.userId) {
+                try {
+                    const userDetails = await getUserDetails(userData.userId);
+                    setVendorId(userDetails.id);
+                } catch (error) {
+                    console.error("Failed to fetch user details:", error);
+                    // Fallback to local storage id if API fails
+                    setVendorId(userData.userId);
+                }
+            } else {
+                setLoading(false);
+                console.error("No user session found. Please log in as a vendor.");
+            }
+        };
+        initVendorInfo();
+    }, []);
+
+    const fetchProducts = async () => {
+        if (!vendorId) return; // Wait until vendorId is fetched
+
+        setLoading(true);
+        try {
+            const queryParams = {
+                page: page,
+                size: size,
+                sort: 'id,desc'
+            };
+
+            if (search) queryParams.search = search;
+            if (category && category !== 'All Categories') queryParams.category = category;
+            if (status && status !== 'All Status') queryParams.status = status;
+
+            const data = await getVendorProducts(vendorId, queryParams);
+            setProducts(data.content);
+            setTotalPages(data.totalPages);
+            setTotalElements(data.totalElements);
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    useEffect(() => {
+        if (vendorId) {
+            fetchProducts();
+        }
+    }, [page, size, search, category, status, vendorId]);
+
+    const handleSearchChange = (e) => {
+        setSearch(e.target.value);
+        setPage(0); // Reset to first page
+    };
+
+    const handleCategoryChange = (e) => {
+        setCategory(e.target.value);
+        setPage(0); // Reset to first page
+    };
+
+    const handleStatusChange = (e) => {
+        setStatus(e.target.value);
+        setPage(0); // Reset to first page
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 0 && newPage < totalPages) {
+            setPage(newPage);
+        }
+    };
+
+    const handleDeleteProduct = async (productId) => {
+        if (window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+            try {
+                await deleteProduct(productId);
+                toast.success("Product deleted successfully");
+                fetchProducts(); // Refresh the list
+            } catch (error) {
+                console.error("Failed to delete product:", error);
+                toast.error("Failed to delete product. Please try again.");
+            }
+        }
+    };
 
     const getStockBadgeClass = (status) => {
         switch (status) {
@@ -114,14 +153,38 @@ const VendorProducts = () => {
                 <div className="filter-bar">
                     <div className="search-input-wrapper">
                         <Search size={18} color="#888" />
-                        <input type="text" placeholder="Search products by name or SKU..." />
+                        <input
+                            type="text"
+                            placeholder="Search products by name or SKU..."
+                            value={search}
+                            onChange={handleSearchChange}
+                        />
                     </div>
-                    <button className="filter-dropdown">
-                        All Categories <ChevronDown size={16} color="#666" />
-                    </button>
-                    <button className="filter-dropdown">
-                        All Status <ChevronDown size={16} color="#666" />
-                    </button>
+
+                    <div className="filter-dropdown-container">
+                        <select className="filter-dropdown-select" value={category} onChange={handleCategoryChange}>
+                            <option value="All Categories">All Categories</option>
+                            <option value="grocery">Grocery & Gourmet Food</option>
+                            <option value="health">Health & Household</option>
+                            <option value="home">Home & Kitchen</option>
+                            <option value="beauty">Beauty & Personal Care</option>
+                            <option value="clothing">Clothing, Shoes & Jewellery</option>
+                            <option value="toys">Toys & Games</option>
+                            <option value="patio">Patio, Lawn & Garden</option>
+                            <option value="musical">Musical Instruments</option>
+                        </select>
+                        <ChevronDown size={16} color="#666" className="dropdown-icon" />
+                    </div>
+
+                    <div className="filter-dropdown-container">
+                        <select className="filter-dropdown-select" value={status} onChange={handleStatusChange}>
+                            <option value="All Status">All Status</option>
+                            <option value="in">In Stock</option>
+                            <option value="low">Low Stock</option>
+                            <option value="out">Out of Stock</option>
+                        </select>
+                        <ChevronDown size={16} color="#666" className="dropdown-icon" />
+                    </div>
                     <button className="btn-more-filters">
                         <Filter size={16} /> More Filters
                     </button>
@@ -142,7 +205,7 @@ const VendorProducts = () => {
                         </button>
                     </div>
                     <div className="showing-text">
-                        Showing 1-5 of 42 products
+                        Showing {totalElements === 0 ? 0 : (page * size) + 1}-{Math.min((page + 1) * size, totalElements)} of {totalElements} products
                     </div>
                 </div>
 
@@ -168,10 +231,14 @@ const VendorProducts = () => {
                                     </td>
                                     <td>
                                         <div className="product-info-cell">
-                                            <img src={product.image} alt={product.name} className="product-image" />
+                                            <img
+                                                src={product.media && product.media.length > 0 ? `${BACKEND_URL}/uploads/products/${product.media[0].fileName}` : '/placeholder-image.png'}
+                                                alt={product.name}
+                                                className="product-image"
+                                            />
                                             <div className="product-details">
                                                 <div className="product-name">{product.name}</div>
-                                                <div className="product-desc">{product.desc}</div>
+                                                <div className="product-desc">{product.shortDescription || product.description || 'No description available'}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -182,18 +249,18 @@ const VendorProducts = () => {
                                         <span className="category-badge">{product.category}</span>
                                     </td>
                                     <td>
-                                        <div className="price-text">{product.price}</div>
+                                        <div className="price-text">₹{product.regularPrice || product.discountPrice || '0.00'}</div>
                                     </td>
                                     <td>
                                         <span className={`stock-badge ${getStockBadgeClass(product.status)}`}>
-                                            {getStockText(product.status, product.stock)}
+                                            {getStockText(product.status, product.initialStock || product.stock || 0)}
                                         </span>
                                     </td>
                                     <td>
                                         <div className="row-actions">
-                                            <button className="row-action-btn"><Edit2 size={16} /></button>
-                                            <button className="row-action-btn"><Copy size={16} /></button>
-                                            <button className="row-action-btn"><Trash2 size={16} /></button>
+                                            <button className="row-action-btn" onClick={() => navigate(`/vendor/products/edit/${product.id}`)} title="Edit Product"><Edit2 size={16} /></button>
+                                            <button className="row-action-btn" title="Duplicate Product"><Copy size={16} /></button>
+                                            <button className="row-action-btn" onClick={() => handleDeleteProduct(product.id)} title="Delete Product"><Trash2 size={16} /></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -204,16 +271,35 @@ const VendorProducts = () => {
                     {/* Pagination */}
                     <div className="pagination-row">
                         <div className="pagination-text">
-                            Showing <span style={{ fontWeight: 700, color: '#111' }}>1</span> to <span style={{ fontWeight: 700, color: '#111' }}>5</span> of <span style={{ fontWeight: 700, color: '#111' }}>42</span> results
+                            Showing <span style={{ fontWeight: 700, color: '#111' }}>{totalElements === 0 ? 0 : (page * size) + 1}</span> to <span style={{ fontWeight: 700, color: '#111' }}>{Math.min((page + 1) * size, totalElements)}</span> of <span style={{ fontWeight: 700, color: '#111' }}>{totalElements}</span> results
                         </div>
                         <div className="pagination-controls">
-                            <button className="page-btn" disabled><ChevronLeft size={16} /></button>
-                            <button className="page-btn active">1</button>
-                            <button className="page-btn">2</button>
-                            <button className="page-btn">3</button>
-                            <span className="page-dots">...</span>
-                            <button className="page-btn">9</button>
-                            <button className="page-btn"><ChevronRight size={16} /></button>
+                            <button
+                                className="page-btn"
+                                onClick={() => handlePageChange(page - 1)}
+                                disabled={page === 0}>
+                                <ChevronLeft size={16} />
+                            </button>
+
+                            {[...Array(totalPages)].map((_, index) => {
+                                // Simple pagination logic for demo, showing all pages
+                                return (
+                                    <button
+                                        key={index}
+                                        className={`page-btn ${page === index ? 'active' : ''}`}
+                                        onClick={() => handlePageChange(index)}
+                                    >
+                                        {index + 1}
+                                    </button>
+                                );
+                            })}
+
+                            <button
+                                className="page-btn"
+                                onClick={() => handlePageChange(page + 1)}
+                                disabled={page >= totalPages - 1}>
+                                <ChevronRight size={16} />
+                            </button>
                         </div>
                     </div>
                 </div>

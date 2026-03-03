@@ -35,7 +35,7 @@ const LoginPage = () => {
         e.preventDefault();
         const loadingToast = toast.loading('Signing in...');
         try {
-            const data = await loginUser(email, password);
+            const data = await loginUser(email, password, isVendorLogin);
             toast.dismiss(loadingToast);
 
             console.log("Login successful:", data);
@@ -157,66 +157,64 @@ const LoginPage = () => {
                         </Button>
                     </form>
 
-                    <div className="divider">
-                        <span>Or login with</span>
-                    </div>
-
-
-
-
-
-                    <div className="social-login" style={{ display: 'flex', justifyContent: 'center' }}>
-                        <GoogleLogin
-                            onSuccess={async (credentialResponse) => {
-                                console.log(credentialResponse);
-                                const loadingToast = toast.loading('Verifying Google Sign-In...');
-                                try {
-                                    const data = await googleLogin(credentialResponse.credential);
-                                    toast.dismiss(loadingToast);
-
-                                    console.log("Google Login successful:", data);
-
-                                    if (isVendorLogin && data.roleId !== 3) {
-                                        await logoutUser();
+                    {!isVendorLogin && (
+                        <div className="divider">
+                            <span>Or login with</span>
+                        </div>
+                    )}                    {!isVendorLogin && (
+                        <div className="social-login" style={{ display: 'flex', justifyContent: 'center' }}>
+                            <GoogleLogin
+                                onSuccess={async (credentialResponse) => {
+                                    console.log(credentialResponse);
+                                    const loadingToast = toast.loading('Verifying Google Sign-In...');
+                                    try {
+                                        const data = await googleLogin(credentialResponse.credential, isVendorLogin);
                                         toast.dismiss(loadingToast);
-                                        toast.error("This login is restricted to vendors only.");
-                                        return;
+
+                                        console.log("Google Login successful:", data);
+
+                                        if (isVendorLogin && data.roleId !== 3) {
+                                            await logoutUser();
+                                            toast.dismiss(loadingToast);
+                                            toast.error("This login is restricted to vendors only.");
+                                            return;
+                                        }
+
+                                        toast.success(`Welcome back, ${data.fullName}!`);
+
+                                        // Save user to localStorage
+                                        localStorage.setItem('user', JSON.stringify(data));
+
+                                        // Clear fields
+                                        setEmail('');
+                                        setPassword('');
+
+                                        // Redirect based on role
+                                        if (data.roleId === 1) {
+                                            window.location.replace('/admin/dashboard');
+                                        } else if (data.roleId === 3) {
+                                            window.location.replace('/vendor/dashboard');
+                                        } else {
+                                            window.location.replace('/');
+                                        }
+                                    } catch (error) {
+                                        toast.dismiss(loadingToast);
+                                        console.error("Error verifying Google login:", error);
+                                        toast.error(error.message);
                                     }
-
-                                    toast.success(`Welcome back, ${data.fullName}!`);
-
-                                    // Save user to localStorage
-                                    localStorage.setItem('user', JSON.stringify(data));
-
-                                    // Clear fields
-                                    setEmail('');
-                                    setPassword('');
-
-                                    // Redirect based on role
-                                    if (data.roleId === 1) {
-                                        window.location.replace('/admin/dashboard');
-                                    } else if (data.roleId === 3) {
-                                        window.location.replace('/vendor/dashboard');
-                                    } else {
-                                        window.location.replace('/');
-                                    }
-                                } catch (error) {
-                                    toast.dismiss(loadingToast);
-                                    console.error("Error verifying Google login:", error);
-                                    toast.error(error.message);
-                                }
-                            }}
-                            onError={() => {
-                                console.log('Login Failed');
-                                toast.error("Google Sign-In failed");
-                            }}
-                            width="100%"
-                        />
-                    </div>
+                                }}
+                                onError={() => {
+                                    console.log('Login Failed');
+                                    toast.error("Google Sign-In failed");
+                                }}
+                                width="100%"
+                            />
+                        </div>
+                    )}
 
                     <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
                         Don't have an account?{' '}
-                        <Link to="/register" style={{ color: 'var(--primary-orange)', fontWeight: '600' }}>
+                        <Link to={isVendorLogin ? "/register?type=vendor" : "/register"} style={{ color: 'var(--primary-orange)', fontWeight: '600' }}>
                             Create an account
                         </Link>
                     </div>

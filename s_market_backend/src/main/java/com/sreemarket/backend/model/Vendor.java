@@ -9,27 +9,79 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import java.util.List;
+import java.util.ArrayList;
+
+import jakarta.persistence.Column;
+
 @Entity
 @Table(name = "vendors")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 public class Vendor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Store> stores = new ArrayList<>();
+
+    @Column(name = "fullname")
     private String fullName;
+    @Column(name = "email_address")
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private String email;
+    @Column(name = "phonenumber")
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private String phone;
+    @Column(name = "password")
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private String password;
 
+    @Column(name = "role_id")
     private Long roleId; // typically 3 for Vendors
+    @Column(name = "status")
     private String status;
+
+    @Column(name = "payment_method")
+    private String paymentMethod;
+    @Column(name = "payment_email")
+    @com.fasterxml.jackson.annotation.JsonProperty(value = "paymentIdentifier", access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
+    private String paymentEmail;
+
+    @Column(name = "terms_and_condition")
+    private Boolean agreeTerms;
+    @Column(name = "marketplace_policies")
+    private Boolean agreePolicies;
+    @Column(name = "vendor_rules")
+    private Boolean agreeRules;
+    @Column(name = "privacy_policy")
+    private Boolean agreePrivacy;
+
+    @Column(name = "newsletter")
+    private Boolean newsletter;
 
     private Long createdAt;
     private Long updatedAt;
+
+    // Custom getters and setters for stores to maintain bidirectional relationship
+    public List<Store> getStores() {
+        return stores;
+    }
+
+    public void setStores(List<Store> stores) {
+        this.stores = stores;
+        if (stores != null) {
+            for (Store store : stores) {
+                store.setVendor(this);
+            }
+        }
+    }
 
     public Long getId() {
         return id;
@@ -85,6 +137,62 @@ public class Vendor {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentEmail() {
+        return paymentEmail;
+    }
+
+    public void setPaymentEmail(String paymentEmail) {
+        this.paymentEmail = paymentEmail;
+    }
+
+    public Boolean getAgreeTerms() {
+        return agreeTerms;
+    }
+
+    public void setAgreeTerms(Boolean agreeTerms) {
+        this.agreeTerms = agreeTerms;
+    }
+
+    public Boolean getAgreePolicies() {
+        return agreePolicies;
+    }
+
+    public void setAgreePolicies(Boolean agreePolicies) {
+        this.agreePolicies = agreePolicies;
+    }
+
+    public Boolean getAgreeRules() {
+        return agreeRules;
+    }
+
+    public void setAgreeRules(Boolean agreeRules) {
+        this.agreeRules = agreeRules;
+    }
+
+    public Boolean getAgreePrivacy() {
+        return agreePrivacy;
+    }
+
+    public void setAgreePrivacy(Boolean agreePrivacy) {
+        this.agreePrivacy = agreePrivacy;
+    }
+
+    public Boolean getNewsletter() {
+        return newsletter;
+    }
+
+    public void setNewsletter(Boolean newsletter) {
+        this.newsletter = newsletter;
     }
 
     public Long getCreatedAt() {

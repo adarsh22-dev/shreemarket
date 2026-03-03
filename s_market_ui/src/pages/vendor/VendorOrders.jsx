@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Download,
     Plus,
@@ -6,61 +6,78 @@ import {
     Calendar,
     Eye,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Loader2
 } from 'lucide-react';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorOrders.css';
+import { fetchVendorOrders, updateOrderStatus } from '../../api/api';
 
 const VendorOrders = () => {
-    const orders = [
-        {
-            id: '#ORD-9021',
-            customer: 'Sarah Jenkins',
-            date: 'Oct 24,\n2023',
-            amount: '₹124.50',
-            location: 'Warehouse A',
-            delivery: 'Oct 26,\n10:00 AM',
-            status: 'Pending'
-        },
-        {
-            id: '#ORD-9018',
-            customer: 'Michael Chen',
-            date: 'Oct 23,\n2023',
-            amount: '₹89.00',
-            location: 'Local Hub',
-            delivery: 'Oct 24,\n02:30 PM',
-            status: 'Shipped'
-        },
-        {
-            id: '#ORD-9015',
-            customer: 'Elena Rodriguez',
-            date: 'Oct 22,\n2023',
-            amount: '₹210.20',
-            location: 'Sorting Facility',
-            delivery: 'Oct 25,\n11:15 AM',
-            status: 'Processing'
-        },
-        {
-            id: '#ORD-9012',
-            customer: 'David Smith',
-            date: 'Oct 22,\n2023',
-            amount: '₹45.15',
-            location: 'Delivered',
-            delivery: 'Oct 23,\n09:45 AM',
-            status: 'Delivered'
-        },
-        {
-            id: '#ORD-9009',
-            customer: 'Jessica Wu',
-            date: 'Oct 21,\n2023',
-            amount: '₹156.00',
-            location: 'Warehouse B',
-            delivery: 'Oct 24,\n04:00 PM',
-            status: 'Pending'
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('All Orders');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const userObj = JSON.parse(userStr);
+                if (userObj.userId) {
+                    const data = await fetchVendorOrders(userObj.userId);
+                    setOrders(data);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch vendor orders:", error);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+
+    const handleTabClick = (tabName) => {
+        setActiveTab(tabName);
+    };
+
+    const handleStatusUpdate = async (orderId, newStatus) => {
+        try {
+            await updateOrderStatus(orderId, newStatus);
+            // After successful update, re-fetch to see the changes
+            fetchOrders();
+        } catch (error) {
+            console.error("Failed to update status:", error);
+            alert("Failed to update order status.");
+        }
+    };
+
+    const filteredOrders = orders.filter(order => {
+        // Tab filtering
+        if (activeTab !== 'All Orders') {
+            const status = order.status || 'Pending';
+            if (status.toLowerCase() !== activeTab.toLowerCase()) {
+                return false;
+            }
+        }
+        // Search filtering
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            const orderIdStr = order.orderNumber ? order.orderNumber.toLowerCase() : `#${order.id}`;
+            const customerStr = (order.customerName || '').toLowerCase();
+            if (!orderIdStr.includes(query) && !customerStr.includes(query)) {
+                return false;
+            }
+        }
+        return true;
+    });
 
     const getStatusClass = (status) => {
+        if (!status) return '';
         switch (status.toLowerCase()) {
             case 'pending': return 'status-pending';
             case 'shipped': return 'status-shipped';
@@ -68,6 +85,12 @@ const VendorOrders = () => {
             case 'delivered': return 'status-delivered';
             default: return '';
         }
+    };
+
+    const formatDate = (epoch) => {
+        if (!epoch) return 'N/A';
+        const date = new Date(epoch);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
     return (
@@ -92,72 +115,99 @@ const VendorOrders = () => {
                     {/* Control Bar */}
                     <div className="orders-control-bar">
                         <div className="order-tabs">
-                            <button className="tab-btn active">All Orders</button>
-                            <button className="tab-btn">Pending</button>
-                            <button className="tab-btn">Processing</button>
-                            <button className="tab-btn">Shipped</button>
+                            <button className={`tab-btn ${activeTab === 'All Orders' ? 'active' : ''}`} onClick={() => handleTabClick('All Orders')}>All Orders</button>
+                            <button className={`tab-btn ${activeTab === 'Pending' ? 'active' : ''}`} onClick={() => handleTabClick('Pending')}>Pending</button>
+                            <button className={`tab-btn ${activeTab === 'Processing' ? 'active' : ''}`} onClick={() => handleTabClick('Processing')}>Processing</button>
+                            <button className={`tab-btn ${activeTab === 'Shipped' ? 'active' : ''}`} onClick={() => handleTabClick('Shipped')}>Shipped</button>
+                            <button className={`tab-btn ${activeTab === 'Delivered' ? 'active' : ''}`} onClick={() => handleTabClick('Delivered')}>Delivered</button>
                         </div>
                         <div className="search-wrapper">
                             <Search className="search-icon" size={18} />
-                            <input type="text" placeholder="Search by Order ID or customer name..." />
+                            <input
+                                type="text"
+                                placeholder="Search by Order ID or customer name..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                         </div>
                     </div>
 
                     {/* Data Table */}
                     <div className="orders-table-container">
-                        <table className="orders-data-table">
-                            <thead>
-                                <tr>
-                                    <th>ORDER ID</th>
-                                    <th>CUSTOMER NAME</th>
-                                    <th>DATE</th>
-                                    <th>TOTAL AMOUNT</th>
-                                    <th>CURRENT LOCATION</th>
-                                    <th>ESTIMATED DELIVERY</th>
-                                    <th>FULFILLMENT STATUS</th>
-                                    <th>ACTIONS</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {orders.map((order, index) => (
-                                    <tr key={index}>
-                                        <td className="order-id">{order.id}</td>
-                                        <td className="customer-name">{order.customer}</td>
-                                        <td className="date-cell">
-                                            {order.date.split('\n').map((line, i) => (
-                                                <div key={i}>{line}</div>
-                                            ))}
-                                        </td>
-                                        <td className="total-amount">{order.amount}</td>
-                                        <td className="location-cell">{order.location}</td>
-                                        <td className="delivery-cell">
-                                            {order.delivery.split('\n').map((line, i) => (
-                                                <div key={i}>{line}</div>
-                                            ))}
-                                        </td>
-                                        <td>
-                                            <span className={`status-badge ${getStatusClass(order.status)}`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="order-actions">
-                                                <button className="icon-action-btn" title="Schedule">
-                                                    <Calendar size={18} />
-                                                </button>
-                                                <button className="icon-action-btn" title="View Details">
-                                                    <Eye size={18} />
-                                                </button>
-                                                <button className="btn-mark-shipped">
-                                                    Mark as Shipped
-                                                </button>
-                                            </div>
-                                        </td>
+                        {loading ? (
+                            <div className="orders-loading">
+                                <Loader2 className="spinning-loader" size={24} />
+                                <span>Loading orders...</span>
+                            </div>
+                        ) : orders.length === 0 ? (
+                            <div className="orders-empty">
+                                <p>No orders found.</p>
+                            </div>
+                        ) : (
+                            <table className="orders-data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ORDER ID</th>
+                                        <th>CUSTOMER NAME</th>
+                                        <th>DATE</th>
+                                        <th>TOTAL AMOUNT</th>
+                                        <th>CURRENT LOCATION</th>
+                                        <th>ESTIMATED DELIVERY</th>
+                                        <th>FULFILLMENT STATUS</th>
+                                        <th>ACTIONS</th>
+                                        <th></th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {filteredOrders.map((order, index) => (
+                                        <tr key={index}>
+                                            <td className="order-id">{order.orderNumber || `#${order.id}`}</td>
+                                            <td className="customer-name">{order.customerName || 'N/A'}</td>
+                                            <td className="date-cell">
+                                                <div>{formatDate(order.datePlaced)}</div>
+                                            </td>
+                                            <td className="total-amount">₹{(order.totalAmount || 0).toFixed(2)}</td>
+                                            <td className="location-cell">{order.deliveryLocation || 'N/A'}</td>
+                                            <td className="delivery-cell">
+                                                <div>{order.estimatedDelivery || 'N/A'}</div>
+                                            </td>
+                                            <td>
+                                                <span className={`status-badge ${getStatusClass(order.status)}`}>
+                                                    {order.status || 'Pending'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="order-actions">
+                                                    <button className="icon-action-btn" title="Schedule">
+                                                        <Calendar size={18} />
+                                                    </button>
+                                                    <button className="icon-action-btn" title="View Details">
+                                                        <Eye size={18} />
+                                                    </button>
+                                                    {(!order.status || order.status.toLowerCase() === 'pending' || order.status.toLowerCase() === 'processing') && (
+                                                        <button
+                                                            className="btn-mark-shipped"
+                                                            onClick={() => handleStatusUpdate(order.id, 'SHIPPED')}
+                                                        >
+                                                            Mark as Shipped
+                                                        </button>
+                                                    )}
+                                                    {order.status && order.status.toLowerCase() === 'shipped' && (
+                                                        <button
+                                                            className="btn-mark-shipped"
+                                                            onClick={() => handleStatusUpdate(order.id, 'DELIVERED')}
+                                                            style={{ backgroundColor: '#4CAF50', color: 'white' }}
+                                                        >
+                                                            Mark Delivered
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
 
                         {/* Pagination Footer */}
                         <div className="orders-pagination-footer">

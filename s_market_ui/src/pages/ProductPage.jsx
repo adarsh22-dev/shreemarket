@@ -2,71 +2,117 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Minus, Plus, Star, ThumbsUp, ThumbsDown, Package, RotateCcw, ShieldCheck, HeartHandshake, Leaf, MapPin, Heart } from 'lucide-react';
+import { Minus, Plus, Star, ThumbsUp, ThumbsDown, Package, RotateCcw, ShieldCheck, HeartHandshake, Leaf, MapPin, Heart, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { getProduct, getVendorById, getAllProducts, getProductReviews, submitProductReview, BACKEND_URL } from '../api/api';
 import './ProductPage.css';
 
 const ProductPage = () => {
     const { id } = useParams();
     const [quantity, setQuantity] = useState(1);
-    const { cartItems, addToCart, removeFromCart } = useCart();
+    const { cartItems, addToCart, removeFromCart, isProductInCart, addToRecentlyViewed } = useCart();
+
+    const [product, setProduct] = useState(null);
+    const [vendor, setVendor] = useState(null);
+    const [relatedProducts, setRelatedProducts] = useState([]);
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [activeImage, setActiveImage] = useState(0);
+
+    // Review Form State
+    const [isWritingReview, setIsWritingReview] = useState(false);
+    const [newReview, setNewReview] = useState({ rating: 5, title: '', text: '', reviewerName: '' });
+    const [submittingReview, setSubmittingReview] = useState(false);
 
     useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
+        const fetchProductData = async () => {
+            setLoading(true);
+            try {
+                // Fetch Product
+                const productData = await getProduct(id);
+                setProduct(productData);
 
-    const product = {
-        id: 'pp1',
-        title: "Handwoven Desert Sand Wool Throw",
-        price: 185.00,
-        description: "A masterpiece of traditional craftsmanship, this throw captures the incredible tones inspired by the natural landscape. Hand spun in natural wool and colored with rich, plant-based dyes, each piece takes over three weeks to complete.",
-        materials: "100% Oaxacan Merino Wool",
-        dimensions: "50\" x 70\" (Includes 4\" tassels on each end)",
-        mainImage: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?q=80&w=1200&auto=format&fit=crop",
-        thumbnails: [
-            "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?q=80&w=200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1522758971460-1d21fac222d1?q=80&w=200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1606744887373-30b1bc6b2c28?q=80&w=200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1528156172605-cf4ca715d2a9?q=80&w=200&auto=format&fit=crop"
-        ],
-        artisan: {
-            name: "Elena Garcia",
-            title: "Master Weaver",
-            location: "Oaxaca, Mexico",
-            image: "https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=800&auto=format&fit=crop",
-            story: "“Every thread holds a piece of our land,” says Elena. With over 40 years of experience, Elena leads a small collective of five women in her village. Using a traditional backstrap loom, she translates the textures of the Sierra Norte mountains into timeless textiles.\n\nElena's work is not just a livelihood; it's a preservation of indigenous Zapotec weaving techniques passed down for generations."
+                // Add to recently viewed
+                addToRecentlyViewed({
+                    id: productData.id,
+                    name: productData.name,
+                    price: productData.discountPrice || productData.regularPrice,
+                    image: productData.media && productData.media.length > 0
+                        ? `${BACKEND_URL}/uploads/products/${productData.media.find(m => m.isPrimary)?.fileName || productData.media[0].fileName}`
+                        : "https://via.placeholder.com/400x400",
+                    category: productData.category
+                });
+
+                // Fetch Vendor (Artisan)
+                if (productData.vendorId) {
+                    const vendorData = await getVendorById(productData.vendorId);
+                    setVendor(vendorData);
+                }
+
+                // Fetch Related Products (same category)
+                const allProducts = await getAllProducts();
+                const related = allProducts
+                    .filter(p => p.category === productData.category && p.id !== productData.id)
+                    .slice(0, 4);
+                setRelatedProducts(related);
+
+                // Fetch Reviews
+                try {
+                    const productReviews = await getProductReviews(id);
+                    setReviews(productReviews);
+                } catch (reviewErr) {
+                    console.error("Failed to fetch reviews:", reviewErr);
+                }
+
+                window.scrollTo(0, 0);
+            } catch (err) {
+                console.error("Failed to fetch product details:", err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProductData();
+    }, [id]);
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        setSubmittingReview(true);
+        try {
+            const savedReview = await submitProductReview({
+                ...newReview,
+                productId: id,
+                reviewerName: newReview.reviewerName || 'Anonymous',
+            });
+            setReviews(prev => [savedReview, ...prev]);
+            setIsWritingReview(false);
+            setNewReview({ rating: 5, title: '', text: '', reviewerName: '' });
+        } catch (err) {
+            console.error("Failed to submit review:", err);
+            alert("Could not submit the review. Please try again.");
+        } finally {
+            setSubmittingReview(false);
         }
     };
 
-    const reviews = [
-        {
-            user: "Madeleine M.",
-            date: "October 12, 2023",
-            rating: 5,
-            title: "Absolutely stunning craftsmanship",
-            verified: true,
-            text: "This throw is even more beautiful in person! You can really feel the handmade quality. It's warm, surprisingly soft, and the desert sand color is perfectly represented in the photos. A true heirloom to be cherished for a long time.",
-            helpful: 24,
-            notHelpful: 1
-        },
-        {
-            user: "Sarah J.",
-            date: "September 24, 2023",
-            rating: 5,
-            title: "Worth every penny!",
-            verified: true,
-            text: "I love knowing exactly where my products come from. The story of Elena Garcia makes this piece even more special. The weight of the throw is perfect for chilly evenings.",
-            helpful: 12,
-            notHelpful: 0
-        }
-    ];
+    // Derived Statistics
+    const averageRating = reviews.length > 0
+        ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1)
+        : "5.0";
 
-    const relatedProducts = [
-        { id: 101, name: "Hand-Dyed Indigo Throw", price: 175.00, image: "https://images.unsplash.com/photo-1606744887373-30b1bc6b2c28?q=80&w=400&auto=format&fit=crop" },
-        { id: 102, name: "Artisanal Ceramic Vase", price: 85.00, image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=400&auto=format&fit=crop" },
-        { id: 103, name: "Woven Wall Hanging", price: 120.00, image: "https://images.unsplash.com/photo-1522758971460-1d21fac222d1?q=80&w=400&auto=format&fit=crop" },
-        { id: 104, name: "Organic Linen Pillows", price: 65.00, image: "https://images.unsplash.com/photo-1528156172605-cf4ca715d2a9?q=80&w=400&auto=format&fit=crop" }
-    ];
+    const getRatingDistribution = () => {
+        const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        reviews.forEach(r => {
+            if (dist[r.rating] !== undefined) dist[r.rating]++;
+        });
+        return Object.keys(dist).sort((a, b) => b - a).map(stars => ({
+            stars: parseInt(stars),
+            count: dist[stars],
+            pct: reviews.length > 0 ? Math.round((dist[stars] / reviews.length) * 100) : 0
+        }));
+    };
 
     const renderStars = (rating) => {
         return (
@@ -78,20 +124,61 @@ const ProductPage = () => {
         );
     };
 
-    const isProductInCart = (productId) => cartItems.some(item => item.id === productId);
-
     const handleHeartClick = (e) => {
         e.preventDefault();
         if (isProductInCart(product.id)) {
             removeFromCart(product.id);
         } else {
-            addToCart({ ...product, name: product.title, image: product.mainImage }, 1, null, false);
+            addToCart({
+                ...product,
+                title: product.name,
+                price: product.discountPrice || product.regularPrice || 0,
+                image: product.media && product.media.length > 0 ? `${BACKEND_URL}/uploads/products/${product.media.find(m => m.isPrimary)?.fileName || product.media[0].fileName}` : null
+            }, 1, null, false);
         }
     };
 
     const handleAddToCart = () => {
-        addToCart({ ...product, name: product.title, image: product.mainImage }, quantity, null, false);
+        addToCart({
+            ...product,
+            title: product.name,
+            price: product.discountPrice || product.regularPrice || 0,
+            image: product.media && product.media.length > 0 ? `${BACKEND_URL}/uploads/products/${product.media.find(m => m.isPrimary)?.fileName || product.media[0].fileName}` : null
+        }, quantity, null, true);
     };
+
+    if (loading) {
+        return (
+            <div className="product-page-wrapper">
+                <Navbar />
+                <div className="product-page-loading">
+                    <Loader2 size={48} className="animate-spin" color="#FF5722" />
+                    <p>Loading masterpiece...</p>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
+    if (error || !product) {
+        return (
+            <div className="product-page-wrapper">
+                <Navbar />
+                <div className="product-page-error">
+                    <h2>Oops! We couldn't find this product.</h2>
+                    <p>{error || "The product you're looking for might have been moved or doesn't exist."}</p>
+                    <Link to="/shop" className="back-to-shop-btn">Back to Shop</Link>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
+    const mainImageUrl = product.media && product.media.length > 0
+        ? `${BACKEND_URL}/uploads/products/${product.media[activeImage]?.fileName}`
+        : "https://via.placeholder.com/600x600?text=No+Image";
+
+    const store = vendor?.stores?.[0];
 
     return (
         <div className="product-page-wrapper">
@@ -100,7 +187,7 @@ const ProductPage = () => {
             <main className="product-page-main">
                 {/* Breadcrumbs */}
                 <div className="breadcrumbs">
-                    <Link to="/">Home</Link> <span className="separator">&gt;</span> <Link to="/shop">Shop All</Link> <span className="separator">&gt;</span> <span className="current">Throw</span>
+                    <Link to="/">Home</Link> <span className="separator">&gt;</span> <Link to="/shop">Shop All</Link> <span className="separator">&gt;</span> <span className="current">{product.name}</span>
                 </div>
 
                 {/* Hero Section */}
@@ -133,33 +220,61 @@ const ProductPage = () => {
                                     color={isProductInCart(product.id) ? "#FF0000" : "#ccc"}
                                 />
                             </button>
-                            <img src={product.mainImage} alt={product.title} className="main-image" />
+                            <img src={mainImageUrl} alt={product.name} className="main-image" />
                         </div>
                         <div className="thumbnails">
-                            {product.thumbnails.map((thumb, index) => (
-                                <div key={index} className={`thumb-wrapper ${index === 0 ? 'active' : ''}`}>
-                                    <img src={thumb} alt={`Thumbnail ${index + 1}`} />
+                            {product.media && product.media.map((med, index) => (
+                                <div
+                                    key={med.id}
+                                    className={`thumb-wrapper ${index === activeImage ? 'active' : ''}`}
+                                    onClick={() => setActiveImage(index)}
+                                >
+                                    <img src={`${BACKEND_URL}/uploads/products/${med.fileName}`} alt={`Thumbnail ${index + 1}`} />
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     <div className="product-details">
-                        <div className="tag">LIMITED EDITION ARTISANAL</div>
-                        <h1 className="product-title">{product.title}</h1>
-                        <p className="product-price">₹{product.price.toFixed(2)}</p>
+                        <div className="tag">{product.category?.toUpperCase()} | {product.status?.toUpperCase() || 'AVAILABLE'}</div>
+                        <h1 className="product-title">{product.name}</h1>
+                        <p className="product-price">
+                            {product.discountPrice ? (
+                                <div className="price-container">
+                                    <span className="discount-price">₹{product.discountPrice.toFixed(2)}</span>
+                                    <span className="regular-price-strike">₹{product.regularPrice.toFixed(2)}</span>
+                                    {product.regularPrice > product.discountPrice && (
+                                        <span className="discount-badge-inline">
+                                            -{Math.round(((product.regularPrice - product.discountPrice) / product.regularPrice) * 100)}%
+                                        </span>
+                                    )}
+                                </div>
+                            ) : (
+                                `₹${product.regularPrice.toFixed(2)}`
+                            )}
+                        </p>
 
-                        <p className="product-description">{product.description}</p>
+                        <p className="product-description">{product.shortDescription || product.description}</p>
 
                         <div className="product-specs">
-                            <div className="spec-item">
-                                <span className="spec-label">MATERIALS</span>
-                                <span className="spec-value"><ShieldCheck size={14} className="spec-icon" /> {product.materials}</span>
-                            </div>
-                            <div className="spec-item">
-                                <span className="spec-label">DIMENSIONS</span>
-                                <span className="spec-value"><Package size={14} className="spec-icon" /> {product.dimensions}</span>
-                            </div>
+                            {product.brand && (
+                                <div className="spec-item">
+                                    <span className="spec-label">BRAND</span>
+                                    <span className="spec-value">{product.brand}</span>
+                                </div>
+                            )}
+                            {product.sku && (
+                                <div className="spec-item">
+                                    <span className="spec-label">SKU</span>
+                                    <span className="spec-value">{product.sku}</span>
+                                </div>
+                            )}
+                            {product.attributes && product.attributes.map(attr => (
+                                <div key={attr.id} className="spec-item">
+                                    <span className="spec-label">{attr.name?.toUpperCase()}</span>
+                                    <span className="spec-value">{attr.value}</span>
+                                </div>
+                            ))}
                         </div>
 
                         <div className="product-actions">
@@ -183,29 +298,38 @@ const ProductPage = () => {
                 </section>
 
                 {/* Artisan Section */}
-                <section className="artisan-section">
-                    <div className="artisan-card">
-                        <div className="artisan-image-wrapper">
-                            <img src={product.artisan.image} alt={product.artisan.name} />
-                            <div className="artisan-location-badge">
-                                <span className="location-label">LOCATION</span>
-                                <strong>{product.artisan.location} 🇲🇽</strong>
+                {store && (
+                    <section className="artisan-section">
+                        <div className="artisan-card">
+                            <div className="artisan-image-wrapper">
+                                <img
+                                    src={store.storeLogo ? `${BACKEND_URL}/uploads/logos/${store.storeLogo}` : "https://via.placeholder.com/400x400?text=Artisan"}
+                                    alt={store.storeName}
+                                />
+                                <div className="artisan-location-badge">
+                                    <span className="location-label">LOCATION</span>
+                                    <strong>{store.city || store.country || 'Global'} 🌏</strong>
+                                </div>
+                            </div>
+                            <div className="artisan-info">
+                                <h3>Meet the Artisan</h3>
+                                <div className="artisan-name-title">
+                                    <span className="name">{store.storeName}</span>
+                                </div>
+                                <div className="artisan-story">
+                                    {store.description ? (
+                                        store.description.split('\n\n').map((paragraph, index) => (
+                                            <p key={index}>{paragraph}</p>
+                                        ))
+                                    ) : (
+                                        <p>A dedicated creator committed to the highest standards of quality and traditional craftsmanship.</p>
+                                    )}
+                                </div>
+                                <Link to={`/shop?vendor=${vendor.id}`} className="view-collection-link">View Store Collection &gt;</Link>
                             </div>
                         </div>
-                        <div className="artisan-info">
-                            <h3>Meet the Artisan</h3>
-                            <div className="artisan-name-title">
-                                <span className="name">{product.artisan.name}</span>, <span className="title">{product.artisan.title}</span>
-                            </div>
-                            <div className="artisan-story">
-                                {product.artisan.story.split('\n\n').map((paragraph, index) => (
-                                    <p key={index}>{paragraph}</p>
-                                ))}
-                            </div>
-                            <Link to="#" className="view-collection-link">View Elena's Collection &gt;</Link>
-                        </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
                 {/* Why It Matters */}
                 <section className="why-it-matters-section">
@@ -238,23 +362,19 @@ const ProductPage = () => {
                     <div className="reviews-overview">
                         <div className="rating-summary">
                             <div className="big-rating">
-                                <span className="number">4.9</span>
+                                <span className="number">{averageRating}</span>
                                 <div className="stars-and-count">
-                                    {renderStars(5)}
-                                    <span className="count">Based on 28 reviews</span>
+                                    {renderStars(Math.round(parseFloat(averageRating)))}
+                                    <span className="count">Based on {reviews.length} reviews</span>
                                 </div>
                             </div>
-                            <button className="write-review-btn">Write a Review</button>
+                            <button className="write-review-btn" onClick={() => setIsWritingReview(!isWritingReview)}>
+                                {isWritingReview ? "Cancel" : "Write a Review"}
+                            </button>
                         </div>
 
                         <div className="rating-bars">
-                            {[
-                                { stars: 5, pct: 90 },
-                                { stars: 4, pct: 10 },
-                                { stars: 3, pct: 0 },
-                                { stars: 2, pct: 0 },
-                                { stars: 1, pct: 0 },
-                            ].map((bar) => (
+                            {getRatingDistribution().map((bar) => (
                                 <div key={bar.stars} className="rating-bar-row">
                                     <span className="star-label">{bar.stars} Star</span>
                                     <div className="bar-track">
@@ -266,51 +386,128 @@ const ProductPage = () => {
                         </div>
                     </div>
 
+                    {isWritingReview && (
+                        <div className="review-form-container" style={{ background: '#fcfcfc', padding: '20px', borderRadius: '8px', marginBottom: '30px', border: '1px solid #eee' }}>
+                            <h3 style={{ marginTop: 0, marginBottom: '20px', fontSize: '1.2rem' }}>Write Your Review</h3>
+                            <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Rating</label>
+                                    <select
+                                        value={newReview.rating}
+                                        onChange={e => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
+                                        style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid #ccc' }}
+                                    >
+                                        <option value={5}>5 Stars - Excellent</option>
+                                        <option value={4}>4 Stars - Good</option>
+                                        <option value={3}>3 Stars - Average</option>
+                                        <option value={2}>2 Stars - Poor</option>
+                                        <option value={1}>1 Star - Terrible</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Your Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="How you want your name to appear"
+                                        value={newReview.reviewerName}
+                                        onChange={e => setNewReview({ ...newReview, reviewerName: e.target.value })}
+                                        style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid #ccc' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Review Title</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Summarize your experience"
+                                        value={newReview.title}
+                                        onChange={e => setNewReview({ ...newReview, title: e.target.value })}
+                                        style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid #ccc' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Review</label>
+                                    <textarea
+                                        required
+                                        placeholder="What did you like or dislike? What should other shoppers know?"
+                                        value={newReview.text}
+                                        onChange={e => setNewReview({ ...newReview, text: e.target.value })}
+                                        rows={4}
+                                        style={{ padding: '10px', width: '100%', borderRadius: '4px', border: '1px solid #ccc', resize: 'vertical' }}
+                                    />
+                                </div>
+                                <button type="submit" disabled={submittingReview} style={{
+                                    padding: '12px 24px',
+                                    background: '#FF5722',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: submittingReview ? 'not-allowed' : 'pointer',
+                                    fontWeight: 'bold',
+                                    alignSelf: 'flex-start'
+                                }}>
+                                    {submittingReview ? 'Submitting...' : 'Submit Review'}
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
                     <div className="reviews-list">
-                        {reviews.map((review, index) => (
-                            <div key={index} className="review-item">
+                        {reviews.length > 0 ? reviews.map((review) => (
+                            <div key={review.id || review.createdAt} className="review-item">
                                 <div className="review-header">
                                     {renderStars(review.rating)}
-                                    <span className="review-date">{review.date}</span>
+                                    <span className="review-date">
+                                        {review.createdAt ? new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Just now'}
+                                    </span>
                                 </div>
                                 <h4 className="review-title">{review.title}</h4>
                                 <div className="reviewer-info">
-                                    <span className="reviewer-name">{review.user}</span>
-                                    {review.verified && <span className="verified-buyer"><ShieldCheck size={12} className="verified-icon" /> Verified Buyer</span>}
+                                    <span className="reviewer-name">{review.reviewerName || 'Anonymous'}</span>
+                                    {review.verifiedBuyer && <span className="verified-buyer"><ShieldCheck size={12} className="verified-icon" /> Verified Buyer</span>}
                                 </div>
                                 <p className="review-text">{review.text}</p>
                                 <div className="review-helpful">
                                     <span className="helpful-question">Was this helpful?</span>
-                                    <button className="helpful-btn"><ThumbsUp size={14} /> {review.helpful}</button>
-                                    <button className="helpful-btn"><ThumbsDown size={14} /> {review.notHelpful}</button>
+                                    <button className="helpful-btn"><ThumbsUp size={14} /> {review.helpfulCount || 0}</button>
+                                    <button className="helpful-btn"><ThumbsDown size={14} /> {review.notHelpfulCount || 0}</button>
                                 </div>
                             </div>
-                        ))}
+                        )) : (
+                            <p style={{ padding: '2rem 0', color: '#666', fontStyle: 'italic' }}>No reviews yet. Be the first to review this product!</p>
+                        )}
                     </div>
 
-                    <div className="load-more-container">
-                        <button className="load-more-btn">Load More Reviews</button>
-                    </div>
+                    {reviews.length > 5 && (
+                        <div className="load-more-container">
+                            <button className="load-more-btn">Load More Reviews</button>
+                        </div>
+                    )}
                 </section>
 
                 {/* You May Also Like */}
-                <section className="related-products-section">
-                    <h3 className="related-heading">You May Also Like</h3>
-                    <div className="related-grid">
-                        {relatedProducts.map(item => (
-                            <Link to={`/product/${item.id}`} key={item.id} className="related-card">
-                                <div className="related-image-wrapper">
-                                    <img src={item.image} alt={item.name} />
-                                </div>
-                                <div className="related-info">
-                                    <h5 className="related-name">{item.name}</h5>
-                                    <p className="related-price">₹{item.price.toFixed(2)}</p>
-                                    <span className="view-product-link">View Product &gt;</span>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </section>
+                {relatedProducts.length > 0 && (
+                    <section className="related-products-section">
+                        <h3 className="related-heading">You May Also Like</h3>
+                        <div className="related-grid">
+                            {relatedProducts.map(item => (
+                                <Link to={`/product/${item.id}`} key={item.id} className="related-card">
+                                    <div className="related-image-wrapper">
+                                        <img
+                                            src={item.media && item.media.length > 0 ? `${BACKEND_URL}/uploads/products/${item.media.find(m => m.isPrimary)?.fileName || item.media[0].fileName}` : "https://via.placeholder.com/400x400"}
+                                            alt={item.name}
+                                        />
+                                    </div>
+                                    <div className="related-info">
+                                        <h5 className="related-name">{item.name}</h5>
+                                        <p className="related-price">₹{(item.discountPrice || item.regularPrice).toFixed(2)}</p>
+                                        <span className="view-product-link">View Product &gt;</span>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
             </main>
 

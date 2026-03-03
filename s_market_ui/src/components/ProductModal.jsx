@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Star, ArrowRight, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './ProductModal.css';
 
@@ -20,15 +21,15 @@ const ProductModal = ({ product, onClose }) => {
     if (!product) return null;
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <button className="modal-close-btn" onClick={onClose}>
+        <div className="product-modal-overlay" onClick={onClose}>
+            <div className="product-modal-content" onClick={e => e.stopPropagation()}>
+                <button className="product-modal-close-btn" onClick={onClose}>
                     <X size={24} />
                 </button>
 
-                <div className="modal-body">
+                <div className="product-modal-body">
                     {/* Left Column: Images */}
-                    <div className="modal-images-column">
+                    <div className="product-modal-images-column">
                         <div className="main-image-wrapper">
                             <img src={images[selectedImage]} alt={product.name} />
                         </div>
@@ -46,16 +47,16 @@ const ProductModal = ({ product, onClose }) => {
                     </div>
 
                     {/* Right Column: Details */}
-                    <div className="modal-details-column">
-                        <div className="modal-breadcrumb">
+                    <div className="product-modal-details-column">
+                        <div className="product-modal-breadcrumb">
                             HOME &gt; ARTISAN SERIES &gt; <span className="highlight">{product.category || 'PRODUCTS'}</span>
                         </div>
 
-                        <h2 className="modal-title">{product.name}</h2>
+                        <h2 className="product-modal-title">{product.name}</h2>
 
-                        <div className="modal-price-row">
-                            <span className="modal-price">${product.price.toFixed(2)}</span>
-                            <div className="modal-rating">
+                        <div className="product-modal-price-row">
+                            <span className="product-modal-price">₹{product.price.toFixed(2)}</span>
+                            <div className="product-modal-rating">
                                 <div className="stars">
                                     {[...Array(5)].map((_, i) => (
                                         <Star key={i} size={14} fill={i < 4 ? "#FFC107" : "#eee"} color={i < 4 ? "#FFC107" : "#eee"} />
@@ -65,7 +66,7 @@ const ProductModal = ({ product, onClose }) => {
                             </div>
                         </div>
 
-                        <p className="modal-description">
+                        <p className="product-modal-description">
                             Experience the warmth of artisanal craftsmanship. Each piece is meticulously handmade using traditional techniques, featuring unique details that complement any modern interior.
                         </p>
 
@@ -88,7 +89,7 @@ const ProductModal = ({ product, onClose }) => {
                             </div>
                         </div>
 
-                        <div className="modal-actions">
+                        <div className="product-modal-actions">
                             <div className="quantity-selector">
                                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))}><Minus size={16} /></button>
                                 <span>{quantity}</span>
@@ -97,7 +98,10 @@ const ProductModal = ({ product, onClose }) => {
                             <button
                                 className="add-to-cart-btn"
                                 onClick={() => {
-                                    addToCart(product, quantity, { size: 'Standard', color: 'Default' });
+                                    addToCart({
+                                        ...product,
+                                        price: product.price || product.discountPrice || product.regularPrice || 0
+                                    }, quantity, { size: 'Standard', color: 'Default' });
                                     onClose();
                                 }}
                             >
@@ -105,9 +109,9 @@ const ProductModal = ({ product, onClose }) => {
                             </button>
                         </div>
 
-                        <div className="view-full-details">
+                        <Link to={`/product/${product.id}`} className="view-full-details" onClick={onClose}>
                             View Full Details <ArrowRight size={16} />
-                        </div>
+                        </Link>
                     </div>
                 </div>
             </div>

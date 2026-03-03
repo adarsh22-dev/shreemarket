@@ -8,6 +8,8 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "users")
@@ -23,12 +25,16 @@ public class User {
     private String fullName;
     private String email;
     private String phone;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private Long roleId;
     private String status;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String resetToken;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long resetTokenExpiry;
 
     private Long createdAt;

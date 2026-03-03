@@ -8,6 +8,7 @@ import ShopPage from './pages/ShopPage';
 import ProductPage from './pages/ProductPage';
 import ProductListingPage from './pages/ProductListingPage';
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AddUserPage from './pages/admin/AddUserPage';
 import CreateRolePage from './pages/admin/CreateRolePage';
@@ -24,6 +25,13 @@ import VendorAnalytics from './pages/vendor/VendorAnalytics';
 import ProtectedRoute from './components/ProtectedRoute';
 import SettingsPage from './pages/SettingsPage';
 import OrdersPage from './pages/OrdersPage';
+import OurStory from './pages/OurStory';
+import ContactPage from './pages/ContactPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+import ShippingPage from './pages/ShippingPage';
+import ReturnsPage from './pages/ReturnsPage';
+import FAQPage from './pages/FAQPage';
 import './index.css';
 
 import { Toaster } from 'react-hot-toast';
@@ -41,19 +49,28 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/shop" element={<ShopPage />} />
+            <Route path="/our-story" element={<OurStory />} />
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/shop/:category" element={<ProductListingPage />} />
             <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/support/contact" element={<ContactPage />} />
+            <Route path="/support/privacy" element={<PrivacyPage />} />
+            <Route path="/support/terms" element={<TermsPage />} />
+            <Route path="/support/shipping" element={<ShippingPage />} />
+            <Route path="/support/returns" element={<ReturnsPage />} />
+            <Route path="/support/faq" element={<FAQPage />} />
             <Route element={<ProtectedRoute allowedRoles={[3]} />}>
               <Route path="/vendor/dashboard" element={<VendorDashboard />} />
               <Route path="/vendor/products" element={<VendorProducts />} />
               <Route path="/vendor/products/add" element={<AddProduct />} />
+              <Route path="/vendor/products/edit/:id" element={<AddProduct />} />
               <Route path="/vendor/orders" element={<VendorOrders />} />
               <Route path="/vendor/shipping" element={<VendorShipping />} />
               <Route path="/vendor/notifications" element={<VendorNotifications />} />
