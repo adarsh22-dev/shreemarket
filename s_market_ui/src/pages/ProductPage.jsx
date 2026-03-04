@@ -368,9 +368,9 @@ const ProductPage = () => {
                                     <span className="count">Based on {reviews.length} reviews</span>
                                 </div>
                             </div>
-                            <button className="write-review-btn" onClick={() => setIsWritingReview(!isWritingReview)}>
+                            {/* <button className="write-review-btn" onClick={() => setIsWritingReview(!isWritingReview)}>
                                 {isWritingReview ? "Cancel" : "Write a Review"}
-                            </button>
+                            </button> */}
                         </div>
 
                         <div className="rating-bars">
@@ -467,6 +467,22 @@ const ProductPage = () => {
                                     {review.verifiedBuyer && <span className="verified-buyer"><ShieldCheck size={12} className="verified-icon" /> Verified Buyer</span>}
                                 </div>
                                 <p className="review-text">{review.text}</p>
+
+                                {/* Display Review Images if present */}
+                                {review.images && review.images.length > 0 && (
+                                    <div className="review-images-gallery">
+                                        {review.images.map((img, index) => (
+                                            <div key={index} className="review-image-thumbnail">
+                                                <img
+                                                    src={`${BACKEND_URL}/uploads/reviews/${img}`}
+                                                    alt={`Review image ${index + 1}`}
+                                                    onClick={() => window.open(`${BACKEND_URL}/uploads/reviews/${img}`, '_blank')}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div className="review-helpful">
                                     <span className="helpful-question">Was this helpful?</span>
                                     <button className="helpful-btn"><ThumbsUp size={14} /> {review.helpfulCount || 0}</button>

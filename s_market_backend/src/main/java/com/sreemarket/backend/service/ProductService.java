@@ -178,6 +178,74 @@ public class ProductService {
         }
     }
 
+    @Transactional
+    public void deleteProductsBulk(List<Long> ids) {
+        if (ids != null && !ids.isEmpty()) {
+            // In a real environment, we might also delete files associated with these
+            // products
+            productRepository.deleteAllById(ids);
+        }
+    }
+
+    @Transactional
+    public List<Product> uploadProductsBulk(MultipartFile file, Long vendorId) throws IOException {
+        List<Product> products = new ArrayList<>();
+        try (java.io.BufferedReader br = new java.io.BufferedReader(
+                new java.io.InputStreamReader(file.getInputStream()))) {
+            String line;
+            br.readLine(); // Skip header
+
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)"); // Split by comma but ignore commas
+                                                                                 // inside quotes
+                if (data.length >= 5) {
+                    Product product = new Product();
+                    product.setName(cleanCsvValue(data[0]));
+                    product.setSku(cleanCsvValue(data[1]));
+                    product.setCategory(cleanCsvValue(data[2]));
+                    product.setRegularPrice(parseOptionalDouble(data[3]));
+                    product.setInitialStock(parseOptionalInt(data[4]));
+                    product.setStatus("in"); // Default status
+                    product.setType("single");
+                    product.setVendorId(vendorId);
+
+                    if (data.length > 5) {
+                        product.setShortDescription(cleanCsvValue(data[5]));
+                    }
+
+                    products.add(productRepository.save(product));
+                }
+            }
+        }
+        return products;
+    }
+
+    private String cleanCsvValue(String value) {
+        if (value == null)
+            return "";
+        value = value.trim();
+        if (value.startsWith("\"") && value.endsWith("\"")) {
+            value = value.substring(1, value.length() - 1).replace("\"\"", "\"");
+        }
+        return value;
+    }
+
+    private Double parseOptionalDouble(String value) {
+        try {
+            return Double.parseDouble(cleanCsvValue(value));
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    private Integer parseOptionalInt(String value) {
+        try {
+            return Integer.parseInt(cleanCsvValue(value));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
     public Product getProductById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));

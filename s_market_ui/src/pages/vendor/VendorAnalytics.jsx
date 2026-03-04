@@ -1,10 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import VendorLayout from '../../components/vendor/VendorLayout';
-import { Download, Wallet, Truck, ShoppingBag, Zap, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Download, Wallet, Truck, ShoppingBag, Zap, ArrowUpRight, ArrowDownRight, Package, AlertTriangle, RefreshCw } from 'lucide-react';
 import './VendorAnalytics.css';
+import { getVendorAnalytics, getUserDetails, BACKEND_URL } from '../../api/api';
 
 const VendorAnalytics = () => {
     const [filter, setFilter] = useState('Daily');
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const initAnalytics = async () => {
+            setLoading(true);
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            if (userData.userId) {
+                try {
+                    const userDetails = await getUserDetails(userData.userId);
+                    const analytics = await getVendorAnalytics(userDetails.id);
+                    setData(analytics);
+                } catch (error) {
+                    console.error("Failed to fetch analytics:", error);
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setLoading(false);
+            }
+        };
+        initAnalytics();
+    }, []);
+
+    if (loading) {
+        return (
+            <VendorLayout>
+                <div className="analytics-loading">
+                    <RefreshCw className="spinner" size={40} />
+                    <p>Loading your performance data...</p>
+                </div>
+            </VendorLayout>
+        );
+    }
+
+    if (!data) {
+        return (
+            <VendorLayout>
+                <div className="analytics-empty">
+                    <AlertTriangle size={48} color="#9ca3af" />
+                    <h2>No Analytics Data Available</h2>
+                    <p>We couldn't find any performance data for your store yet. Start selling to see your growth!</p>
+                </div>
+            </VendorLayout>
+        );
+    }
+
+    const { metrics, trends, categorySales, topProducts, demographics } = data;
 
     return (
         <VendorLayout>
@@ -13,7 +62,7 @@ const VendorAnalytics = () => {
                 <div className="analytics-header">
                     <div>
                         <h1 className="analytics-title">Performance Overview</h1>
-                        <p className="analytics-subtitle">Real-time data for Oct 1, 2023 - Oct 31, 2023</p>
+                        <p className="analytics-subtitle">Real-time data for {new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                     </div>
                     <div className="analytics-actions">
                         <div className="filter-group">
@@ -36,59 +85,79 @@ const VendorAnalytics = () => {
                 {/* Metrics Cards */}
                 <div className="metrics-grid">
                     <div className="metric-card">
-                        <div className="metric-header">
-                            <div className="icon-wrapper bg-red-light">
-                                <Wallet className="text-red" size={20} />
+                        <div className="metric-content-horizontal">
+                            <div className="icon-box-modern bg-red-light">
+                                <Wallet className="text-red" size={24} />
                             </div>
-                            <span className="badge badge-green">+12.5%</span>
+                            <div className="metric-info-modern">
+                                <h3 className="metric-label-modern">TOTAL REVENUE</h3>
+                                <div className="metric-value-modern">₹{metrics.totalRevenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                            </div>
+                            <div className="metric-trend-badge">
+                                <span className={`trend-pill ${metrics.revenueGrowth?.startsWith('+') ? 'trend-up' : 'trend-down'}`}>
+                                    {metrics.revenueGrowth?.startsWith('+') ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                                    {metrics.revenueGrowth}
+                                </span>
+                            </div>
                         </div>
-                        <div className="metric-body">
-                            <h3 className="metric-label">TOTAL REVENUE</h3>
-                            <div className="metric-value">₹128,430.00</div>
-                        </div>
-                        <div className="metric-footer border-red"></div>
+                        <div className="metric-under-bar bg-red"></div>
                     </div>
 
                     <div className="metric-card">
-                        <div className="metric-header">
-                            <div className="icon-wrapper bg-blue-light">
-                                <Truck className="text-blue" size={20} />
+                        <div className="metric-content-horizontal">
+                            <div className="icon-box-modern bg-blue-light">
+                                <Truck className="text-blue" size={24} />
                             </div>
-                            <span className="badge badge-red">-2.4%</span>
+                            <div className="metric-info-modern">
+                                <h3 className="metric-label-modern">TOTAL ORDERS</h3>
+                                <div className="metric-value-modern">{metrics.totalOrders}</div>
+                            </div>
+                            <div className="metric-trend-badge">
+                                <span className={`trend-pill ${metrics.ordersGrowth?.startsWith('+') ? 'trend-up' : 'trend-down'}`}>
+                                    {metrics.ordersGrowth?.startsWith('+') ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                                    {metrics.ordersGrowth}
+                                </span>
+                            </div>
                         </div>
-                        <div className="metric-body">
-                            <h3 className="metric-label">TOTAL ORDERS</h3>
-                            <div className="metric-value">1,240</div>
-                        </div>
-                        <div className="metric-footer border-blue"></div>
+                        <div className="metric-under-bar bg-blue"></div>
                     </div>
 
                     <div className="metric-card">
-                        <div className="metric-header">
-                            <div className="icon-wrapper bg-orange-light">
-                                <ShoppingBag className="text-orange" size={20} />
+                        <div className="metric-content-horizontal">
+                            <div className="icon-box-modern bg-orange-light">
+                                <ShoppingBag className="text-orange" size={24} />
                             </div>
-                            <span className="badge badge-green">+5.1%</span>
+                            <div className="metric-info-modern">
+                                <h3 className="metric-label-modern">AVG. ORDER VALUE</h3>
+                                <div className="metric-value-modern">₹{metrics.avgOrderValue?.toFixed(2)}</div>
+                            </div>
+                            <div className="metric-trend-badge">
+                                <span className={`trend-pill ${metrics.avgValueGrowth?.startsWith('+') ? 'trend-up' : 'trend-down'}`}>
+                                    {metrics.avgValueGrowth?.startsWith('+') ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                                    {metrics.avgValueGrowth}
+                                </span>
+                            </div>
                         </div>
-                        <div className="metric-body">
-                            <h3 className="metric-label">AVG. ORDER VALUE</h3>
-                            <div className="metric-value">₹103.57</div>
-                        </div>
-                        <div className="metric-footer border-orange"></div>
+                        <div className="metric-under-bar bg-orange"></div>
                     </div>
 
                     <div className="metric-card">
-                        <div className="metric-header">
-                            <div className="icon-wrapper bg-purple-light">
-                                <Zap className="text-purple" size={20} />
+                        <div className="metric-content-horizontal">
+                            <div className="icon-box-modern bg-purple-light">
+                                <Zap className="text-purple" size={24} />
                             </div>
-                            <span className="badge badge-green">+0.4%</span>
+                            <div className="metric-info-modern">
+                                <h3 className="metric-label-modern">CONVERSION RATE</h3>
+                                <div className="metric-value-modern">{metrics.conversionRate}%</div>
+                            </div>
+                            <div className="metric-trend-badge">
+                                <span className={`trend-pill ${metrics.conversionGrowth?.startsWith('+') ? 'trend-up' : 'trend-down'}`}>
+                                    {metrics.conversionGrowth?.startsWith('+') ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                                    {metrics.conversionGrowth}
+                                </span>
+                            </div>
                         </div>
-                        <div className="metric-body">
-                            <h3 className="metric-label">CONVERSION RATE</h3>
-                            <div className="metric-value">3.2%</div>
-                        </div>
-                        <div className="metric-footer border-purple"></div>
+                        <div className="metric-under-bar bg-purple"></div>
                     </div>
                 </div>
 
@@ -105,24 +174,10 @@ const VendorAnalytics = () => {
                         </div>
                     </div>
                     <div className="bar-chart">
-                        {/* Mock data for bars */}
-                        {[
-                            { month: 'JAN', height: '40%' },
-                            { month: 'FEB', height: '60%' },
-                            { month: 'MAR', height: '35%' },
-                            { month: 'APR', height: '90%', active: true },
-                            { month: 'MAY', height: '70%' },
-                            { month: 'JUN', height: '45%' },
-                            { month: 'JUL', height: '65%' },
-                            { month: 'AUG', height: '85%' },
-                            { month: 'SEP', height: '55%' },
-                            { month: 'OCT', height: '40%' },
-                            { month: 'NOV', height: '60%' },
-                            { month: 'DEC', height: '75%' },
-                        ].map((data, index) => (
+                        {trends.map((item, index) => (
                             <div key={index} className="bar-wrapper">
-                                <div className={`bar ${data.active ? 'bar-active' : ''}`} style={{ height: data.height }}></div>
-                                <span className="bar-label">{data.month}</span>
+                                <div className={`bar ${item.active ? 'bar-active' : ''}`} style={{ height: item.height }}></div>
+                                <span className="bar-label">{item.month}</span>
                             </div>
                         ))}
                     </div>
@@ -135,32 +190,30 @@ const VendorAnalytics = () => {
                         <div className="donut-container">
                             <div className="donut-chart">
                                 <div className="donut-inner">
-                                    <div className="donut-value">₹128k</div>
+                                    <div className="donut-value">₹{(metrics.totalRevenue / 1000).toFixed(0)}k</div>
                                     <div className="donut-label">Total</div>
                                 </div>
+                                <svg width="100%" height="100%" viewBox="0 0 36 36" className="donut-ring">
+                                    <circle className="donut-ring-bg" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#f3f4f6" strokeWidth="3"></circle>
+                                    {categorySales.map((cat, i) => {
+                                        // Simple representation - first category as main ring
+                                        if (i !== 0) return null;
+                                        return (
+                                            <circle key={i} className="donut-segment" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#e84c1e" strokeWidth="3.2" strokeDasharray={`${cat.percentage} ${100 - cat.percentage}`} strokeDashoffset="25"></circle>
+                                        );
+                                    })}
+                                </svg>
                             </div>
                             <div className="donut-legend">
-                                <div className="legend-row">
-                                    <div className="legend-dot bg-orange-dark"></div>
-                                    <div className="legend-info">
-                                        <span className="legend-title">Textiles</span>
-                                        <span className="legend-stats">40% • ₹51.3k</span>
+                                {categorySales.map((cat, i) => (
+                                    <div className="legend-row" key={i}>
+                                        <div className={`legend-dot ${i === 0 ? 'bg-orange-dark' : i === 1 ? 'bg-yellow' : 'bg-grey-light'}`}></div>
+                                        <div className="legend-info">
+                                            <span className="legend-title">{cat.category}</span>
+                                            <span className="legend-stats">{cat.percentage}% • ₹{(cat.value / 1000).toFixed(1)}k</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="legend-row">
-                                    <div className="legend-dot bg-yellow"></div>
-                                    <div className="legend-info">
-                                        <span className="legend-title">Ceramics</span>
-                                        <span className="legend-stats">30% • ₹38.5k</span>
-                                    </div>
-                                </div>
-                                <div className="legend-row">
-                                    <div className="legend-dot bg-grey-light"></div>
-                                    <div className="legend-info">
-                                        <span className="legend-title">Furniture</span>
-                                        <span className="legend-stats">30% • ₹38.5k</span>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -168,15 +221,8 @@ const VendorAnalytics = () => {
                     <div className="chart-card demographics-card">
                         <h2 className="card-title">Customer Demographics</h2>
                         <div className="demographics-content">
-                            {/* Watermark map background represented by CSS */}
-                            <div className="demographics-bg"></div>
                             <div className="progress-bars">
-                                {[
-                                    { country: 'USA', width: '80%', val: '45%' },
-                                    { country: 'CAN', width: '40%', val: '22%' },
-                                    { country: 'UK', width: '30%', val: '18%' },
-                                    { country: 'GER', width: '25%', val: '15%' },
-                                ].map(item => (
+                                {demographics.map(item => (
                                     <div className="progress-row" key={item.country}>
                                         <span className="country-label">{item.country}</span>
                                         <div className="progress-track">
@@ -194,7 +240,7 @@ const VendorAnalytics = () => {
                 <div className="products-card">
                     <div className="products-header">
                         <h2 className="card-title">Top Performing Products</h2>
-                        <a href="#" className="view-all-link">View All Inventory</a>
+                        <a href="/vendor/products" className="view-all-link">View All Inventory</a>
                     </div>
                     <div className="table-wrapper">
                         <table className="products-table">
@@ -209,54 +255,39 @@ const VendorAnalytics = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        <div className="product-info-cell">
-                                            <img src="https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?q=80&w=100&auto=format&fit=crop" alt="Vase" className="product-img" />
-                                            <div>
-                                                <div className="product-name">Artisan Ceramic Vase</div>
-                                                <div className="product-cat">Home Decor</div>
+                                {topProducts.map((p, i) => (
+                                    <tr key={p.id || i}>
+                                        <td>
+                                            <div className="product-info-cell">
+                                                <img
+                                                    src={p.image && p.image !== '/placeholder-image.png' ? `${BACKEND_URL}/uploads/products/${p.image}` : '/placeholder-image.png'}
+                                                    alt={p.name}
+                                                    className="product-img"
+                                                />
+                                                <div>
+                                                    <div className="product-name">{p.name}</div>
+                                                    <div className="product-cat">{p.category}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>EH-CR-012</td>
-                                    <td className="font-semibold">482</td>
-                                    <td className="font-semibold">₹12,050.00</td>
-                                    <td><span className="status-badge stock-in">IN STOCK</span></td>
-                                    <td className="growth-positive">+18%</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div className="product-info-cell">
-                                            <img src="https://images.unsplash.com/photo-1596401057658-3e5328eb9fa4?q=80&w=100&auto=format&fit=crop" alt="Blanket" className="product-img" />
-                                            <div>
-                                                <div className="product-name">Nordic Throw Blanket</div>
-                                                <div className="product-cat">Textiles</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>EH-TX-984</td>
-                                    <td className="font-semibold">395</td>
-                                    <td className="font-semibold">₹9,875.00</td>
-                                    <td><span className="status-badge stock-low">LOW STOCK</span></td>
-                                    <td className="growth-positive">+12%</td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div className="product-info-cell">
-                                            <img src="https://images.unsplash.com/photo-1503602642458-232111445657?q=80&w=100&auto=format&fit=crop" alt="Stool" className="product-img" />
-                                            <div>
-                                                <div className="product-name">Minimalist Oak Stool</div>
-                                                <div className="product-cat">Furniture</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>EH-FR-455</td>
-                                    <td className="font-semibold">210</td>
-                                    <td className="font-semibold">₹18,600.00</td>
-                                    <td><span className="status-badge stock-in">IN STOCK</span></td>
-                                    <td className="growth-negative">-4%</td>
-                                </tr>
+                                        </td>
+                                        <td>{p.sku}</td>
+                                        <td className="font-semibold">{p.unitsSold}</td>
+                                        <td className="font-semibold">₹{p.revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                        <td>
+                                            <span className={`status-badge ${p.status === 'out' ? 'stock-out' : p.status === 'low' ? 'stock-low' : 'stock-in'}`}>
+                                                {p.status === 'out' ? 'OUT OF STOCK' : p.status === 'low' ? 'LOW STOCK' : 'IN STOCK'}
+                                            </span>
+                                        </td>
+                                        <td className="growth-positive">{p.growth}</td>
+                                    </tr>
+                                ))}
+                                {topProducts.length === 0 && (
+                                    <tr>
+                                        <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                                            No sales recorded yet.
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -267,3 +298,4 @@ const VendorAnalytics = () => {
 };
 
 export default VendorAnalytics;
+

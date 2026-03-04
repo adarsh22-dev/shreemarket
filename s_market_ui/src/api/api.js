@@ -321,6 +321,40 @@ export const deleteProduct = async (productId) => {
 };
 
 /**
+ * Deletes multiple products by their IDs.
+ * @param {Array<number>} productIds - Array of product IDs to delete
+ */
+export const deleteProductsBulk = async (productIds) => {
+    const response = await fetch(`${API_BASE_URL}/products/bulk`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(productIds),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Uploads products in bulk via CSV file.
+ * @param {File} file - CSV file
+ * @param {number|string} vendorId - Vendor ID
+ */
+export const bulkUploadProducts = async (file, vendorId) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("vendorId", vendorId);
+
+    const response = await fetch(`${API_BASE_URL}/products/bulk-upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+    });
+    return handleResponse(response);
+};
+
+/**
  * Fetches a single product by ID.
  * @param {number} productId - Product ID
  */
@@ -379,6 +413,74 @@ export const updateUserDetails = async (userId, userData) => {
         },
         credentials: "include",
         body: JSON.stringify(userData),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Updates user password.
+ * @param {number|string} userId
+ * @param {Object} passwordData - {currentPassword, newPassword}
+ */
+export const updateUserPassword = async (userId, passwordData) => {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/password`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(passwordData),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Updates vendor password.
+ * @param {number|string} vendorId
+ * @param {Object} passwordData - {currentPassword, newPassword}
+ */
+export const updateVendorPassword = async (vendorId, passwordData) => {
+    const response = await fetch(`${API_BASE_URL}/vendors/${vendorId}/password`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(passwordData),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Deletes a user account.
+ * @param {number|string} userId
+ * @param {string} password
+ */
+export const deleteUser = async (userId, password) => {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ password }),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Deletes a vendor account.
+ * @param {number|string} vendorId
+ * @param {string} password
+ */
+export const deleteVendor = async (vendorId, password) => {
+    const response = await fetch(`${API_BASE_URL}/vendors/${vendorId}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ password }),
     });
     return handleResponse(response);
 };
@@ -575,17 +677,186 @@ export const getProductReviews = async (productId) => {
 };
 
 /**
- * Submits a new review for a product.
- * @param {Object} reviewData - { productId, reviewerName, rating, title, text }
+ * Fetches all reviews by a user.
+ * @param {number|string} userId
  */
-export const submitProductReview = async (reviewData) => {
-    const response = await fetch(`${API_BASE_URL}/reviews`, {
-        method: "POST",
+export const getUserReviews = async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/reviews/user/${userId}`, {
+        method: "GET",
         headers: {
             "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify(reviewData),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Submits a new review for a product.
+ * @param {Object|FormData} reviewData - Review data or FormData if images are included
+ */
+export const submitProductReview = async (reviewData) => {
+    const isFormData = reviewData instanceof FormData;
+
+    const response = await fetch(`${API_BASE_URL}/reviews`, {
+        method: "POST",
+        headers: isFormData ? {} : {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: isFormData ? reviewData : JSON.stringify(reviewData),
+    });
+    return handleResponse(response);
+};
+
+// --- VENDOR STAFF API METHODS ---
+
+/**
+ * Fetches vendor staff by vendorId
+ * @param {number|string} vendorId
+ */
+export const getVendorStaffByVendorId = async (vendorId) => {
+    const response = await fetch(`${API_BASE_URL}/vendor-staff/vendor/${vendorId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Creates a new vendor staff
+ * @param {Object} staffData
+ */
+export const createVendorStaff = async (staffData) => {
+    const response = await fetch(`${API_BASE_URL}/vendor-staff`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(staffData)
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Updates a vendor staff
+ * @param {number|string} staffId
+ * @param {Object} staffData
+ */
+export const updateVendorStaff = async (staffId, staffData) => {
+    const response = await fetch(`${API_BASE_URL}/vendor-staff/${staffId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(staffData)
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Deletes a vendor staff
+ * @param {number|string} staffId
+ */
+export const deleteVendorStaff = async (staffId) => {
+    const response = await fetch(`${API_BASE_URL}/vendor-staff/${staffId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+    });
+    if (response.status === 204) return null;
+    return handleResponse(response);
+};
+
+/**
+ * Fetches analytics data for a specific vendor.
+ * @param {number|string} vendorId
+ */
+export const getVendorAnalytics = async (vendorId) => {
+    const response = await fetch(`${API_BASE_URL}/analytics/vendor/${vendorId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+    });
+    return handleResponse(response);
+};
+
+// --- NOTIFICATIONS API METHODS ---
+
+/**
+ * Fetches notifications for a specific vendor.
+ * @param {number|string} vendorId
+ * @param {string} type - Optional filter type (ORDER, PAYMENT, DELIVERY, PLATFORM)
+ */
+export const fetchVendorNotifications = async (vendorId, type = "All") => {
+    const url = type === "All"
+        ? `${API_BASE_URL}/notifications/vendor/${vendorId}`
+        : `${API_BASE_URL}/notifications/vendor/${vendorId}?type=${type}`;
+    const response = await fetch(url, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Marks a single notification as read.
+ * @param {number|string} id
+ */
+export const markNotificationAsRead = async (id) => {
+    const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Marks all notifications as read for a vendor.
+ * @param {number|string} vendorId
+ */
+export const markAllNotificationsAsRead = async (vendorId) => {
+    const response = await fetch(`${API_BASE_URL}/notifications/vendor/${vendorId}/read-all`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+    });
+    return handleResponse(response);
+};
+
+// --- DEVICE MANAGEMENT API METHODS ---
+
+/**
+ * Fetch all active devices for a user.
+ * @param {number|string} userId 
+ * @param {number|string} roleId 
+ * @returns {Promise<Array>} Array of device objects
+ */
+export const getUserDevices = async (userId, roleId) => {
+    const response = await fetch(`${API_BASE_URL}/devices/${userId}/${roleId}`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Log out a specific device session.
+ * @param {number|string} deviceId 
+ * @param {number|string} userId 
+ * @param {number|string} roleId 
+ */
+export const logoutDevice = async (deviceId, userId, roleId) => {
+    const response = await fetch(`${API_BASE_URL}/devices/${deviceId}?userId=${userId}&roleId=${roleId}`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
     });
     return handleResponse(response);
 };

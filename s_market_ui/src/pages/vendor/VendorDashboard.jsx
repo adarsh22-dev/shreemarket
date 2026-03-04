@@ -20,6 +20,8 @@ const VendorDashboard = () => {
     const [orders, setOrders] = useState([]);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [chartFilter, setChartFilter] = useState('Weekly');
+    const [vendorName, setVendorName] = useState('');
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -27,6 +29,7 @@ const VendorDashboard = () => {
                 const userStr = localStorage.getItem('user');
                 if (userStr) {
                     const userObj = JSON.parse(userStr);
+                    setVendorName(userObj.firstName || userObj.vendorName || userObj.name || '');
                     if (userObj.userId) {
                         const [ordersData, productsData] = await Promise.all([
                             fetchVendorOrders(userObj.userId),
@@ -78,6 +81,94 @@ const VendorDashboard = () => {
         }
     };
 
+    // Chart Data Processing
+    const getChartData = () => {
+        const now = new Date();
+        const data = [];
+        const labels = [];
+
+        if (chartFilter === 'Weekly') {
+            // Last 7 days
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(now.getDate() - i);
+                date.setHours(0, 0, 0, 0);
+
+                const dailyTotal = orders
+                    .filter(o => o.status !== 'CANCELLED' && o.status !== 'REJECTED')
+                    .filter(o => {
+                        const orderDate = new Date(o.datePlaced);
+                        orderDate.setHours(0, 0, 0, 0);
+                        return orderDate.getTime() === date.getTime();
+                    })
+                    .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+                data.push(dailyTotal);
+                labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+            }
+        } else {
+            // Last 4 weeks
+            for (let i = 3; i >= 0; i--) {
+                const start = new Date(now);
+                start.setDate(now.getDate() - (i * 7 + 6));
+                start.setHours(0, 0, 0, 0);
+
+                const end = new Date(now);
+                end.setDate(now.getDate() - (i * 7));
+                end.setHours(23, 59, 59, 999);
+
+                const weeklyTotal = orders
+                    .filter(o => o.status !== 'CANCELLED' && o.status !== 'REJECTED')
+                    .filter(o => o.datePlaced >= start.getTime() && o.datePlaced <= end.getTime())
+                    .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
+                data.push(weeklyTotal);
+                labels.push(`Week ${4 - i}`);
+            }
+        }
+
+        return { data, labels };
+    };
+
+    const [hoveredPoint, setHoveredPoint] = useState(null);
+
+    const { data: chartValues, labels: chartLabels } = getChartData();
+    const maxVal = Math.max(...chartValues, 100);
+
+    const generateChartPath = (isArea = false) => {
+        if (chartValues.length === 0) return "";
+
+        const width = 800;
+        const height = 150; // Use 150 of the 200 viewbox height for padding
+        const step = width / (chartValues.length - 1);
+
+        let path = `M 0 ${height - (chartValues[0] / maxVal) * height}`;
+
+        for (let i = 1; i < chartValues.length; i++) {
+            const x = i * step;
+            const y = height - (chartValues[i] / maxVal) * height;
+            path += ` L ${x} ${y}`;
+        }
+
+        if (isArea) {
+            path += ` L ${width} 200 L 0 200 Z`;
+        }
+
+        return path;
+    };
+
+    const getStockBadgeClass = (qty) => {
+        if (qty === 0) return 'stock-out';
+        if (qty <= 5) return 'stock-low';
+        return 'stock-in';
+    };
+
+    const getStockText = (qty) => {
+        if (qty === 0) return 'Out of Stock';
+        if (qty <= 5) return `Low Stock (${qty})`;
+        return `In Stock (${qty})`;
+    };
+
     if (loading) {
         return (
             <VendorLayout>
@@ -95,14 +186,14 @@ const VendorDashboard = () => {
                 {/* Header */}
                 <header className="vendor-header">
                     <div className="header-title-section">
-                        <h1>Welcome back, Artisan!</h1>
+                        <h1>Welcome back{vendorName ? `, ${vendorName}!` : '!'}</h1>
                         <p>Here's what's happening with your store today.</p>
                     </div>
                     <div className="header-actions">
-                        <div className="search-bar">
+                        {/* <div className="search-bar">
                             <Search size={18} color="#888" />
                             <input type="text" placeholder="Search orders..." />
-                        </div>
+                        </div> */}
                         <button className="btn-add-product" onClick={() => navigate('/vendor/products/add')}>
                             <Plus size={18} />
                             Add New Product
@@ -158,12 +249,22 @@ const VendorDashboard = () => {
                                     <p>Track your revenue growth over time</p>
                                 </div>
                                 <div className="chart-filters">
-                                    <button className="chart-filter-btn active">Weekly</button>
-                                    <button className="chart-filter-btn">Monthly</button>
+                                    <button
+                                        className={`chart-filter-btn ${chartFilter === 'Weekly' ? 'active' : ''}`}
+                                        onClick={() => setChartFilter('Weekly')}
+                                    >
+                                        Weekly
+                                    </button>
+                                    <button
+                                        className={`chart-filter-btn ${chartFilter === 'Monthly' ? 'active' : ''}`}
+                                        onClick={() => setChartFilter('Monthly')}
+                                    >
+                                        Monthly
+                                    </button>
                                 </div>
                             </div>
 
-                            <div className="chart-area">
+                            <div className="chart-area" style={{ position: 'relative' }}>
                                 <svg className="chart-svg" viewBox="0 0 800 200" preserveAspectRatio="none">
                                     <defs>
                                         <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
@@ -179,31 +280,53 @@ const VendorDashboard = () => {
 
                                     {/* Chart Path Area */}
                                     <path
-                                        d="M 0 130 C 100 120, 150 145, 200 135 C 300 115, 350 50, 400 60 C 500 80, 550 40, 600 20 C 700 -20, 750 60, 800 65 L 800 200 L 0 200 Z"
+                                        d={generateChartPath(true)}
                                         fill="url(#gradient)"
                                     />
                                     {/* Chart Line */}
                                     <path
-                                        d="M 0 130 C 100 120, 150 145, 200 135 C 300 115, 350 50, 400 60 C 500 80, 550 40, 600 20 C 700 -20, 750 60, 800 65"
+                                        d={generateChartPath(false)}
                                         fill="none"
                                         stroke="#E03E1A"
                                         strokeWidth="3"
                                     />
 
                                     {/* Data Points */}
-                                    <circle cx="200" cy="135" r="4" fill="white" stroke="#E03E1A" strokeWidth="2" />
-                                    <circle cx="400" cy="60" r="4" fill="white" stroke="#E03E1A" strokeWidth="2" />
-                                    <circle cx="600" cy="20" r="4" fill="white" stroke="#E03E1A" strokeWidth="2" />
+                                    {chartValues.map((val, i) => {
+                                        const x = i * (800 / (chartValues.length - 1));
+                                        const y = 150 - (val / maxVal) * 150;
+                                        return (
+                                            <circle
+                                                key={i}
+                                                cx={x}
+                                                cy={y}
+                                                r={hoveredPoint?.index === i ? "6" : "4"}
+                                                fill={hoveredPoint?.index === i ? "#E03E1A" : "white"}
+                                                stroke="#E03E1A"
+                                                strokeWidth="2"
+                                                onMouseEnter={() => setHoveredPoint({ index: i, value: val, label: chartLabels[i], x, y })}
+                                                onMouseLeave={() => setHoveredPoint(null)}
+                                                style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+                                            />
+                                        );
+                                    })}
                                 </svg>
 
+                                {hoveredPoint && (
+                                    <div
+                                        className="chart-tooltip"
+                                        style={{
+                                            left: `${(hoveredPoint.x / 800) * 100}%`,
+                                            top: `${(hoveredPoint.y / 200) * 100}%`
+                                        }}
+                                    >
+                                        <div className="tooltip-label">{hoveredPoint.label}</div>
+                                        <div className="tooltip-value">₹{hoveredPoint.value.toLocaleString()}</div>
+                                    </div>
+                                )}
+
                                 <div className="chart-labels">
-                                    <span>Mon</span>
-                                    <span>Tue</span>
-                                    <span>Wed</span>
-                                    <span>Thu</span>
-                                    <span>Fri</span>
-                                    <span>Sat</span>
-                                    <span>Sun</span>
+                                    {chartLabels.map((label, i) => <span key={i}>{label}</span>)}
                                 </div>
                             </div>
                         </div>
@@ -230,11 +353,9 @@ const VendorDashboard = () => {
                                         </div>
                                         <div className="product-meta">
                                             <div className="product-price">₹{(product.discountPrice || product.regularPrice || 0).toFixed(2)}</div>
-                                            {product.status === 'ACTIVE' ? (
-                                                <div className="stock-status stock-in">Active</div>
-                                            ) : (
-                                                <div className="stock-status stock-low">{product.status}</div>
-                                            )}
+                                            <div className={`stock-status ${getStockBadgeClass(product.initialStock || 0)}`}>
+                                                {getStockText(product.initialStock || 0)}
+                                            </div>
                                         </div>
                                     </div>
                                 );

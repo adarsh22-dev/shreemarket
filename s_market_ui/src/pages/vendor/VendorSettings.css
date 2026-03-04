@@ -1,0 +1,202 @@
+.vs-wrapper {
+    background: #f8fafc;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.vs-completeness {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.vs-comp-text {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 10px;
+}
+
+.vs-progress-bg {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.vs-progress-fill {
+    height: 100%;
+    background: #0ea5e9;
+    transition: width 0.4s ease;
+}
+
+.vs-suggestions {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 8px;
+}
+
+.vs-main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.vs-sidebar {
+    display: flex;
+    width: 100% !important;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 0;
+    height: fit-content;
+}
+
+.vs-sidebar-label {
+    padding: 15px 25px;
+    font-size: 11px;
+    color: #94a3b8;
+    letter-spacing: 1px;
+}
+
+.vs-tab-link {
+    display: block;
+    width: 100%;
+    padding: 12px 25px;
+    text-align: left;
+    border: none;
+    background: none;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+}
+
+.vs-tab-link.active {
+    background: #f0f9ff;
+    color: #e03e1a;
+    border-left-color: #e03e1a00;
+    font-weight: 600;
+    border-bottom: 3px solid #e03e1a;
+}
+
+.vs-content-body {
+    flex: 1;
+}
+
+.vs-tab-header h2 {
+    font-size: 24px;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
+
+.vs-tab-header p {
+    color: #64748b;
+    margin-bottom: 25px;
+}
+
+.vs-section-card {
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 1px solid #e2e8f0;
+}
+
+.vs-section-title {
+    padding: 15px 20px;
+    font-size: 13px;
+    color: #e03e1a;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 700;
+}
+
+.vs-section-content {
+    padding: 25px;
+}
+
+.vs-form-row {
+    display: flex;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.vs-row-vertical {
+    flex-direction: row;
+    align-items: center;
+}
+
+.vs-label {
+    width: 220px;
+    font-size: 14px;
+    color: #334155;
+    font-weight: 500;
+}
+
+.vs-req { color: #ef4444; }
+
+.vs-input-wrap { flex: 1; width: 100%; }
+
+.vs-input-wrap input[type="text"], 
+.vs-input-wrap input[type="email"], 
+.vs-input-wrap input[type="number"],
+.vs-input-wrap select, 
+.vs-input-wrap textarea {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.vs-upload-box {
+    width: 80px;
+    height: 80px;
+    border: 2px dashed #e03e1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #f8fafc;
+}
+
+.vs-preview { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+
+.vs-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding: 20px 0;
+}
+
+.vs-btn-save {
+    background: #e03e1a;
+    color: #FFF;
+    padding: 10px 25px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.vs-btn-cancel {
+    background: #fff;
+    border: 1px solid #e03e1a;
+    padding: 10px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.vs-hours-row-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    padding: 15px;
+}
+
+.vs-day-header { font-weight: 600; margin-bottom: 10px; color: #1e293b; }
+.vs-slots-flex { display: flex; gap: 20px; }
+.vs-slot-input label { display: block; font-size: 12px; color: #64748b; margin-bottom: 5px; }

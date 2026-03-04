@@ -32,6 +32,10 @@ import TermsPage from './pages/TermsPage';
 import ShippingPage from './pages/ShippingPage';
 import ReturnsPage from './pages/ReturnsPage';
 import FAQPage from './pages/FAQPage';
+import StaffInventorySystem from './pages/vendor/vendorStaffMgmt';
+import VendorGuide from './pages/vendor/VendorGuide';
+import VendorPayout from './pages/vendor/VendorPayouts';
+import VendorSettings from './pages/vendor/VendorSettings';
 import './index.css';
 
 import { Toaster } from 'react-hot-toast';
@@ -78,6 +82,10 @@ function App() {
               <Route path="/vendor/promotions/create" element={<CreatePromotion />} />
               <Route path="/vendor/promotions/:id" element={<PromotionDetails />} />
               <Route path="/vendor/analytics" element={<VendorAnalytics />} />
+              <Route path="/vendor/staffmanagement" element={<StaffInventorySystem />} />
+              <Route path="/vendor/guide" element={<VendorGuide />} />
+              <Route path="/vendor/payouts" element={<VendorPayout />} />
+              <Route path="/vendor/settings" element={<VendorSettings />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={[1]} />}>

@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Pencil, Trash2, Plus, Bell, Hash, CreditCard, Home as HomeIcon, Briefcase, MapPin } from 'lucide-react';
+import { Pencil, Trash2, Plus, Bell, Hash, CreditCard, Home as HomeIcon, Briefcase, MapPin, X, Eye, EyeOff, MonitorSmartphone, Monitor, Smartphone, CheckCircle, LogOut } from 'lucide-react';
 import {
     getUserDetails, updateUserDetails,
     fetchUserAddresses, addUserAddress,
-    updateUserAddress, deleteUserAddress, setAddressAsDefault
+    updateUserAddress, deleteUserAddress, setAddressAsDefault,
+    updateUserPassword, updateVendorPassword,
+    deleteUser, deleteVendor,
+    getUserDevices, logoutDevice
 } from '../api/api';
 import './SettingsPage.css';
 
 const SettingsPage = () => {
+    const navigate = useNavigate();
     const [userDetails, setUserDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({
@@ -19,6 +24,10 @@ const SettingsPage = () => {
         phone: ''
     });
     const [updateStatus, setUpdateStatus] = useState({ loading: false, error: null, success: false });
+
+    // Devices State
+    const [devices, setDevices] = useState([]);
+    const [loadingDevices, setLoadingDevices] = useState(false);
 
     // Address State
     const [addresses, setAddresses] = useState([]);
@@ -35,6 +44,24 @@ const SettingsPage = () => {
         isDefault: false
     });
     const [addressLoading, setAddressLoading] = useState(false);
+
+    // Password Visibility State
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    // Password Form State
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [passwordStatus, setPasswordStatus] = useState({ loading: false, error: null, success: false });
+
+    // Account Deletion State
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deletionPassword, setDeletionPassword] = useState('');
+    const [deletionLoading, setDeletionLoading] = useState(false);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -57,6 +84,22 @@ const SettingsPage = () => {
                         setAddresses(userAddresses);
                     } catch (addrErr) {
                         console.error("Failed to fetch addresses:", addrErr);
+                    }
+
+                    // Fetch active devices
+                    try {
+                        setLoadingDevices(true);
+                        const devResponse = await getUserDevices(storedUser.userId, storedUser.roleId);
+                        if (devResponse && Array.isArray(devResponse)) {
+                            // API returns the array directly based on Controller mapping
+                            setDevices(devResponse);
+                        } else if (devResponse && devResponse.data) {
+                            setDevices(devResponse.data);
+                        }
+                    } catch (devErr) {
+                        console.error("Failed to fetch devices:", devErr);
+                    } finally {
+                        setLoadingDevices(false);
                     }
                 }
             } catch (error) {
@@ -98,6 +141,16 @@ const SettingsPage = () => {
         }
     };
 
+    const handlePasswordInputChange = (e) => {
+        setPasswordData({
+            ...passwordData,
+            [e.target.name]: e.target.value
+        });
+        if (passwordStatus.error || passwordStatus.success) {
+            setPasswordStatus({ loading: false, error: null, success: false });
+        }
+    };
+
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
 
@@ -129,6 +182,7 @@ const SettingsPage = () => {
 
             setUserDetails(updatedData);
             setUpdateStatus({ loading: false, error: null, success: true });
+            toast.success("Profile updated successfully!");
 
             // Optionally update local storage with new base values
             localStorage.setItem('user', JSON.stringify({
@@ -145,7 +199,60 @@ const SettingsPage = () => {
             }, 3000);
 
         } catch (error) {
-            setUpdateStatus({ loading: false, error: error.message || 'Failed to update user details', success: false });
+            const errorMsg = error.message || 'Failed to update user details';
+            setUpdateStatus({ loading: false, error: errorMsg, success: false });
+            toast.error(errorMsg);
+        }
+    };
+
+    const handleUpdatePassword = async (e) => {
+        e.preventDefault();
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            setPasswordStatus({ ...passwordStatus, error: "New passwords do not match" });
+            return;
+        }
+
+        if (passwordData.newPassword.length < 8) {
+            const errorMsg = "Password must be at least 8 characters";
+            setPasswordStatus({ ...passwordStatus, error: errorMsg });
+            toast.error(errorMsg);
+            return;
+        }
+
+        setPasswordStatus({ ...passwordStatus, loading: true, error: null });
+
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            if (!storedUser || !storedUser.userId) throw new Error("User session not found");
+
+            const roleId = storedUser.roleId;
+            const userId = storedUser.userId;
+
+            if (roleId === 3) {
+                await updateVendorPassword(userId, {
+                    currentPassword: passwordData.currentPassword,
+                    newPassword: passwordData.newPassword
+                });
+            } else {
+                await updateUserPassword(userId, {
+                    currentPassword: passwordData.currentPassword,
+                    newPassword: passwordData.newPassword
+                });
+            }
+
+            setPasswordStatus({ loading: false, error: null, success: true });
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            toast.success("Password updated successfully!");
+
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                setPasswordStatus(prev => ({ ...prev, success: false }));
+            }, 3000);
+        } catch (error) {
+            const errorMsg = error.message || 'Failed to update password';
+            setPasswordStatus({ loading: false, error: errorMsg, success: false });
+            toast.error(errorMsg);
         }
     };
 
@@ -155,6 +262,58 @@ const SettingsPage = () => {
             ...addressForm,
             [e.target.name]: value
         });
+    };
+
+    const handleDeleteAccount = () => {
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDeleteAccount = async (e) => {
+        e.preventDefault();
+
+        if (!deletionPassword.trim()) {
+            toast.error("Please enter your password to confirm");
+            return;
+        }
+
+        setDeletionLoading(true);
+
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            if (!storedUser || !storedUser.userId) throw new Error("User session not found");
+
+            if (storedUser.roleId === 3) {
+                await deleteVendor(storedUser.userId, deletionPassword);
+            } else {
+                await deleteUser(storedUser.userId, deletionPassword);
+            }
+
+            toast.success("Account deleted successfully");
+            setIsDeleteModalOpen(false);
+            localStorage.removeItem('user');
+            navigate('/');
+        } catch (error) {
+            console.error("Failed to delete account:", error);
+            toast.error(error.message || "Failed to delete account");
+        } finally {
+            setDeletionLoading(false);
+        }
+    };
+
+    const handleLogoutDevice = async (deviceId) => {
+        try {
+            const storedUser = JSON.parse(localStorage.getItem('user'));
+            if (!storedUser || !storedUser.userId) return;
+
+            await logoutDevice(deviceId, storedUser.userId, storedUser.roleId);
+            toast.success("Device logged out successfully");
+
+            // Remove the device from the UI
+            setDevices(prevDevices => prevDevices.filter(d => d.id !== deviceId));
+        } catch (error) {
+            console.error("Failed to log out device:", error);
+            toast.error("Failed to log out device");
+        }
     };
 
     const handleSaveAddress = async (e) => {
@@ -182,9 +341,11 @@ const SettingsPage = () => {
                 streetAddress: '', city: '', state: '',
                 zipCode: '', country: '', isDefault: false
             });
+            toast.success("Address saved successfully!");
         } catch (error) {
             console.error("Failed to save address:", error);
-            alert("Failed to save address. Please try again.");
+            const errorMsg = error.message || "Failed to save address. Please try again.";
+            toast.error(errorMsg);
         } finally {
             setAddressLoading(false);
         }
@@ -198,9 +359,10 @@ const SettingsPage = () => {
 
             const updatedAddresses = await fetchUserAddresses(storedUser.userId);
             setAddresses(updatedAddresses);
+            toast.success("Address deleted successfully!");
         } catch (error) {
             console.error("Failed to delete address:", error);
-            alert("Could not delete address.");
+            toast.error("Could not delete address.");
         }
     };
 
@@ -211,8 +373,10 @@ const SettingsPage = () => {
 
             const updatedAddresses = await fetchUserAddresses(storedUser.userId);
             setAddresses(updatedAddresses);
+            toast.success("Default address updated!");
         } catch (error) {
             console.error("Failed to set default address:", error);
+            toast.error("Failed to set default address.");
         }
     };
 
@@ -411,20 +575,73 @@ const SettingsPage = () => {
                             <p>Manage your password and security settings.</p>
                         </div>
                         <div className="settings-card">
-                            <form className="security-form" onSubmit={(e) => e.preventDefault()}>
+                            <form className="security-form" onSubmit={handleUpdatePassword}>
+                                {passwordStatus.error && <p className="status-message error">{passwordStatus.error}</p>}
+                                {passwordStatus.success && <p className="status-message success">Password updated successfully!</p>}
+
                                 <div className="form-group">
                                     <label>Current Password</label>
-                                    <input type="password" defaultValue="••••••••" />
+                                    <div className="password-input-wrapper">
+                                        <input
+                                            type={showCurrentPassword ? "text" : "password"}
+                                            name="currentPassword"
+                                            value={passwordData.currentPassword}
+                                            onChange={handlePasswordInputChange}
+                                            placeholder="••••••••"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle-btn"
+                                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                        >
+                                            {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="form-group">
                                     <label>New Password</label>
-                                    <input type="password" placeholder="••••••••" />
+                                    <div className="password-input-wrapper">
+                                        <input
+                                            type={showNewPassword ? "text" : "password"}
+                                            name="newPassword"
+                                            value={passwordData.newPassword}
+                                            onChange={handlePasswordInputChange}
+                                            placeholder="••••••••"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle-btn"
+                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                        >
+                                            {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="form-group">
                                     <label>Confirm New Password</label>
-                                    <input type="password" placeholder="••••••••" />
+                                    <div className="password-input-wrapper">
+                                        <input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            name="confirmPassword"
+                                            value={passwordData.confirmPassword}
+                                            onChange={handlePasswordInputChange}
+                                            placeholder="••••••••"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle-btn"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        >
+                                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
-                                <button type="submit" className="btn-outline-primary full-width">Update Password</button>
+                                <button type="submit" className="btn-outline-primary full-width" disabled={passwordStatus.loading}>
+                                    {passwordStatus.loading ? 'Updating...' : 'Update Password'}
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -464,14 +681,58 @@ const SettingsPage = () => {
                             </div> */}
                         </div>
                     </div>
+
+                    {/* Active Sessions / Devices Section */}
+                    <div className="settings-section">
+                        <div className="section-header">
+                            <h2>Active Sessions</h2>
+                            <p>Manage devices currently logged into your account.</p>
+                        </div>
+                        <div className="settings-card devices-card">
+                            {loadingDevices ? (
+                                <p>Loading your devices...</p>
+                            ) : devices.length > 0 ? (
+                                <div className="devices-list">
+                                    {devices.map((device) => {
+                                        return (
+                                            <div key={device.id} className="device-item">
+                                                <div className="device-icon-wrapper">
+                                                    {device.deviceType === 'Mobile' ? <Smartphone size={24} /> : <Monitor size={24} />}
+                                                </div>
+                                                <div className="device-info">
+                                                    <h4 className="device-name">
+                                                        {device.os} • {device.browser}
+                                                    </h4>
+                                                    <p className="device-meta">
+                                                        {device.ipAddress} • Last active: {new Date(device.lastActive).toLocaleString()}
+                                                    </p>
+                                                </div>
+                                                <div className="device-actions">
+                                                    <button
+                                                        className="btn-text text-danger"
+                                                        onClick={() => handleLogoutDevice(device.id)}
+                                                    >
+                                                        <LogOut size={16} /> Log Out
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <p className="text-muted">No active sessions found.</p>
+                            )}
+                        </div>
+                    </div>
+
                 </div>
 
                 <div className="danger-zone-section">
                     <div className="danger-zone-content">
                         <h2>Danger Zone</h2>
-                        <p>Permanently delete your account and all your data.</p>
+                        <p>Permanently Delete.</p>
                     </div>
-                    <button className="btn-outline-danger">Delete Account</button>
+                    <button className="btn-outline-danger" onClick={handleDeleteAccount}>Delete Account</button>
                 </div>
 
             </div>
@@ -479,10 +740,12 @@ const SettingsPage = () => {
             {/* Address Modal */}
             {isAddressModalOpen && (
                 <div className="address-modal-overlay">
-                    <div className="address-modal">
+                    <div className="address-modal-content">
                         <div className="address-modal-header">
                             <h2>Add New Address</h2>
-                            <button className="close-modal-btn" onClick={() => setIsAddressModalOpen(false)}>&times;</button>
+                            <button type="button" className="close-modal-btn" onClick={() => setIsAddressModalOpen(false)}>
+                                <X size={20} />
+                            </button>
                         </div>
                         <form className="address-modal-form" onSubmit={handleSaveAddress}>
                             <div className="form-group">
@@ -522,11 +785,7 @@ const SettingsPage = () => {
                                     <label>Country</label>
                                     <select name="country" value={addressForm.country} onChange={handleAddressInputChange} required>
                                         <option value="">Select country</option>
-                                        <option value="US">United States</option>
-                                        <option value="IN">India</option>
-                                        <option value="UK">United Kingdom</option>
-                                        <option value="CA">Canada</option>
-                                        <option value="AU">Australia</option>
+                                        <option selected value="IN">India</option>
                                     </select>
                                 </div>
                             </div>
@@ -545,6 +804,69 @@ const SettingsPage = () => {
             )}
 
             <Footer />
+            {/* Account Deletion Modal */}
+            {isDeleteModalOpen && (
+                <div className="address-modal-overlay">
+                    <div className="address-modal-content delete-modal">
+                        <div className="address-modal-header">
+                            <h2 className="text-danger">Confirm Account Deletion</h2>
+                            <button type="button" className="close-modal-btn" onClick={() => setIsDeleteModalOpen(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="delete-modal-body">
+                            <p className="warning-text">
+                                <strong>Warning:</strong> This action is permanent and cannot be undone. All your data, includes addresses, orders, and store settings, will be permanently removed.
+                            </p>
+                            <p className="instruction-text">
+                                Please enter your current password to confirm deletion.
+                            </p>
+                        </div>
+                        <form onSubmit={confirmDeleteAccount}>
+                            <div className="form-group">
+                                <label>Password</label>
+                                <div className="password-input-wrapper">
+                                    <input
+                                        type={showCurrentPassword ? "text" : "password"}
+                                        value={deletionPassword}
+                                        onChange={(e) => setDeletionPassword(e.target.value)}
+                                        placeholder="Enter your password"
+                                        required
+                                        autoFocus
+                                    />
+                                    <button
+                                        type="button"
+                                        className="password-toggle-btn"
+                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                    >
+                                        {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="address-modal-actions mt-lg">
+                                <button
+                                    type="button"
+                                    className="btn-outline"
+                                    onClick={() => {
+                                        setIsDeleteModalOpen(false);
+                                        setDeletionPassword('');
+                                    }}
+                                    disabled={deletionLoading}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn-danger-filled"
+                                    disabled={deletionLoading}
+                                >
+                                    {deletionLoading ? 'Deleting...' : 'Permanently Delete My Account'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

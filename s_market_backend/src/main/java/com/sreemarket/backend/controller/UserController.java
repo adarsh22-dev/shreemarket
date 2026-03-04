@@ -53,9 +53,13 @@ public class UserController {
     }
 
     @DeleteMapping("/vendors/{id}")
-    public ResponseEntity<?> deleteVendor(@PathVariable Long id) {
+    public ResponseEntity<?> deleteVendor(@PathVariable Long id, @RequestBody Map<String, String> body) {
         try {
-            vendorService.deleteVendor(id);
+            String password = body.get("password");
+            if (password == null || password.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Password is required for account deletion"));
+            }
+            vendorService.deleteVendor(id, password);
             return ResponseEntity.ok(Map.of("message", "Vendor deleted successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -87,6 +91,45 @@ public class UserController {
         try {
             User savedUser = userService.updateUser(id, updatedUser);
             return ResponseEntity.ok(savedUser);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/users/{id}/password")
+    public ResponseEntity<?> updateUserPassword(@PathVariable Long id, @RequestBody Map<String, String> passwordData) {
+        try {
+            String currentPassword = passwordData.get("currentPassword");
+            String newPassword = passwordData.get("newPassword");
+            userService.changePassword(id, currentPassword, newPassword);
+            return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/vendors/{id}/password")
+    public ResponseEntity<?> updateVendorPassword(@PathVariable Long id,
+            @RequestBody Map<String, String> passwordData) {
+        try {
+            String currentPassword = passwordData.get("currentPassword");
+            String newPassword = passwordData.get("newPassword");
+            vendorService.changePassword(id, currentPassword, newPassword);
+            return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        try {
+            String password = body.get("password");
+            if (password == null || password.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Password is required for account deletion"));
+            }
+            userService.deleteUser(id, password);
+            return ResponseEntity.ok(Map.of("message", "User account deleted successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

@@ -3,7 +3,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Search, ChevronDown, Leaf, HeartHandshake, Package } from 'lucide-react';
 import './OrdersPage.css';
-import { fetchUserOrders, createMockOrder } from '../api/api';
+import { fetchUserOrders, createMockOrder, getAllProducts, submitProductReview, getUserReviews, BACKEND_URL } from '../api/api';
+import { Star, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const OrdersPage = () => {
@@ -11,6 +12,19 @@ const OrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [userId, setUserId] = useState(null);
+    const [productsCache, setProductsCache] = useState({});
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Review Modal State
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
+    const [reviewProduct, setReviewProduct] = useState(null);
+    const [rating, setRating] = useState(0);
+    const [hoveredRating, setHoveredRating] = useState(0);
+    const [reviewText, setReviewText] = useState('');
+    const [submittingReview, setSubmittingReview] = useState(false);
+    const [userReviews, setUserReviews] = useState({}); // { productId: reviewObject }
+    const [selectedImages, setSelectedImages] = useState([]);
+    const [imagePreviews, setImagePreviews] = useState([]);
 
     const tabs = ['All Orders', 'Processing', 'Shipped', 'Delivered'];
 
@@ -19,8 +33,9 @@ const OrdersPage = () => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
-            setUserId(parsedUser.userId);
-            loadOrders(parsedUser.userId);
+            setUserId(parsedUser.userId || parsedUser.id);
+            loadOrders(parsedUser.userId || parsedUser.id);
+            loadUserReviews(parsedUser.userId || parsedUser.id);
         } else {
             setLoading(false);
             // Optionally redirect to login here
@@ -32,11 +47,35 @@ const OrdersPage = () => {
         try {
             const data = await fetchUserOrders(id);
             setOrders(data);
+
+            // Fetch products to show details
+            try {
+                const productsData = await getAllProducts();
+                const pMap = {};
+                productsData.forEach(p => { pMap[p.id] = p; });
+                setProductsCache(pMap);
+            } catch (e) {
+                console.error("Failed to fetch products cache:", e);
+            }
+
         } catch (error) {
             console.error("Failed to load orders:", error);
             toast.error("Failed to load your orders");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadUserReviews = async (id) => {
+        try {
+            const reviews = await getUserReviews(id);
+            const reviewMap = {};
+            reviews.forEach(r => {
+                reviewMap[r.productId] = r;
+            });
+            setUserReviews(reviewMap);
+        } catch (error) {
+            console.error("Failed to load user reviews:", error);
         }
     };
 
@@ -69,10 +108,161 @@ const OrdersPage = () => {
         });
     };
 
+    const handleOpenReview = (product) => {
+        setReviewProduct(product);
+        setIsReviewOpen(true);
+
+        const existingReview = userReviews[product.id];
+        if (existingReview) {
+            setRating(existingReview.rating);
+            setHoveredRating(existingReview.rating);
+            setReviewText(existingReview.text || '');
+
+            // Populate existing images
+            if (existingReview.images && existingReview.images.length > 0) {
+                const previews = existingReview.images.map(img => ({
+                    url: `${BACKEND_URL}/uploads/reviews/${img}`,
+                    type: 'existing',
+                    name: img
+                }));
+                setImagePreviews(previews);
+            } else {
+                setImagePreviews([]);
+            }
+        } else {
+            setRating(0);
+            setHoveredRating(0);
+            setReviewText('');
+            setImagePreviews([]);
+        }
+
+        setSelectedImages([]);
+    };
+
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length + imagePreviews.length > 5) {
+            toast.error("You can only upload up to 5 images");
+            return;
+        }
+
+        const newSelected = [...selectedImages, ...files];
+        setSelectedImages(newSelected);
+
+        const newPreviews = files.map(file => ({
+            url: URL.createObjectURL(file),
+            type: 'new',
+            file: file,
+            name: file.name
+        }));
+        setImagePreviews([...imagePreviews, ...newPreviews]);
+    };
+
+    const removeImage = (index) => {
+        const itemToRemove = imagePreviews[index];
+
+        if (itemToRemove.type === 'new') {
+            URL.revokeObjectURL(itemToRemove.url);
+            setSelectedImages(prev => prev.filter(f => f !== itemToRemove.file));
+        }
+
+        const newPreviews = [...imagePreviews];
+        newPreviews.splice(index, 1);
+        setImagePreviews(newPreviews);
+    };
+
+    const handleSubmitReview = async (e) => {
+        e.preventDefault();
+
+        if (rating === 0) {
+            toast.error("Please select a rating from 1 to 5 stars");
+            return;
+        }
+        if (!reviewText.trim()) {
+            toast.error("Please write a review");
+            return;
+        }
+
+        setSubmittingReview(true);
+        try {
+            const user = JSON.parse(localStorage.getItem('user'));
+            const rawUserId = user?.id || userId;
+
+            if (!rawUserId) {
+                toast.error("User ID not found. Please log in again.");
+                setSubmittingReview(false);
+                return;
+            }
+
+            const existingReview = userReviews[reviewProduct.id];
+
+            const reviewJson = {
+                productId: Number(reviewProduct.id),
+                userId: Number(rawUserId),
+                reviewerName: user?.fullName || "Valued Customer",
+                rating: Number(rating),
+                text: reviewText,
+                verifiedBuyer: true,
+                // Keep existing images that weren't removed
+                images: imagePreviews.filter(p => p.type === 'existing').map(p => p.name)
+            };
+
+            // If we are editing, include the existing review ID
+            if (existingReview && existingReview.id) {
+                reviewJson.id = existingReview.id;
+            }
+
+            const formData = new FormData();
+            formData.append("review", JSON.stringify(reviewJson));
+
+            // Append only new image files
+            imagePreviews.filter(p => p.type === 'new').forEach(p => {
+                formData.append("images", p.file);
+            });
+
+            console.log("Submitting review with FormData");
+
+            await submitProductReview(formData);
+            toast.success(existingReview ? "Review updated!" : "Review submitted! Thank you.");
+
+            // Refresh reviews to update the state
+            loadUserReviews(rawUserId);
+
+            setIsReviewOpen(false);
+            setRating(0);
+            setReviewText('');
+            setSelectedImages([]);
+            setImagePreviews([]);
+        } catch (error) {
+            console.error("Failed to submit review:", error);
+            // Show more detailed error if available from the backend JSON response
+            const errorMessage = error.message || "Failed to submit review";
+            toast.error(errorMessage);
+            // Close the modal on error as requested
+            setIsReviewOpen(false);
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
+
     // Filter orders based on active tab
     const filteredOrders = orders.filter(order => {
-        if (activeTab === 'All Orders') return true;
-        return order.status.toUpperCase() === activeTab.toUpperCase();
+        // Filter by tab
+        const matchesTab = activeTab === 'All Orders' || order.status?.toUpperCase() === activeTab.toUpperCase();
+        if (!matchesTab) return false;
+
+        // Filter by search query
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase();
+
+        // Match order number
+        if (order.orderNumber?.toLowerCase().includes(query)) return true;
+
+        // Match product names
+        const productNames = Object.keys(order.productQuantities || {}).map(pid =>
+            productsCache[pid]?.name?.toLowerCase() || ""
+        );
+        return productNames.some(name => name.includes(query));
     });
 
     return (
@@ -103,7 +293,12 @@ const OrdersPage = () => {
                     <div className="orders-controls">
                         <div className="search-input-wrapper">
                             <Search size={16} color="#999" />
-                            <input type="text" placeholder="Search order ID or product..." />
+                            <input
+                                type="text"
+                                placeholder="Search order ID or product..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                         </div>
                         <div className="date-dropdown">
                             <span>Last 3 months</span>
@@ -120,8 +315,9 @@ const OrdersPage = () => {
                             // Define actions dynamically based on status
                             const actions = [];
                             actions.push({ label: 'View Details', type: 'secondary' });
-                            if (order.status === 'DELIVERED') actions.push({ label: 'Order Again', type: 'primary' });
-                            if (order.status === 'SHIPPED') actions.push({ label: 'Track Order', type: 'dark' });
+                            const statusUpper = order.status?.toUpperCase();
+                            if (statusUpper === 'DELIVERED') actions.push({ label: 'Order Again', type: 'primary' });
+                            if (statusUpper === 'SHIPPED') actions.push({ label: 'Track Order', type: 'dark' });
 
                             return (
                                 <div key={order.id} className="order-card">
@@ -141,10 +337,10 @@ const OrdersPage = () => {
                                             </div>
                                         </div>
                                         <div className="order-status-container">
-                                            <div className={`status-pill ${order.status.toLowerCase()}`}>
-                                                {order.status === 'DELIVERED' && <div className="status-dot green"></div>}
-                                                {order.status === 'SHIPPED' && <Package size={12} />}
-                                                {order.status === 'PROCESSING' && <div className="status-dot orange"></div>}
+                                            <div className={`status-pill ${order.status?.toLowerCase()}`}>
+                                                {statusUpper === 'DELIVERED' && <div className="status-dot green"></div>}
+                                                {statusUpper === 'SHIPPED' && <Package size={12} />}
+                                                {statusUpper === 'PROCESSING' && <div className="status-dot orange"></div>}
                                                 {order.status}
                                             </div>
                                         </div>
@@ -163,14 +359,59 @@ const OrdersPage = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        {order.impactNote && (
-                                            <div className="order-impact-note">
-                                                <div className="impact-note-icon">
-                                                    <HeartHandshake size={iconSize} color="#d32f2f" />
-                                                </div>
-                                                <div className="impact-note-content">
-                                                    <span className="impact-note-brand">Impact Note:</span> {order.impactNote}
-                                                </div>
+                                        {order.productQuantities && Object.keys(order.productQuantities).length > 0 && (
+                                            <div style={{ marginTop: '0.75rem' }}>
+                                                {Object.entries(order.productQuantities).map(([productId, quantity]) => {
+                                                    const product = productsCache[productId];
+                                                    return (
+                                                        <div key={productId} style={{ marginBottom: '6px', fontSize: '0.9rem', color: '#333' }}>
+                                                            <div style={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                padding: '8px 0',
+                                                                borderBottom: '1px solid #f8f9fa'
+                                                            }}>
+                                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                    <div>
+                                                                        <span style={{ fontWeight: '600', color: '#1e293b' }}>
+                                                                            {product ? product.name : `Product #${productId}`}
+                                                                        </span>
+                                                                        <span style={{ color: '#64748b', marginLeft: '6px', fontSize: '0.85rem' }}>x{quantity}</span>
+                                                                    </div>
+                                                                </div>
+                                                                {statusUpper === 'DELIVERED' && product && (
+                                                                    <button
+                                                                        onClick={() => handleOpenReview(product)}
+                                                                        style={{
+                                                                            fontSize: '0.75rem',
+                                                                            color: '#FF5722',
+                                                                            background: 'rgba(255, 87, 34, 0.08)',
+                                                                            border: '1px solid rgba(255, 87, 34, 0.2)',
+                                                                            borderRadius: '20px',
+                                                                            padding: '6px 14px',
+                                                                            cursor: 'pointer',
+                                                                            fontWeight: '600',
+                                                                            transition: 'all 0.2s ease',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: '4px'
+                                                                        }}
+                                                                        onMouseOver={(e) => {
+                                                                            e.currentTarget.style.background = 'rgba(255, 87, 34, 0.15)';
+                                                                        }}
+                                                                        onMouseOut={(e) => {
+                                                                            e.currentTarget.style.background = 'rgba(255, 87, 34, 0.08)';
+                                                                        }}
+                                                                    >
+                                                                        <Star size={12} fill="#FF5722" color="#FF5722" />
+                                                                        {userReviews[product.id] ? 'Edit Review' : 'Write Review'}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
@@ -194,26 +435,119 @@ const OrdersPage = () => {
                             <Package size={48} color="#ccc" style={{ marginBottom: '1rem' }} />
                             <h3>No Orders Found</h3>
                             <p style={{ color: '#666', marginBottom: '2rem' }}>You haven't placed any orders yet, or they don't match this filter.</p>
-                            {activeTab === 'All Orders' && userId && (
+                            {/* {activeTab === 'All Orders' && userId && (
                                 <button
                                     className="btn-order-action dark"
                                     onClick={handleGenerateMocks}
                                 >
                                     Generate Mock Orders
                                 </button>
-                            )}
+                            )} */}
                         </div>
                     )}
                 </div>
 
-                {!loading && filteredOrders.length > 0 && (
-                    <div className="load-more-container">
-                        <button className="btn-load-more">Load older orders <ChevronDown size={14} /></button>
-                    </div>
-                )}
+
             </div>
 
             <Footer />
+
+            {/* Review Modal */}
+            {isReviewOpen && (
+                <div className="review-modal-overlay">
+                    <div className="review-modal-content">
+                        <div className="review-modal-header">
+                            <h3>Review Product</h3>
+                            <button onClick={() => setIsReviewOpen(false)} className="close-modal-btn">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="review-modal-body">
+                            <div className="review-product-info">
+                                <span className="review-product-name">{reviewProduct?.name}</span>
+                            </div>
+
+                            <form onSubmit={handleSubmitReview}>
+                                <div className="rating-input-group">
+                                    <label>Your Rating</label>
+                                    <div className="stars-container" onMouseLeave={() => setHoveredRating(0)}>
+                                        {[1, 2, 3, 4, 5].map((star) => {
+                                            const isFilled = star <= (hoveredRating || rating);
+                                            return (
+                                                <Star
+                                                    key={star}
+                                                    size={32}
+                                                    className={`star-icon ${isFilled ? 'filled' : ''}`}
+                                                    onClick={() => setRating(star)}
+                                                    onMouseEnter={() => setHoveredRating(star)}
+                                                    fill={isFilled ? "#FF5722" : "none"}
+                                                    color={isFilled ? "#FF5722" : "#E0E0E0"}
+                                                    strokeWidth={isFilled ? 1 : 1.5}
+                                                    style={{
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease',
+                                                        transform: hoveredRating === star ? 'scale(1.15)' : 'scale(1)'
+                                                    }}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="review-input-group">
+                                    <label>Your Review</label>
+                                    <textarea
+                                        value={reviewText}
+                                        onChange={(e) => setReviewText(e.target.value)}
+                                        placeholder="What did you like or dislike?"
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                <div className="review-input-group">
+                                    <label>Add Photos (Optional)</label>
+                                    <div className="review-image-upload-container">
+                                        <div className="image-previews">
+                                            {imagePreviews.map((preview, index) => (
+                                                <div key={index} className="image-preview-item">
+                                                    <img src={preview.url} alt={`Preview ${index}`} />
+                                                    <button type="button" onClick={() => removeImage(index)} className="remove-image-btn">
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            {imagePreviews.length < 5 && (
+                                                <label className="add-image-label">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        onChange={handleImageChange}
+                                                        style={{ display: 'none' }}
+                                                    />
+                                                    <div className="add-image-placeholder">
+                                                        <span>+</span>
+                                                        <span style={{ fontSize: '10px' }}>Add Photo</span>
+                                                    </div>
+                                                </label>
+                                            )}
+                                        </div>
+                                        <p className="upload-hint">You can add up to 5 photos.</p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="submit-review-btn"
+                                    disabled={submittingReview}
+                                >
+                                    {submittingReview ? "Submitting..." : "Submit Review"}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

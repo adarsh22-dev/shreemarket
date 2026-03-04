@@ -166,21 +166,30 @@
 
 .form-control {
     padding: 0.75rem 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid #999;
+    /* Darker border for visibility */
     border-radius: 8px;
     font-size: 0.95rem;
-    color: #333;
+    color: #111;
+    /* Darker font color */
+    background-color: #fff;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.2s ease;
     font-family: inherit;
+    width: 100%;
 }
 
 .form-control:focus {
     border-color: #E03E1A;
+    box-shadow: 0 0 0 3px rgba(224, 62, 26, 0.15);
+    /* Focus ring */
 }
 
 .form-control::placeholder {
-    color: #aaa;
+    color: #777;
+    /* Darker, clearly visible placeholder */
+    opacity: 1;
+    /* Override default browser opacity for placeholders */
 }
 
 textarea.form-control {

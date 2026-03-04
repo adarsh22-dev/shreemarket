@@ -24,6 +24,39 @@
     font-size: 0.95rem;
 }
 
+.header-actions-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.btn-bulk-upload {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: white;
+    border: 1px solid #e5e5e5;
+    padding: 0.65rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-bulk-upload:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-bulk-upload:active {
+    transform: translateY(0);
+}
+
 /* Filter Bar */
 .filter-bar {
     display: flex;
@@ -159,6 +192,16 @@
 
 .action-text-btn:hover {
     color: #E03E1A;
+}
+
+.action-text-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: #888;
+}
+
+.action-text-btn.disabled:hover {
+    color: #888;
 }
 
 .showing-text {
@@ -385,4 +428,307 @@
 .page-dots {
     color: #888;
     font-weight: 600;
+}
+
+/* Delete Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.delete-modal-box {
+    background-color: white;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 16px;
+    padding: 2.5rem;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideUp 0.3s ease-out;
+}
+
+.delete-modal-icon {
+    width: 64px;
+    height: 64px;
+    background-color: #fef2f2;
+    color: #ef4444;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.delete-modal-box h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 0.75rem;
+}
+
+.delete-modal-box p {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+.delete-modal-box strong {
+    color: #111;
+}
+
+.delete-modal-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-cancel-modal {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid #e5e5e5;
+    background-color: white;
+    color: #666;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel-modal:hover {
+    background-color: #f9f9f9;
+    color: #111;
+}
+
+.btn-confirm-delete {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: none;
+    background-color: #ef4444;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-confirm-delete:hover {
+    background-color: #dc2626;
+}
+
+.btn-confirm-delete:disabled,
+.btn-cancel-modal:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.spinning-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Upload Modal Styles */
+.upload-modal-box {
+    background-color: white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    animation: slideUp 0.3s ease-out;
+}
+
+.upload-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.upload-modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0;
+}
+
+.close-modal-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.upload-content {
+    padding: 2rem;
+}
+
+.upload-hint {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+}
+
+.sample-download-area {
+    margin-bottom: 2rem;
+}
+
+.btn-download-sample {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    color: #475569;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-download-sample:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.drop-zone {
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    background-color: #fcfcfc;
+    transition: all 0.2s;
+}
+
+.drop-zone:hover {
+    border-color: #E03E1A;
+    background-color: #fffaf9;
+}
+
+.drop-zone.has-file {
+    border-color: #E03E1A;
+    background-color: #fffafa;
+    border-style: solid;
+}
+
+.drop-zone-label {
+    cursor: pointer;
+    display: block;
+}
+
+.drop-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: #888;
+    font-weight: 500;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.file-name {
+    font-weight: 700;
+    color: #111;
+    font-size: 1rem;
+}
+
+.file-size {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.upload-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-cancel-upload {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid #e5e5e5;
+    background-color: white;
+    color: #ef4444;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-start-upload {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: none;
+    background-color: #E03E1A;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-start-upload:hover {
+    background-color: #c93414;
+}
+
+.btn-start-upload:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

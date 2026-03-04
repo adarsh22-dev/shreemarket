@@ -161,6 +161,33 @@ public class ProductController {
         }
     }
 
+    @DeleteMapping("/bulk")
+    public ResponseEntity<?> deleteProductsBulk(@RequestBody List<Long> ids) {
+        try {
+            productService.deleteProductsBulk(ids);
+            return ResponseEntity.ok(Map.of("message", "Selected products deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Server Error", "message", "Failed to delete products in bulk."));
+        }
+    }
+
+    @PostMapping("/bulk-upload")
+    public ResponseEntity<?> uploadProductsBulk(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("vendorId") Long vendorId) {
+        try {
+            List<Product> uploadedProducts = productService.uploadProductsBulk(file, vendorId);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Successfully uploaded " + uploadedProducts.size() + " products",
+                    "count", uploadedProducts.size()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Upload Error", "message",
+                            "Failed to process bulk upload: " + e.getMessage()));
+        }
+    }
+
     @PutMapping(value = "/{id}", consumes = { "multipart/form-data" })
     public ResponseEntity<?> updateProduct(
             @PathVariable Long id,

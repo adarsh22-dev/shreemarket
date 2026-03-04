@@ -87,10 +87,26 @@ public class VendorService {
         return vendorRepository.save(vendor);
     }
 
-    public void deleteVendor(Long id) {
-        if (!vendorRepository.existsById(id)) {
-            throw new RuntimeException("Vendor not found with id: " + id);
+    public void deleteVendor(Long id, String password) {
+        Vendor vendor = vendorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vendor not found with id: " + id));
+
+        if (!passwordEncoder.matches(password, vendor.getPassword())) {
+            throw new RuntimeException("Invalid password. Deletion denied.");
         }
+
         vendorRepository.deleteById(id);
+    }
+
+    public void changePassword(Long vendorId, String currentPassword, String newPassword) {
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new RuntimeException("Vendor not found"));
+
+        if (!passwordEncoder.matches(currentPassword, vendor.getPassword())) {
+            throw new RuntimeException("Invalid current password");
+        }
+
+        vendor.setPassword(passwordEncoder.encode(newPassword));
+        vendorRepository.save(vendor);
     }
 }

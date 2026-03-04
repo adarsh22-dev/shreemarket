@@ -11,8 +11,11 @@ import {
     Tag,
     BarChart2,
     Truck,
-    Bell
+    Bell,
+    Users,
+    BookOpen,
 } from 'lucide-react';
+import smarketLogo from '../../assets/smarketlogo.svg';
 import { logoutUser } from '../../api/api';
 import '../../pages/vendor/VendorDashboard.css'; // Inheriting sidebar styling
 
@@ -37,13 +40,8 @@ const VendorLayout = ({ children }) => {
             {/* Shared Sidebar */}
             <aside className="vendor-sidebar">
                 <div className="sidebar-logo">
-                    <div className="logo-icon">
-                        <Home size={20} />
-                    </div>
-                    <div>
-                        <div>EmpowerHome</div>
-                        <div style={{ fontSize: '0.7rem', color: '#888', fontWeight: '500', marginTop: '-2px' }}>VENDOR PORTAL</div>
-                    </div>
+                    <img src={smarketLogo} alt="S-Market Logo" className="logo-img" style={{ height: '45px', width: 'auto' }} />
+
                 </div>
 
                 <nav className="sidebar-nav">
@@ -78,6 +76,14 @@ const VendorLayout = ({ children }) => {
                     <Link to="/vendor/payouts" className={`nav-item ${currentPath === '/vendor/payouts' ? 'active' : ''}`}>
                         <CreditCard size={20} />
                         Payouts
+                    </Link>
+                    <Link to="/vendor/staffmanagement" className={`nav-item ${currentPath === '/vendor/staffmanagement' ? 'active' : ''}`}>
+                        <Users size={20} />
+                        Staff Manager
+                    </Link>
+                    <Link to="/vendor/guide" className={`nav-item ${currentPath === '/vendor/guide' ? 'active' : ''}`}>
+                        <BookOpen size={20} />
+                        Vendor Guide
                     </Link>
                     <Link to="/vendor/settings" className={`nav-item ${currentPath === '/vendor/settings' ? 'active' : ''}`}>
                         <Settings size={20} />

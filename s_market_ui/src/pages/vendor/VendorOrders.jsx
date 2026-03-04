@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorOrders.css';
-import { fetchVendorOrders, updateOrderStatus } from '../../api/api';
+import { fetchVendorOrders, updateOrderStatus, getUserDetails } from '../../api/api';
 
 const VendorOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -27,7 +27,32 @@ const VendorOrders = () => {
                 const userObj = JSON.parse(userStr);
                 if (userObj.userId) {
                     const data = await fetchVendorOrders(userObj.userId);
-                    setOrders(data);
+
+                    // Fetch missing user details for orders mapping
+                    const uniqueUserIds = [...new Set(data
+                        .filter(order => !order.customerName && order.userId)
+                        .map(order => order.userId))];
+
+                    const namesMap = {};
+                    // Use Promise.all to fetch missing names concurrently
+                    await Promise.all(
+                        uniqueUserIds.map(async (id) => {
+                            try {
+                                const userDetails = await getUserDetails(id);
+                                namesMap[id] = userDetails.fullName || 'Unknown User';
+                            } catch (err) {
+                                namesMap[id] = 'Unknown User';
+                            }
+                        })
+                    );
+
+                    // Enrich orders with displayCustomerName
+                    const enrichedOrders = data.map(order => ({
+                        ...order,
+                        displayCustomerName: order.customerName || namesMap[order.userId] || 'N/A'
+                    }));
+
+                    setOrders(enrichedOrders);
                 }
             }
         } catch (error) {
@@ -68,7 +93,7 @@ const VendorOrders = () => {
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             const orderIdStr = order.orderNumber ? order.orderNumber.toLowerCase() : `#${order.id}`;
-            const customerStr = (order.customerName || '').toLowerCase();
+            const customerStr = (order.displayCustomerName || '').toLowerCase();
             if (!orderIdStr.includes(query) && !customerStr.includes(query)) {
                 return false;
             }
@@ -162,7 +187,7 @@ const VendorOrders = () => {
                                     {filteredOrders.map((order, index) => (
                                         <tr key={index}>
                                             <td className="order-id">{order.orderNumber || `#${order.id}`}</td>
-                                            <td className="customer-name">{order.customerName || 'N/A'}</td>
+                                            <td className="customer-name">{order.displayCustomerName}</td>
                                             <td className="date-cell">
                                                 <div>{formatDate(order.datePlaced)}</div>
                                             </td>

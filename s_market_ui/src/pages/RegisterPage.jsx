@@ -15,10 +15,10 @@ import toast from 'react-hot-toast';
 import { registerUser, registerVendor, uploadStoreLogo } from '../api/api';
 
 const VENDOR_STEP_IMAGES = [
-    '/assets/vendor_step_1.png',
-    '/assets/vendor_step_2.png',
-    '/assets/vendor_step_3.png',
-    '/assets/vendor_step_4.png'
+    'https://images.unsplash.com/photo-1491975474562-1f4e30bc9468?q=80&w=1887&auto=format&fit=crop', // Step 1: Professional details
+    'https://images.unsplash.com/photo-1534452283282-74ad09369911?q=80&w=2070&auto=format&fit=crop', // Step 2: Store front
+    'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop', // Step 3: Payment/Financial
+    'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop'  // Step 4: Agreements/Legal
 ];
 
 const VENDOR_STEPS_CONTENT = [
@@ -39,6 +39,8 @@ const VENDOR_STEPS_CONTENT = [
         description: "Join thousands of successful vendors reaching millions of customers worldwide."
     }
 ];
+
+const FORM_STEPS = ["Account", "Store", "Payment", "Policies"];
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -224,7 +226,7 @@ const RegisterPage = () => {
             newErrors.phone = "Phone number must be 10 digits";
         }
         if (formData.password.length < 8) newErrors.password = "Min 8 characters";
-        if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords match";
+        if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -272,7 +274,9 @@ const RegisterPage = () => {
 
         if (isValid) {
             setCurrentStep(prev => prev + 1);
-            window.scrollTo(0, 0);
+            // Target the scrollable container instead of window
+            const contentArea = document.querySelector('.register-content');
+            if (contentArea) contentArea.scrollTo(0, 0);
         } else {
             toast.error("Please fill in all required fields correctly.");
         }
@@ -280,7 +284,8 @@ const RegisterPage = () => {
 
     const handleBackStep = () => {
         setCurrentStep(prev => prev - 1);
-        window.scrollTo(0, 0);
+        const contentArea = document.querySelector('.register-content');
+        if (contentArea) contentArea.scrollTo(0, 0);
     };
 
     const handleSubmit = async (e) => {
@@ -348,11 +353,17 @@ const RegisterPage = () => {
         return (
             <div className="step-indicator-rail">
                 {[1, 2, 3, 4].map(step => (
-                    <div key={step} className={`step-dot-container ${currentStep >= step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}>
+                    <div key={step}
+                        className={`step-dot-container ${currentStep >= step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}
+                        onClick={() => {
+                            if (step < currentStep) setCurrentStep(step);
+                        }}
+                        style={{ cursor: step < currentStep ? 'pointer' : 'default' }}
+                    >
                         <div className="step-dot">
                             {currentStep > step ? <CheckCircle size={16} /> : step}
                         </div>
-                        {step < 4 && <div className="step-line"></div>}
+                        <span className="step-label">{FORM_STEPS[step - 1]}</span>
                     </div>
                 ))}
             </div>
@@ -419,7 +430,8 @@ const RegisterPage = () => {
                     {currentStep === 1 && (
                         <div className="form-step-content">
                             <div className="step-header">
-                                <h2>Step 1: Vendor Details</h2>
+                                <h2>Step 1: Account Details</h2>
+                                <p>Create your vendor account to start selling on SreeMarket.</p>
                             </div>
                             <div className="form-grid">
                                 <div className="form-row">
@@ -440,7 +452,7 @@ const RegisterPage = () => {
                     {currentStep === 2 && (
                         <div className="form-step-content">
                             <div className="step-header">
-                                <h2>Store Details</h2>
+                                <h2>Step 2: Store Details</h2>
                                 <p>Enter your business information to set up your profile. You can add multiple branches if applicable.</p>
                             </div>
 
@@ -462,6 +474,11 @@ const RegisterPage = () => {
                                         </div>
 
                                         <div className="form-section-label-sub"><Info size={14} /> GENERAL INFORMATION</div>
+                                        {formData.stores.length > 1 && (
+                                            <div className="form-row">
+                                                <div className="branch-id-badge">Branch {index + 1}</div>
+                                            </div>
+                                        )}
                                         <div className="form-grid">
                                             <div className="form-row">
                                                 <Input id="storeName" label="STORE NAME" placeholder="My Awesome Store" value={store.storeName} onChange={(e) => handleStoreChange(index, e)} error={errors[`store_${index}_storeName`]} />
@@ -545,7 +562,7 @@ const RegisterPage = () => {
                         <div className="form-step-content">
                             <div className="step-header">
                                 <h2>Step 3: Payment Details</h2>
-                                <p>How would you like to receive your payouts? Securely connect your favorite payment method.</p>
+                                <p>Set up your preferred payment method to receive earnings from SreeMarket.</p>
                             </div>
                             <div className="form-grid">
                                 <div className="select-container">

@@ -144,11 +144,27 @@
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     border: 1px solid #f0f0f0;
-    transition: box-shadow 0.2s;
+    transition: all 0.2s ease;
 }
 
 .notification-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border-color: #ddd;
+}
+
+.notification-card.is-unread {
+    background-color: #fff9f8;
+    border-color: #ffe0d8;
+}
+
+.no-notifications {
+    padding: 3rem;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    background: white;
+    border-radius: 12px;
+    border: 1px dashed #ddd;
 }
 
 .nc-left {

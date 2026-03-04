@@ -139,7 +139,7 @@ const Navbar = () => {
                                             <div className="suggestion-category">{product.category}</div>
                                         </div>
                                         <div className="suggestion-price">
-                                            ${product.discountPrice || product.regularPrice}
+                                            ₹{product.discountPrice || product.regularPrice}
                                         </div>
                                     </div>
                                 ))}

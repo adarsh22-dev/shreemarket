@@ -5,6 +5,7 @@ import com.sreemarket.backend.model.Vendor;
 import com.sreemarket.backend.repository.VendorRepository;
 import com.sreemarket.backend.service.UserService;
 import com.sreemarket.backend.service.VendorService;
+import com.sreemarket.backend.service.UserDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,9 @@ public class AuthController {
 
     @Autowired
     private VendorRepository vendorRepository;
+
+    @Autowired
+    private UserDeviceService userDeviceService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
@@ -98,6 +102,8 @@ public class AuthController {
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
+                userDeviceService.saveDevice(vendor.getId(), vendor.getRoleId(), request);
+
                 return ResponseEntity
                         .ok(Map.of("message", "Login successful", "userId", vendor.getId(), "fullName",
                                 vendor.getFullName(),
@@ -129,6 +135,8 @@ public class AuthController {
                         authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+                userDeviceService.saveDevice(user.getId(), user.getRoleId(), request);
 
                 return ResponseEntity
                         .ok(Map.of("message", "Login successful", "userId", user.getId(), "fullName",
@@ -180,6 +188,8 @@ public class AuthController {
                     authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
             request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+            userDeviceService.saveDevice(user.getId(), user.getRoleId(), request);
 
             return ResponseEntity
                     .ok(Map.of("message", "Google Login successful", "userId", user.getId(), "fullName",

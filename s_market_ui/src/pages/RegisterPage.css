@@ -161,6 +161,8 @@
     /* Allow scrolling */
     height: 100%;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #E5E7EB transparent;
 }
 
 .vendor-mode .register-content {
@@ -229,6 +231,34 @@
 .step-dot-container.active+.step-dot-container .step-line,
 .step-dot-container.completed .step-line {
     background-color: var(--primary-orange);
+}
+
+.step-label {
+    position: absolute;
+    right: 50px;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #9CA3AF;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.step-dot-container.active .step-label {
+    opacity: 1;
+    color: var(--primary-orange);
+    transform: translateX(-5px);
+}
+
+.step-dot-container.completed .step-label {
+    opacity: 0.7;
+    color: #10B981;
+}
+
+.step-dot-container:hover .step-label {
+    opacity: 1;
 }
 
 /* Vendor Form Styles */

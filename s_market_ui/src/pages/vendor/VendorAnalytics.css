@@ -129,113 +129,133 @@
     padding: 24px 0;
 }
 
-/* Metric Cards Specifics */
-.metric-header {
+/* Metric Cards Specifics - Scoped to Analytics Page */
+.analytics-container .metric-card {
+    padding: 0 !important;
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
 }
 
-.icon-wrapper {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+.analytics-container .metric-content-horizontal {
+    display: flex;
+    align-items: center;
+    padding: 24px;
+    gap: 16px;
+    position: relative;
+}
+
+.analytics-container .icon-box-modern {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
-.bg-red-light {
-    background-color: #fde8e5;
-}
-
-.text-red {
-    color: #dc4c38;
-}
-
-.bg-blue-light {
-    background-color: #e5f0fa;
-}
-
-.text-blue {
-    color: #3498db;
-}
-
-.bg-orange-light {
-    background-color: #fef0e3;
-}
-
-.text-orange {
-    color: #f39c12;
-}
-
-.bg-purple-light {
-    background-color: #f3eafa;
-}
-
-.text-purple {
-    color: #9b59b6;
-}
-
-.badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 700;
-}
-
-.badge-green {
-    background-color: #e6f7ed;
-    color: #2ecc71;
-}
-
-.badge-red {
-    background-color: #fde8e5;
-    color: #e74c3c;
-}
-
-.metric-body {
+.analytics-container .metric-info-modern {
     flex-grow: 1;
 }
 
-.metric-label {
+.analytics-container .metric-label-modern {
     font-size: 0.75rem;
-    font-weight: 600;
-    color: #888;
-    margin: 0 0 8px 0;
-    letter-spacing: 0.5px;
+    font-weight: 800;
+    color: #94a3b8;
+    margin: 0 0 4px 0;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
 }
 
-.metric-value {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #1a1a1a;
+.analytics-container .metric-value-modern {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
 }
 
-.metric-footer {
+.analytics-container .metric-trend-badge {
     position: absolute;
-    bottom: 0;
-    left: 20px;
-    width: 60px;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
+    top: 16px;
+    right: 16px;
 }
 
-.border-red {
-    background-color: #dc4c38;
+.analytics-container .trend-pill {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
 }
 
-.border-blue {
-    background-color: #3498db;
+.analytics-container .trend-up {
+    background-color: #f0fdf4;
+    color: #10b981;
+    border: 1px solid #dcfce7;
 }
 
-.border-orange {
-    background-color: #f39c12;
+.analytics-container .trend-down {
+    background-color: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fee2e2;
 }
 
-.border-purple {
-    background-color: #9b59b6;
+.analytics-container .metric-under-bar {
+    width: 90%;
+    height: 6px;
+    margin: 0 auto;
+    border-radius: 6px 6px 0 0;
+}
+
+.bg-red {
+    background-color: #ef4444;
+}
+
+.bg-blue {
+    background-color: #3b82f6;
+}
+
+.bg-orange {
+    background-color: #f59e0b;
+}
+
+.bg-purple {
+    background-color: #8b5cf6;
+}
+
+.bg-red-light {
+    background-color: #fff1f0;
+}
+
+.bg-blue-light {
+    background-color: #eff6ff;
+}
+
+.bg-orange-light {
+    background-color: #fffbeb;
+}
+
+.bg-purple-light {
+    background-color: #f5f3ff;
+}
+
+.text-red {
+    color: #dc2626;
+}
+
+.text-blue {
+    color: #2563eb;
+}
+
+.text-orange {
+    color: #d97706;
+}
+
+.text-purple {
+    color: #7c3aed;
 }
 
 /* General Chart Card Titles */
@@ -438,20 +458,6 @@
     margin-top: 24px;
 }
 
-.demographics-bg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 200px;
-    height: 200px;
-    background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" fill="%23f0f0f0"/><path d="M20,50 Q40,30 60,50 T90,60" stroke="%23e0e0e0" fill="transparent" stroke-width="4"/><path d="M30,70 Q50,90 80,40" stroke="%23e0e0e0" fill="transparent" stroke-width="4"/></svg>');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    opacity: 0.8;
-    z-index: 0;
-}
 
 .progress-bars {
     width: 100%;
