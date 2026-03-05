@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Search, ChevronDown, Leaf, HeartHandshake, Package } from 'lucide-react';
 import './OrdersPage.css';
-import { fetchUserOrders, createMockOrder, getAllProducts, submitProductReview, getUserReviews, BACKEND_URL } from '../api/api';
+import { fetchUserOrders, createMockOrder, getAllProducts, submitProductReview, getUserReviews, BACKEND_URL, submitReturnAPI } from '../api/api';
 import { Star, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -25,6 +25,17 @@ const OrdersPage = () => {
     const [userReviews, setUserReviews] = useState({}); // { productId: reviewObject }
     const [selectedImages, setSelectedImages] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
+
+    // Return Modal State
+    const [isReturnOpen, setIsReturnOpen] = useState(false);
+    const [returnOrder, setReturnOrder] = useState(null);
+    const [returnReason, setReturnReason] = useState('');
+    const [returnImages, setReturnImages] = useState([]);
+    const [returnImagePreviews, setReturnImagePreviews] = useState([]);
+    const [submittingReturn, setSubmittingReturn] = useState(false);
+
+    // Store requested returns locally
+    const [returnedOrderIds, setReturnedOrderIds] = useState(new Set());
 
     const tabs = ['All Orders', 'Processing', 'Shipped', 'Delivered'];
 
@@ -245,6 +256,70 @@ const OrdersPage = () => {
         }
     };
 
+    const handleOpenReturn = (order) => {
+        setReturnOrder(order);
+        setIsReturnOpen(true);
+        setReturnReason('');
+        setReturnImages([]);
+        setReturnImagePreviews([]);
+    };
+
+    const handleReturnImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length + returnImagePreviews.length > 5) {
+            toast.error("You can only upload up to 5 images");
+            return;
+        }
+
+        const newSelected = [...returnImages, ...files];
+        setReturnImages(newSelected);
+
+        const newPreviews = files.map(file => ({
+            url: URL.createObjectURL(file),
+            file: file,
+            name: file.name
+        }));
+        setReturnImagePreviews([...returnImagePreviews, ...newPreviews]);
+    };
+
+    const removeReturnImage = (index) => {
+        const itemToRemove = returnImagePreviews[index];
+        URL.revokeObjectURL(itemToRemove.url);
+
+        setReturnImages(prev => prev.filter(f => f !== itemToRemove.file));
+
+        const newPreviews = [...returnImagePreviews];
+        newPreviews.splice(index, 1);
+        setReturnImagePreviews(newPreviews);
+    };
+
+    const handleSubmitReturn = async (e) => {
+        e.preventDefault();
+        if (!returnReason.trim()) {
+            toast.error("Please provide a reason for return");
+            return;
+        }
+
+        setSubmittingReturn(true);
+        try {
+            // Ideally, an API call would be made here to submit the return request
+            const formData = new FormData();
+            formData.append('reason', returnReason);
+            returnImages.forEach(img => formData.append('images', img));
+            await submitReturnAPI(returnOrder.id, formData);
+
+            // Simulating API call for now
+            // await new Promise(resolve => setTimeout(resolve, 1000));
+            setReturnedOrderIds(prev => new Set(prev).add(returnOrder.id));
+            toast.success("Return request submitted successfully");
+            setIsReturnOpen(false);
+        } catch (error) {
+            toast.error("Failed to submit return request");
+        } finally {
+            setSubmittingReturn(false);
+        }
+    };
+
     // Filter orders based on active tab
     const filteredOrders = orders.filter(order => {
         // Filter by tab
@@ -316,7 +391,14 @@ const OrdersPage = () => {
                             const actions = [];
                             actions.push({ label: 'View Details', type: 'secondary' });
                             const statusUpper = order.status?.toUpperCase();
-                            if (statusUpper === 'DELIVERED') actions.push({ label: 'Order Again', type: 'primary' });
+                            if (statusUpper === 'DELIVERED') {
+                                actions.push({ label: 'Order Again', type: 'primary' });
+                                if (returnedOrderIds.has(order.id)) {
+                                    actions.push({ label: 'Return Requested', type: 'disabled', disabled: true });
+                                } else {
+                                    actions.push({ label: 'Return', type: 'dark', onClick: () => handleOpenReturn(order) });
+                                }
+                            }
                             if (statusUpper === 'SHIPPED') actions.push({ label: 'Track Order', type: 'dark' });
 
                             return (
@@ -421,6 +503,8 @@ const OrdersPage = () => {
                                             <button
                                                 key={index}
                                                 className={`btn-order-action ${action.type}`}
+                                                onClick={action.onClick}
+                                                disabled={action.disabled}
                                             >
                                                 {action.label === 'Order Again' && <span className="action-icon">↺</span>}
                                                 {action.label}
@@ -542,6 +626,77 @@ const OrdersPage = () => {
                                     disabled={submittingReview}
                                 >
                                     {submittingReview ? "Submitting..." : "Submit Review"}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Return Modal */}
+            {isReturnOpen && (
+                <div className="review-modal-overlay">
+                    <div className="review-modal-content">
+                        <div className="review-modal-header">
+                            <h3>Return Order</h3>
+                            <button onClick={() => setIsReturnOpen(false)} className="close-modal-btn">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="review-modal-body">
+                            <div className="review-product-info">
+                                <span className="review-product-name">Order {returnOrder?.orderNumber}</span>
+                            </div>
+
+                            <form onSubmit={handleSubmitReturn}>
+                                <div className="review-input-group">
+                                    <label>Reason for Return</label>
+                                    <textarea
+                                        value={returnReason}
+                                        onChange={(e) => setReturnReason(e.target.value)}
+                                        placeholder="Please explain why you are returning this item..."
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                <div className="review-input-group">
+                                    <label>Add Photos (Optional)</label>
+                                    <div className="review-image-upload-container">
+                                        <div className="image-previews">
+                                            {returnImagePreviews.map((preview, index) => (
+                                                <div key={index} className="image-preview-item">
+                                                    <img src={preview.url} alt={`Preview ${index}`} />
+                                                    <button type="button" onClick={() => removeReturnImage(index)} className="remove-image-btn">
+                                                        <X size={12} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            {returnImagePreviews.length < 5 && (
+                                                <label className="add-image-label">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        multiple
+                                                        onChange={handleReturnImageChange}
+                                                        style={{ display: 'none' }}
+                                                    />
+                                                    <div className="add-image-placeholder">
+                                                        <span>+</span>
+                                                        <span style={{ fontSize: '10px' }}>Add Photo</span>
+                                                    </div>
+                                                </label>
+                                            )}
+                                        </div>
+                                        <p className="upload-hint">You can add up to 5 photos.</p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="submit-review-btn"
+                                    disabled={submittingReturn}
+                                >
+                                    {submittingReturn ? "Submitting..." : "Submit Return Request"}
                                 </button>
                             </form>
                         </div>

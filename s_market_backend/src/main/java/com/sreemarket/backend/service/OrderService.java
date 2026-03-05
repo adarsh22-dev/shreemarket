@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 import com.sreemarket.backend.repository.ProductRepository;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
 
 @Service
 public class OrderService {
@@ -62,6 +65,38 @@ public class OrderService {
                 Order order = orderRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
                 order.setStatus(status);
+                return orderRepository.save(order);
+        }
+
+        public Order submitReturnRequest(Long orderId, String reason, List<MultipartFile> images) throws IOException {
+                Order order = orderRepository.findById(orderId)
+                                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+
+                order.setStatus("RETURN REQUESTED");
+                order.setReturnReason(reason);
+
+                if (images != null && !images.isEmpty()) {
+                        String uploadDir = "uploads/returns/";
+                        File uploadDirectory = new File(uploadDir);
+                        if (!uploadDirectory.exists()) {
+                                uploadDirectory.mkdirs();
+                        }
+
+                        if (order.getReturnImages() == null) {
+                                order.setReturnImages(new java.util.ArrayList<>());
+                        }
+
+                        for (MultipartFile file : images) {
+                                if (!file.isEmpty()) {
+                                        String fileName = UUID.randomUUID().toString() + "_"
+                                                        + file.getOriginalFilename();
+                                        java.nio.file.Path filePath = java.nio.file.Paths.get(uploadDir, fileName);
+                                        java.nio.file.Files.copy(file.getInputStream(), filePath);
+                                        order.getReturnImages().add(fileName);
+                                }
+                        }
+                }
+
                 return orderRepository.save(order);
         }
 

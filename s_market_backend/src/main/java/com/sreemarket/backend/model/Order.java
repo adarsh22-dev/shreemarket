@@ -38,6 +38,14 @@ public class Order {
     @Column(length = 1000)
     private String impactNote;
 
+    @Column(length = 1000)
+    private String returnReason;
+
+    @ElementCollection
+    @CollectionTable(name = "order_return_images", joinColumns = @JoinColumn(name = "order_id"))
+    @Column(name = "image_url")
+    private List<String> returnImages;
+
     @ElementCollection
     @CollectionTable(name = "order_products", joinColumns = @JoinColumn(name = "order_id"))
     @MapKeyColumn(name = "product_id")
@@ -129,6 +137,22 @@ public class Order {
 
     public void setImpactNote(String impactNote) {
         this.impactNote = impactNote;
+    }
+
+    public String getReturnReason() {
+        return returnReason;
+    }
+
+    public void setReturnReason(String returnReason) {
+        this.returnReason = returnReason;
+    }
+
+    public List<String> getReturnImages() {
+        return returnImages;
+    }
+
+    public void setReturnImages(List<String> returnImages) {
+        this.returnImages = returnImages;
     }
 
     public Long getVendorId() {

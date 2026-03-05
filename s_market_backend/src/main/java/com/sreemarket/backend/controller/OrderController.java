@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -56,6 +58,21 @@ public class OrderController {
         try {
             orderService.generateMockOrders(userId);
             return ResponseEntity.ok(Map.of("message", "Mock orders generated successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping(value = "/{orderId}/return", consumes = { "multipart/form-data" })
+    public ResponseEntity<?> submitReturnRequest(
+            @PathVariable Long orderId,
+            @RequestParam("reason") String reason,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+        try {
+            Order updatedOrder = orderService.submitReturnRequest(orderId, reason, images);
+            return ResponseEntity.ok(updatedOrder);
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to upload images"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

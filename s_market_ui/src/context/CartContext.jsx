@@ -1,8 +1,37 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { fetchUserCart, addToUserCart, updateUserCartItem, removeUserCartItem, clearUserCart, mergeUserCart } from '../api/api';
 
 const CartContext = createContext();
 
 export const useCart = () => useContext(CartContext);
+
+// A simple utility to map backend CartItem structure to frontend's expected item format
+const mapBackendItems = (backendItems) => {
+    return backendItems.map(bItem => {
+        const p = bItem.product || {};
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8082/api";
+        const backendUrl = apiBaseUrl.replace(/\/api$/, '');
+        let image = "https://via.placeholder.com/400x400";
+        if (p.media && p.media.length > 0) {
+            const primaryMedia = p.media.find(m => m.isPrimary) || p.media[0];
+            image = `${backendUrl}/uploads/products/${primaryMedia.fileName}`;
+        }
+
+        let parsedVariant = bItem.variant;
+        try { if (typeof bItem.variant === 'string' && bItem.variant.startsWith('{')) parsedVariant = JSON.parse(bItem.variant); } catch (e) { }
+
+        return {
+            ...p,
+            cartItemId: bItem.id,
+            id: bItem.productId || p.id,
+            name: p.name || 'Unknown Product',
+            price: p.discountPrice || p.regularPrice || 0,
+            image: image,
+            quantity: bItem.quantity,
+            variant: parsedVariant
+        };
+    });
+};
 
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
@@ -10,38 +39,94 @@ export const CartProvider = ({ children }) => {
     const [recentlyViewed, setRecentlyViewed] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
-    // Load cart and saved items from local storage on init
+    // Auth state for cart
+    const [userId, setUserId] = useState(null);
+
+    // Watch for login changes
     useEffect(() => {
-        const savedCart = localStorage.getItem('s_market_cart');
+        const checkUser = () => {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const userObj = JSON.parse(userStr);
+                    setUserId(userObj.userId || userObj.id || null);
+                } catch (e) { setUserId(null); }
+            } else {
+                setUserId(null);
+            }
+        };
+        // Run immediately
+        checkUser();
+        window.addEventListener('storage', checkUser);
+        return () => window.removeEventListener('storage', checkUser);
+    }, []);
+
+    const loadCentralCart = async (uid) => {
+        try {
+            const cart = await fetchUserCart(uid);
+            if (cart && cart.items) setCartItems(mapBackendItems(cart.items));
+        } catch (e) {
+            console.error("Failed to load central cart", e);
+        }
+    };
+
+    // Centralised cart sync logic
+    useEffect(() => {
+        if (userId) {
+            const localCartStr = localStorage.getItem('s_market_cart');
+            const localCart = localCartStr ? JSON.parse(localCartStr) : [];
+
+            if (localCart.length > 0) {
+                const itemsToMerge = localCart.map(item => ({
+                    productId: item.id,
+                    quantity: item.quantity,
+                    variant: typeof item.variant === 'object' ? JSON.stringify(item.variant) : item.variant
+                }));
+                mergeUserCart(userId, itemsToMerge)
+                    .then(cart => {
+                        localStorage.removeItem('s_market_cart');
+                        if (cart && cart.items) setCartItems(mapBackendItems(cart.items));
+                    })
+                    .catch(e => {
+                        console.error("Failed to merge cart. Falling back to fetch.", e);
+                        loadCentralCart(userId);
+                    });
+            } else {
+                loadCentralCart(userId);
+            }
+        } else {
+            // Load from local storage
+            const savedCart = localStorage.getItem('s_market_cart');
+            if (savedCart) {
+                try { setCartItems(JSON.parse(savedCart)); }
+                catch (e) { console.error("Failed to parse cart", e); }
+            } else {
+                setCartItems([]);
+            }
+        }
+    }, [userId]);
+
+    // Load saved items and recently viewed consistently
+    useEffect(() => {
         const savedLaterList = localStorage.getItem('s_market_saved');
         const savedRecentlyViewed = localStorage.getItem('s_market_recent');
-        if (savedCart) {
-            try {
-                setCartItems(JSON.parse(savedCart));
-            } catch (e) {
-                console.error("Failed to parse cart from local storage", e);
-            }
-        }
+
         if (savedLaterList) {
-            try {
-                setSavedItems(JSON.parse(savedLaterList));
-            } catch (e) {
-                console.error("Failed to parse saved items from local storage", e);
-            }
+            try { setSavedItems(JSON.parse(savedLaterList)); }
+            catch (e) { }
         }
         if (savedRecentlyViewed) {
-            try {
-                setRecentlyViewed(JSON.parse(savedRecentlyViewed));
-            } catch (e) {
-                console.error("Failed to parse recently viewed from local storage", e);
-            }
+            try { setRecentlyViewed(JSON.parse(savedRecentlyViewed)); }
+            catch (e) { }
         }
     }, []);
 
-    // Save cart to local storage whenever it changes
+    // Save cart to local storage whenever it changes (only if guest)
     useEffect(() => {
-        localStorage.setItem('s_market_cart', JSON.stringify(cartItems));
-    }, [cartItems]);
+        if (!userId) {
+            localStorage.setItem('s_market_cart', JSON.stringify(cartItems));
+        }
+    }, [cartItems, userId]);
 
     // Save savedItems to local storage whenever they change
     useEffect(() => {
@@ -53,41 +138,72 @@ export const CartProvider = ({ children }) => {
         localStorage.setItem('s_market_recent', JSON.stringify(recentlyViewed));
     }, [recentlyViewed]);
 
-    const addToCart = (product, quantity = 1, variant = null, openCartOnAdd = true) => {
-        setCartItems(prevItems => {
-            const existingItemIndex = prevItems.findIndex(item =>
-                item.id === product.id &&
-                JSON.stringify(item.variant) === JSON.stringify(variant)
-            );
+    const addToCart = async (product, quantity = 1, variant = null, openCartOnAdd = true) => {
+        if (userId) {
+            try {
+                const itemData = {
+                    productId: product.id,
+                    quantity: quantity,
+                    variant: typeof variant === 'object' ? JSON.stringify(variant) : variant
+                };
+                const updatedCart = await addToUserCart(userId, itemData);
+                if (updatedCart && updatedCart.items) {
+                    setCartItems(mapBackendItems(updatedCart.items));
+                }
+                if (openCartOnAdd) setIsCartOpen(true);
+            } catch (e) { console.error("Failed to add to backend cart", e); }
+        } else {
+            setCartItems(prevItems => {
+                const existingItemIndex = prevItems.findIndex(item =>
+                    item.id === product.id && JSON.stringify(item.variant) === JSON.stringify(variant)
+                );
 
-            if (existingItemIndex > -1) {
-                // Item exists, update quantity
-                const newItems = [...prevItems];
-                newItems[existingItemIndex].quantity += quantity;
-                return newItems;
-            } else {
-                // New item
-                return [...prevItems, { ...product, quantity, variant }];
-            }
-        });
-        if (openCartOnAdd) {
-            setIsCartOpen(true); // Open cart when item is added
+                if (existingItemIndex > -1) {
+                    const newItems = [...prevItems];
+                    newItems[existingItemIndex].quantity += quantity;
+                    return newItems;
+                } else {
+                    return [...prevItems, { ...product, quantity, variant }];
+                }
+            });
+            if (openCartOnAdd) setIsCartOpen(true);
         }
     };
 
-    const removeFromCart = (id, variant = null) => {
-        setCartItems(prevItems => prevItems.filter(item =>
-            !(item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant))
-        ));
+    const removeFromCart = async (id, variant = null) => {
+        if (userId) {
+            const item = cartItems.find(i => i.id === id && JSON.stringify(i.variant) === JSON.stringify(variant));
+            if (item && item.cartItemId) {
+                try {
+                    const updatedCart = await removeUserCartItem(userId, item.cartItemId);
+                    if (updatedCart && updatedCart.items) setCartItems(mapBackendItems(updatedCart.items));
+                } catch (e) { console.error("Failed to remove from backend cart", e); }
+            }
+        } else {
+            setCartItems(prevItems => prevItems.filter(item =>
+                !(item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant))
+            ));
+        }
     };
 
-    const updateQuantity = (id, newQuantity, variant = null) => {
+    const updateQuantity = async (id, newQuantity, variant = null) => {
         if (newQuantity < 1) return;
-        setCartItems(prevItems => prevItems.map(item =>
-            (item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant))
-                ? { ...item, quantity: newQuantity }
-                : item
-        ));
+
+        if (userId) {
+            const item = cartItems.find(i => i.id === id && JSON.stringify(i.variant) === JSON.stringify(variant));
+            if (item && item.cartItemId) {
+                try {
+                    const updatedCart = await updateUserCartItem(userId, item.cartItemId, newQuantity);
+                    if (updatedCart && updatedCart.items) setCartItems(mapBackendItems(updatedCart.items));
+                } catch (e) { console.error("Failed to update backend cart quantity", e); }
+            }
+        } else {
+            setCartItems(prevItems => prevItems.map(item =>
+                (item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant))
+                    ? { ...item, quantity: newQuantity }
+                    : item
+            ));
+        }
     };
 
     const toggleCart = () => setIsCartOpen(!isCartOpen);
@@ -98,7 +214,7 @@ export const CartProvider = ({ children }) => {
         const itemToSave = cartItems.find(item => item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant));
         if (itemToSave) {
             setSavedItems(prev => [...prev, itemToSave]);
-            removeFromCart(id, variant);
+            removeFromCart(id, variant); // removeFromCart is async, but it removes from UI state appropriately upon finish
         }
     };
 
@@ -122,16 +238,21 @@ export const CartProvider = ({ children }) => {
     const addToRecentlyViewed = (product) => {
         if (!product || !product.id) return;
         setRecentlyViewed(prev => {
-            // Remove if already exists to move it to the front
             const filtered = prev.filter(item => item.id !== product.id);
-            // Limit to 10 items
             const newList = [product, ...filtered].slice(0, 10);
             return newList;
         });
     };
 
-    const clearCart = () => {
-        setCartItems([]);
+    const clearCart = async () => {
+        if (userId) {
+            try {
+                await clearUserCart(userId);
+                setCartItems([]);
+            } catch (e) { console.error("Failed to clear backend cart", e); }
+        } else {
+            setCartItems([]);
+        }
     };
 
     const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);

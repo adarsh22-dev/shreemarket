@@ -614,6 +614,20 @@ export const updateOrderStatus = async (orderId, status) => {
 };
 
 /**
+ * Submits a return request for an order.
+ * @param {number|string} orderId
+ * @param {FormData} formData
+ */
+export const submitReturnAPI = async (orderId, formData) => {
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}/return`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+    });
+    return handleResponse(response);
+};
+
+/**
  * Fetches all orders for a specific user.
  * @param {number|string} userId
  */
@@ -905,6 +919,94 @@ export const logoutDevice = async (deviceId, userId, roleId) => {
             "Content-Type": "application/json",
         },
         credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+// --- CART API METHODS ---
+
+/**
+ * Fetches the cart for a user.
+ * @param {number|string} userId
+ */
+export const fetchUserCart = async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/cart/${userId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Adds an item to the user's cart.
+ * @param {number|string} userId
+ * @param {Object} itemData - {productId, quantity, variant}
+ */
+export const addToUserCart = async (userId, itemData) => {
+    const response = await fetch(`${API_BASE_URL}/cart/${userId}/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(itemData),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Updates the quantity of a cart item.
+ * @param {number|string} userId
+ * @param {number|string} itemId - The ID of the CartItem
+ * @param {number} quantity
+ */
+export const updateUserCartItem = async (userId, itemId, quantity) => {
+    const response = await fetch(`${API_BASE_URL}/cart/${userId}/update/${itemId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ quantity }),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Removes an item from the cart.
+ * @param {number|string} userId
+ * @param {number|string} itemId - The ID of the CartItem
+ */
+export const removeUserCartItem = async (userId, itemId) => {
+    const response = await fetch(`${API_BASE_URL}/cart/${userId}/remove/${itemId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Clears all items in the user's cart.
+ * @param {number|string} userId
+ */
+export const clearUserCart = async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/cart/${userId}/clear`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Merges a list of guest cart items into the user's cart.
+ * @param {number|string} userId
+ * @param {Array} items - Array of itemData objects
+ */
+export const mergeUserCart = async (userId, items) => {
+    const response = await fetch(`${API_BASE_URL}/cart/${userId}/merge`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(items),
     });
     return handleResponse(response);
 };

@@ -243,6 +243,12 @@
     padding: 0;
 }
 
+.status-returned {
+    background-color: #FFEBEE;
+    color: #D32F2F;
+    /* Red text */
+}
+
 /* Row Actions */
 .order-actions {
     display: flex;

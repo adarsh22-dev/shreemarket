@@ -85,7 +85,12 @@ const VendorOrders = () => {
         // Tab filtering
         if (activeTab !== 'All Orders') {
             const status = order.status || 'Pending';
-            if (status.toLowerCase() !== activeTab.toLowerCase()) {
+            if (activeTab === 'Returned') {
+                const s = status.toLowerCase();
+                if (s !== 'returned' && s !== 'return requested') {
+                    return false;
+                }
+            } else if (status.toLowerCase() !== activeTab.toLowerCase()) {
                 return false;
             }
         }
@@ -108,6 +113,8 @@ const VendorOrders = () => {
             case 'shipped': return 'status-shipped';
             case 'processing': return 'status-processing';
             case 'delivered': return 'status-delivered';
+            case 'returned':
+            case 'return requested': return 'status-returned';
             default: return '';
         }
     };
@@ -145,6 +152,7 @@ const VendorOrders = () => {
                             <button className={`tab-btn ${activeTab === 'Processing' ? 'active' : ''}`} onClick={() => handleTabClick('Processing')}>Processing</button>
                             <button className={`tab-btn ${activeTab === 'Shipped' ? 'active' : ''}`} onClick={() => handleTabClick('Shipped')}>Shipped</button>
                             <button className={`tab-btn ${activeTab === 'Delivered' ? 'active' : ''}`} onClick={() => handleTabClick('Delivered')}>Delivered</button>
+                            <button className={`tab-btn ${activeTab === 'Returned' ? 'active' : ''}`} onClick={() => handleTabClick('Returned')}>Returned</button>
                         </div>
                         <div className="search-wrapper">
                             <Search className="search-icon" size={18} />
@@ -224,6 +232,16 @@ const VendorOrders = () => {
                                                             style={{ backgroundColor: '#4CAF50', color: 'white' }}
                                                         >
                                                             Mark Delivered
+                                                        </button>
+                                                    )}
+                                                    {order.status && (order.status.toLowerCase() === 'return requested' || order.status.toLowerCase() === 'returned') && (
+                                                        <button
+                                                            className="btn-mark-shipped"
+                                                            onClick={() => handleStatusUpdate(order.id, 'RETURNED')}
+                                                            style={{ backgroundColor: '#D32F2F', color: 'white', opacity: order.status.toLowerCase() === 'returned' ? 0.6 : 1, cursor: order.status.toLowerCase() === 'returned' ? 'default' : 'pointer' }}
+                                                            disabled={order.status.toLowerCase() === 'returned'}
+                                                        >
+                                                            {order.status.toLowerCase() === 'returned' ? 'Return Accepted' : 'Accept Return'}
                                                         </button>
                                                     )}
                                                 </div>
