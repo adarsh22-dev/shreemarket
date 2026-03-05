@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import {
   Image as ImageIcon,
   Plus,
-  ArrowLeft,
   ChevronRight,
   FileText,
 } from "lucide-react";
@@ -26,7 +25,7 @@ const AddProduct = () => {
   const [productName, setProductName] = useState("");
   const [productType, setProductType] = useState("single");
   const [category, setCategory] = useState("");
-  const [brand, setBrand] = useState("EmpowerHome Basics");
+  const [brand, setBrand] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
   const [sku, setSku] = useState("");
@@ -269,7 +268,7 @@ const AddProduct = () => {
           setProductName(data.name || "");
           setProductType(data.type || "single");
           setCategory(data.category || "");
-          setBrand(data.brand || "EmpowerHome Basics");
+          setBrand(data.brand || "");
           setShortDescription(data.shortDescription || "");
           setDescription(data.description || "");
           setSku(data.sku || "");
@@ -475,14 +474,6 @@ const AddProduct = () => {
             <ChevronRight size={14} color="#000" />
             <span className="breadcrumb-item active">Add New Product</span>
           </div>
-          <button
-            className="btn-back"
-            onClick={handleCancel}
-            title="Back to Products"
-          >
-            {/* <ArrowLeft size={20} /> <span>Back</span> */}
-            Back
-          </button>
         </div>
 
         {/* Header */}
@@ -933,10 +924,7 @@ const AddProduct = () => {
               >
                 <label>Country of Origin</label>
                 <select className="form-control">
-                  <option value="us">United States</option>
-                  <option value="cn">China</option>
-                  <option value="in">India</option>
-                  <option value="uk">United Kingdom</option>
+                  <option selected value="in">India</option>
                 </select>
               </div>
             </div>

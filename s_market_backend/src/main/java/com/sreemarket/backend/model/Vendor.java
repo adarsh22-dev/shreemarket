@@ -34,7 +34,6 @@ public class Vendor {
     @Column(name = "fullname")
     private String fullName;
     @Column(name = "email_address")
-    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private String email;
     @Column(name = "phonenumber")
     @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)

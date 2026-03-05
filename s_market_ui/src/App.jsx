@@ -36,6 +36,8 @@ import StaffInventorySystem from './pages/vendor/vendorStaffMgmt';
 import VendorGuide from './pages/vendor/VendorGuide';
 import VendorPayout from './pages/vendor/VendorPayouts';
 import VendorSettings from './pages/vendor/VendorSettings';
+import VendorHelpCenter from './pages/vendor/VendorStoreLocatorHelp'
+import VendorReviews from './pages/vendor/VendorReviews';
 import './index.css';
 
 import { Toaster } from 'react-hot-toast';
@@ -85,7 +87,9 @@ function App() {
               <Route path="/vendor/staffmanagement" element={<StaffInventorySystem />} />
               <Route path="/vendor/guide" element={<VendorGuide />} />
               <Route path="/vendor/payouts" element={<VendorPayout />} />
+              <Route path="/vendor/help" element={<VendorHelpCenter />} />
               <Route path="/vendor/settings" element={<VendorSettings />} />
+              <Route path="/vendor/reviews" element={<VendorReviews />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={[1]} />}>

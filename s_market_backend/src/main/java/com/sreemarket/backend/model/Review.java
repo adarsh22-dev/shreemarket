@@ -13,9 +13,9 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "product_id", nullable = false)
-    @JsonProperty("productId")
-    private Long productId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(name = "user_id")
     @JsonProperty("userId")
@@ -44,11 +44,16 @@ public class Review {
 
     private Long createdAt;
 
+    @Column(columnDefinition = "TEXT")
+    private String vendorReply;
+
+    private Long replyDate;
+
     public Review() {
     }
 
-    public Review(Long productId, Long userId, String reviewerName, Integer rating, String title, String text) {
-        this.productId = productId;
+    public Review(Product product, Long userId, String reviewerName, Integer rating, String title, String text) {
+        this.product = product;
         this.userId = userId;
         this.reviewerName = reviewerName;
         this.rating = rating;
@@ -70,12 +75,12 @@ public class Review {
         this.id = id;
     }
 
-    public Long getProductId() {
-        return productId;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public Long getUserId() {
@@ -156,5 +161,21 @@ public class Review {
 
     public void setCreatedAt(Long createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getVendorReply() {
+        return vendorReply;
+    }
+
+    public void setVendorReply(String vendorReply) {
+        this.vendorReply = vendorReply;
+    }
+
+    public Long getReplyDate() {
+        return replyDate;
+    }
+
+    public void setReplyDate(Long replyDate) {
+        this.replyDate = replyDate;
     }
 }

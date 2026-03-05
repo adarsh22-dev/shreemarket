@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Minus, Plus, Star, ThumbsUp, ThumbsDown, Package, RotateCcw, ShieldCheck, HeartHandshake, Leaf, MapPin, Heart, Loader2 } from 'lucide-react';
+import { Minus, Plus, Star, ThumbsUp, ThumbsDown, Package, RotateCcw, ShieldCheck, HeartHandshake, Leaf, MapPin, Heart, Loader2, CornerDownRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { getProduct, getVendorById, getAllProducts, getProductReviews, submitProductReview, BACKEND_URL } from '../api/api';
 import './ProductPage.css';
@@ -480,6 +480,18 @@ const ProductPage = () => {
                                                 />
                                             </div>
                                         ))}
+                                    </div>
+                                )}
+
+                                {review.vendorReply && (
+                                    <div className="vendor-reply-block">
+                                        <div className="vrb-header">
+                                            <span className="vrb-title"><CornerDownRight size={14} /> ARTISAN'S RESPONSE</span>
+                                            <span className="vrb-date">
+                                                {review.replyDate ? new Date(review.replyDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}
+                                            </span>
+                                        </div>
+                                        <p className="vrb-text">{review.vendorReply}</p>
                                     </div>
                                 )}
 

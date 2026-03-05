@@ -709,6 +709,54 @@ export const submitProductReview = async (reviewData) => {
     return handleResponse(response);
 };
 
+/**
+ * Fetches reviews for a specific vendor with filtering and pagination.
+ * @param {number|string} vendorId
+ * @param {Object} queryParams - Filters (rating, status, search, page, size, sortBy, sortDir)
+ */
+export const getVendorReviews = async (vendorId, queryParams) => {
+    const params = new URLSearchParams();
+    Object.keys(queryParams).forEach(key => {
+        if (queryParams[key] !== null && queryParams[key] !== undefined && queryParams[key] !== '') {
+            params.append(key, queryParams[key]);
+        }
+    });
+    const response = await fetch(`${API_BASE_URL}/reviews/vendor/${vendorId}?${params.toString()}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Fetches review statistics for a specific vendor.
+ * @param {number|string} vendorId
+ */
+export const getVendorReviewStats = async (vendorId) => {
+    const response = await fetch(`${API_BASE_URL}/reviews/vendor/${vendorId}/stats`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Submits a vendor reply to a review.
+ * @param {number|string} reviewId
+ * @param {string} replyText
+ */
+export const replyToReview = async (reviewId, replyText) => {
+    const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ reply: replyText })
+    });
+    return handleResponse(response);
+};
+
 // --- VENDOR STAFF API METHODS ---
 
 /**

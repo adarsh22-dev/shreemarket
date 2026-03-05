@@ -27,9 +27,21 @@ const VendorDashboard = () => {
         const fetchDashboardData = async () => {
             try {
                 const userStr = localStorage.getItem('user');
+                const settingsStr = localStorage.getItem('vendor_settings_data_v2');
+
+                let name = '';
+                if (settingsStr) {
+                    const settingsObj = JSON.parse(settingsStr);
+                    name = settingsObj.store?.name || '';
+                }
+
                 if (userStr) {
                     const userObj = JSON.parse(userStr);
-                    setVendorName(userObj.firstName || userObj.vendorName || userObj.name || '');
+                    if (!name) {
+                        name = userObj.vendorName || userObj.firstName || userObj.name || '';
+                    }
+                    setVendorName(name);
+
                     if (userObj.userId) {
                         const [ordersData, productsData] = await Promise.all([
                             fetchVendorOrders(userObj.userId),
@@ -380,10 +392,10 @@ const VendorDashboard = () => {
                             <tr>
                                 <th>Order ID</th>
                                 <th>Customer</th>
-                                <th>Product</th>
+                                <th>Products</th>
                                 <th>Date</th>
                                 <th>Total</th>
-                                <th>Status</th>
+                                <th style={{ textAlign: 'center' }}>Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -398,10 +410,26 @@ const VendorDashboard = () => {
                                             {order.customerName || 'N/A'}
                                         </div>
                                     </td>
-                                    <td>{order.deliveryLocation || 'N/A'}</td>
+                                    <td>
+                                        <div className="order-products-cell">
+                                            {order.productQuantities && Object.keys(order.productQuantities).length > 0 ? (
+                                                Object.entries(order.productQuantities).map(([pid, qty], idx) => {
+                                                    const product = products.find(p => p.id === parseInt(pid));
+                                                    return (
+                                                        <div key={pid} className="order-product-item">
+                                                            <span className="product-name-link">{product?.name || `Product #${pid}`}</span>
+                                                            <span className="product-qty">x{qty}</span>
+                                                        </div>
+                                                    );
+                                                })
+                                            ) : (
+                                                <span>No products</span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td>{formatDate(order.datePlaced)}</td>
                                     <td style={{ fontWeight: 600 }}>₹{(order.totalAmount || 0).toFixed(2)}</td>
-                                    <td>
+                                    <td style={{ textAlign: 'center' }}>
                                         <span className={`status-badge ${getStatusClass(order.status)}`}>
                                             {order.status || 'Pending'}
                                         </span>

@@ -14,6 +14,7 @@ import {
     Bell,
     Users,
     BookOpen,
+    Star
 } from 'lucide-react';
 import smarketLogo from '../../assets/smarketlogo.svg';
 import { logoutUser } from '../../api/api';
@@ -60,6 +61,10 @@ const VendorLayout = ({ children }) => {
                     <Link to="/vendor/analytics" className={`nav-item ${currentPath === '/vendor/analytics' ? 'active' : ''}`}>
                         <BarChart2 size={20} />
                         Analytics
+                    </Link>
+                    <Link to="/vendor/reviews" className={`nav-item ${currentPath === '/vendor/reviews' ? 'active' : ''}`}>
+                        <Star size={20} />
+                        Reviews & Ratings
                     </Link>
                     <Link to="/vendor/orders" className={`nav-item ${currentPath.includes('/vendor/orders') ? 'active' : ''}`}>
                         <ShoppingCart size={20} />
