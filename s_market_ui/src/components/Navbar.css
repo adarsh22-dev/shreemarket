@@ -259,6 +259,16 @@
     flex-direction: column;
 }
 
+.categories-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -0.5rem;
+    left: 0;
+    right: 0;
+    height: 0.5rem;
+    background: transparent;
+}
+
 .category-dropdown-item {
     display: block;
     width: 100%;

@@ -515,7 +515,7 @@ const AddProduct = () => {
           <div className="form-group">
             <label>Product Type</label>
             <select
-              className="form-control"
+              className={`form-control ${productType === '' ? 'select-placeholder' : ''}`}
               value={productType}
               onChange={(e) => setProductType(e.target.value)}
             >
@@ -528,7 +528,7 @@ const AddProduct = () => {
             <div className="form-group form-col">
               <label>Category</label>
               <select
-                className="form-control"
+                className={`form-control ${!category ? 'select-placeholder' : ''}`}
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -687,7 +687,7 @@ const AddProduct = () => {
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label>Discount Type</label>
                 <select
-                  className="form-control"
+                  className={`form-control ${!wholesaleDiscountType ? 'select-placeholder' : ''}`}
                   value={wholesaleDiscountType}
                   onChange={(e) => setWholesaleDiscountType(e.target.value)}
                 >
@@ -698,7 +698,7 @@ const AddProduct = () => {
               {wholesaleDiscountType === "percentage" && (
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label>Discount Value</label>
-                  <select className="form-control" defaultValue="5">
+                  <select className={`form-control select-placeholder`} defaultValue="5">
                     <option value="5">5%</option>
                     <option value="10">10%</option>
                     <option value="15">15%</option>
@@ -923,8 +923,8 @@ const AddProduct = () => {
                 style={{ flex: 1, marginBottom: 0 }}
               >
                 <label>Country of Origin</label>
-                <select className="form-control">
-                  <option selected value="in">India</option>
+                <select className="form-control" defaultValue="in">
+                  <option value="in">India</option>
                 </select>
               </div>
             </div>
@@ -1270,10 +1270,11 @@ const AddProduct = () => {
             <div className="form-group form-col" style={{ flex: 1 }}>
               <label>Shipping class</label>
               <select
-                className="form-control"
+                className={`form-control ${!shippingClass ? 'select-placeholder' : ''}`}
                 value={shippingClass}
                 onChange={(e) => setShippingClass(e.target.value)}
               >
+                <option value="" disabled>Select Shipping Class</option>
                 <option value="no-shipping-class">No shipping class</option>
               </select>
             </div>
@@ -1283,10 +1284,11 @@ const AddProduct = () => {
             <div className="form-group form-col">
               <label>Tax status</label>
               <select
-                className="form-control"
+                className={`form-control ${!taxStatus ? 'select-placeholder' : ''}`}
                 value={taxStatus}
                 onChange={(e) => setTaxStatus(e.target.value)}
               >
+                <option value="" disabled>Select Tax Status</option>
                 <option value="taxable">Taxable</option>
                 <option value="shipping">Shipping only</option>
                 <option value="none">None</option>
@@ -1295,10 +1297,11 @@ const AddProduct = () => {
             <div className="form-group form-col">
               <label>Tax class</label>
               <select
-                className="form-control"
+                className={`form-control ${!taxClass ? 'select-placeholder' : ''}`}
                 value={taxClass}
                 onChange={(e) => setTaxClass(e.target.value)}
               >
+                <option value="" disabled>Select Tax Class</option>
                 <option value="standard">Standard</option>
                 <option value="reduced-rate">Reduced rate</option>
                 <option value="zero-rate">Zero rate</option>

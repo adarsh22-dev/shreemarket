@@ -168,7 +168,7 @@ select.form-control,
 input.form-control,
 textarea.form-control {
     padding: 0.75rem 1rem;
-    border: 1px solid #999;
+    border: 1px solid #888 !important;
     /* Darker border for visibility */
     border-radius: 8px;
     font-size: 0.95rem;
@@ -192,6 +192,18 @@ textarea.form-control {
     /* Darker, clearly visible placeholder */
     opacity: 1;
     /* Override default browser opacity for placeholders */
+}
+
+select.form-control.select-placeholder {
+    color: #777;
+}
+
+select.form-control option {
+    color: #334155;
+}
+
+select.form-control option[value=""] {
+    color: #777;
 }
 
 textarea.form-control {
