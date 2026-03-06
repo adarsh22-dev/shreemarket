@@ -3,7 +3,6 @@ package com.sreemarket.backend.service;
 import com.sreemarket.backend.dto.CartItemRequest;
 import com.sreemarket.backend.model.Cart;
 import com.sreemarket.backend.model.CartItem;
-import com.sreemarket.backend.model.Product;
 import com.sreemarket.backend.repository.CartItemRepository;
 import com.sreemarket.backend.repository.CartRepository;
 import com.sreemarket.backend.repository.ProductRepository;
@@ -50,11 +49,14 @@ public class CartService {
             return cartRepository.save(newCart);
         });
 
-        // Check if item already exists with same product and variant
+        // Check if item already exists with same product, variant, and saved status
         Optional<CartItem> existingItemOpt = cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(request.getProductId()) &&
                         (item.getVariant() == null ? request.getVariant() == null
-                                : item.getVariant().equals(request.getVariant())))
+                                : item.getVariant().equals(request.getVariant()))
+                        &&
+                        (item.getIsSaved() != null
+                                && item.getIsSaved().equals(request.getIsSaved() != null && request.getIsSaved())))
                 .findFirst();
 
         if (existingItemOpt.isPresent()) {
@@ -67,6 +69,7 @@ public class CartService {
             newItem.setProductId(request.getProductId());
             newItem.setQuantity(request.getQuantity());
             newItem.setVariant(request.getVariant());
+            newItem.setIsSaved(request.getIsSaved() != null && request.getIsSaved());
 
             CartItem savedItem = cartItemRepository.save(newItem);
             cart.getItems().add(savedItem);
@@ -130,6 +133,42 @@ public class CartService {
         for (CartItemRequest guestItem : guestItems) {
             addItem(userId, guestItem);
         }
+        return getCart(userId);
+    }
+
+    @Transactional
+    public Cart moveToSaved(Long userId, Long itemId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Cart not found for user: " + userId));
+
+        Optional<CartItem> itemOpt = cart.getItems().stream()
+                .filter(item -> item.getId().equals(itemId))
+                .findFirst();
+
+        if (itemOpt.isPresent()) {
+            CartItem item = itemOpt.get();
+            item.setIsSaved(true);
+            cartItemRepository.save(item);
+        }
+
+        return getCart(userId);
+    }
+
+    @Transactional
+    public Cart moveToCartFromSaved(Long userId, Long itemId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Cart not found for user: " + userId));
+
+        Optional<CartItem> itemOpt = cart.getItems().stream()
+                .filter(item -> item.getId().equals(itemId))
+                .findFirst();
+
+        if (itemOpt.isPresent()) {
+            CartItem item = itemOpt.get();
+            item.setIsSaved(false);
+            cartItemRepository.save(item);
+        }
+
         return getCart(userId);
     }
 }

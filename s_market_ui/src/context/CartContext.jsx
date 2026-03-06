@@ -1,5 +1,14 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { fetchUserCart, addToUserCart, updateUserCartItem, removeUserCartItem, clearUserCart, mergeUserCart } from '../api/api';
+import {
+    fetchUserCart,
+    addToUserCart,
+    updateUserCartItem,
+    removeUserCartItem,
+    clearUserCart,
+    mergeUserCart,
+    moveToSavedAPI,
+    moveToCartFromSavedAPI
+} from '../api/api';
 
 const CartContext = createContext();
 
@@ -28,7 +37,8 @@ const mapBackendItems = (backendItems) => {
             price: p.discountPrice || p.regularPrice || 0,
             image: image,
             quantity: bItem.quantity,
-            variant: parsedVariant
+            variant: parsedVariant,
+            isSaved: bItem.isSaved
         };
     });
 };
@@ -61,10 +71,18 @@ export const CartProvider = ({ children }) => {
         return () => window.removeEventListener('storage', checkUser);
     }, []);
 
+    const processBackendCart = (items) => {
+        const mapped = mapBackendItems(items);
+        setCartItems(mapped.filter(i => !i.isSaved));
+        setSavedItems(mapped.filter(i => i.isSaved));
+    };
+
     const loadCentralCart = async (uid) => {
         try {
             const cart = await fetchUserCart(uid);
-            if (cart && cart.items) setCartItems(mapBackendItems(cart.items));
+            if (cart && cart.items) {
+                processBackendCart(cart.items);
+            }
         } catch (e) {
             console.error("Failed to load central cart", e);
         }
@@ -74,18 +92,32 @@ export const CartProvider = ({ children }) => {
     useEffect(() => {
         if (userId) {
             const localCartStr = localStorage.getItem('s_market_cart');
-            const localCart = localCartStr ? JSON.parse(localCartStr) : [];
+            const localSavedStr = localStorage.getItem('s_market_saved');
 
-            if (localCart.length > 0) {
-                const itemsToMerge = localCart.map(item => ({
-                    productId: item.id,
-                    quantity: item.quantity,
-                    variant: typeof item.variant === 'object' ? JSON.stringify(item.variant) : item.variant
-                }));
+            const localCart = localCartStr ? JSON.parse(localCartStr) : [];
+            const localSaved = localSavedStr ? JSON.parse(localSavedStr) : [];
+
+            if (localCart.length > 0 || localSaved.length > 0) {
+                const itemsToMerge = [
+                    ...localCart.map(item => ({
+                        productId: item.id,
+                        quantity: item.quantity,
+                        variant: typeof item.variant === 'object' ? JSON.stringify(item.variant) : item.variant,
+                        isSaved: false
+                    })),
+                    ...localSaved.map(item => ({
+                        productId: item.id,
+                        quantity: item.quantity,
+                        variant: typeof item.variant === 'object' ? JSON.stringify(item.variant) : item.variant,
+                        isSaved: true
+                    }))
+                ];
+
                 mergeUserCart(userId, itemsToMerge)
                     .then(cart => {
                         localStorage.removeItem('s_market_cart');
-                        if (cart && cart.items) setCartItems(mapBackendItems(cart.items));
+                        localStorage.removeItem('s_market_saved');
+                        if (cart && cart.items) processBackendCart(cart.items);
                     })
                     .catch(e => {
                         console.error("Failed to merge cart. Falling back to fetch.", e);
@@ -95,43 +127,42 @@ export const CartProvider = ({ children }) => {
                 loadCentralCart(userId);
             }
         } else {
-            // Load from local storage
+            // Load from local storage for guests
             const savedCart = localStorage.getItem('s_market_cart');
+            const savedLater = localStorage.getItem('s_market_saved');
+
             if (savedCart) {
                 try { setCartItems(JSON.parse(savedCart)); }
                 catch (e) { console.error("Failed to parse cart", e); }
             } else {
                 setCartItems([]);
             }
+
+            if (savedLater) {
+                try { setSavedItems(JSON.parse(savedLater)); }
+                catch (e) { console.error("Failed to parse saved items", e); }
+            } else {
+                setSavedItems([]);
+            }
         }
     }, [userId]);
 
-    // Load saved items and recently viewed consistently
+    // Load recently viewed consistently
     useEffect(() => {
-        const savedLaterList = localStorage.getItem('s_market_saved');
         const savedRecentlyViewed = localStorage.getItem('s_market_recent');
-
-        if (savedLaterList) {
-            try { setSavedItems(JSON.parse(savedLaterList)); }
-            catch (e) { }
-        }
         if (savedRecentlyViewed) {
             try { setRecentlyViewed(JSON.parse(savedRecentlyViewed)); }
             catch (e) { }
         }
     }, []);
 
-    // Save cart to local storage whenever it changes (only if guest)
+    // Save Guest state to local storage
     useEffect(() => {
         if (!userId) {
             localStorage.setItem('s_market_cart', JSON.stringify(cartItems));
+            localStorage.setItem('s_market_saved', JSON.stringify(savedItems));
         }
-    }, [cartItems, userId]);
-
-    // Save savedItems to local storage whenever they change
-    useEffect(() => {
-        localStorage.setItem('s_market_saved', JSON.stringify(savedItems));
-    }, [savedItems]);
+    }, [cartItems, savedItems, userId]);
 
     // Save recently viewed to local storage
     useEffect(() => {
@@ -144,11 +175,12 @@ export const CartProvider = ({ children }) => {
                 const itemData = {
                     productId: product.id,
                     quantity: quantity,
-                    variant: typeof variant === 'object' ? JSON.stringify(variant) : variant
+                    variant: typeof variant === 'object' ? JSON.stringify(variant) : variant,
+                    isSaved: false
                 };
                 const updatedCart = await addToUserCart(userId, itemData);
                 if (updatedCart && updatedCart.items) {
-                    setCartItems(mapBackendItems(updatedCart.items));
+                    processBackendCart(updatedCart.items);
                 }
                 if (openCartOnAdd) setIsCartOpen(true);
             } catch (e) { console.error("Failed to add to backend cart", e); }
@@ -176,7 +208,7 @@ export const CartProvider = ({ children }) => {
             if (item && item.cartItemId) {
                 try {
                     const updatedCart = await removeUserCartItem(userId, item.cartItemId);
-                    if (updatedCart && updatedCart.items) setCartItems(mapBackendItems(updatedCart.items));
+                    if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
                 } catch (e) { console.error("Failed to remove from backend cart", e); }
             }
         } else {
@@ -190,19 +222,23 @@ export const CartProvider = ({ children }) => {
         if (newQuantity < 1) return;
 
         if (userId) {
-            const item = cartItems.find(i => i.id === id && JSON.stringify(i.variant) === JSON.stringify(variant));
+            const item = cartItems.find(i => i.id === id && JSON.stringify(i.variant) === JSON.stringify(variant))
+                || savedItems.find(i => i.id === id && JSON.stringify(i.variant) === JSON.stringify(variant));
+
             if (item && item.cartItemId) {
                 try {
                     const updatedCart = await updateUserCartItem(userId, item.cartItemId, newQuantity);
-                    if (updatedCart && updatedCart.items) setCartItems(mapBackendItems(updatedCart.items));
+                    if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
                 } catch (e) { console.error("Failed to update backend cart quantity", e); }
             }
         } else {
-            setCartItems(prevItems => prevItems.map(item =>
+            const updateList = (list) => list.map(item =>
                 (item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant))
                     ? { ...item, quantity: newQuantity }
                     : item
-            ));
+            );
+            setCartItems(prev => updateList(prev));
+            setSavedItems(prev => updateList(prev));
         }
     };
 
@@ -210,28 +246,62 @@ export const CartProvider = ({ children }) => {
     const closeCart = () => setIsCartOpen(false);
 
     // Save item for later
-    const saveForLater = (id, variant = null) => {
-        const itemToSave = cartItems.find(item => item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant));
-        if (itemToSave) {
-            setSavedItems(prev => [...prev, itemToSave]);
-            removeFromCart(id, variant); // removeFromCart is async, but it removes from UI state appropriately upon finish
+    const saveForLater = async (id, variant = null) => {
+        if (userId) {
+            const item = cartItems.find(i => i.id === id && JSON.stringify(i.variant) === JSON.stringify(variant));
+            if (item && item.cartItemId) {
+                try {
+                    const updatedCart = await moveToSavedAPI(userId, item.cartItemId);
+                    if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
+                } catch (e) { console.error("Failed to move to saved in backend", e); }
+            }
+        } else {
+            const itemToSave = cartItems.find(item => item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant));
+            if (itemToSave) {
+                setSavedItems(prev => [...prev, itemToSave]);
+                setCartItems(prev => prev.filter(item =>
+                    !(item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant))
+                ));
+            }
         }
     };
 
     // Move item back to cart
-    const moveToCart = (id, variant = null) => {
-        const itemToMove = savedItems.find(item => item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant));
-        if (itemToMove) {
-            addToCart(itemToMove, itemToMove.quantity, itemToMove.variant);
-            removeFromSaved(id, variant);
+    const moveToCart = async (id, variant = null) => {
+        if (userId) {
+            const item = savedItems.find(i => i.id === id && JSON.stringify(i.variant) === JSON.stringify(variant));
+            if (item && item.cartItemId) {
+                try {
+                    const updatedCart = await moveToCartFromSavedAPI(userId, item.cartItemId);
+                    if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
+                } catch (e) { console.error("Failed to move back to cart in backend", e); }
+            }
+        } else {
+            const itemToMove = savedItems.find(item => item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant));
+            if (itemToMove) {
+                setCartItems(prev => [...prev, itemToMove]);
+                setSavedItems(prev => prev.filter(item =>
+                    !(item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant))
+                ));
+            }
         }
     };
 
     // Remove item completely from saved items
-    const removeFromSaved = (id, variant = null) => {
-        setSavedItems(prev => prev.filter(item =>
-            !(item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant))
-        ));
+    const removeFromSaved = async (id, variant = null) => {
+        if (userId) {
+            const item = savedItems.find(i => i.id === id && JSON.stringify(i.variant) === JSON.stringify(variant));
+            if (item && item.cartItemId) {
+                try {
+                    const updatedCart = await removeUserCartItem(userId, item.cartItemId);
+                    if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
+                } catch (e) { console.error("Failed to remove saved item in backend", e); }
+            }
+        } else {
+            setSavedItems(prev => prev.filter(item =>
+                !(item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant))
+            ));
+        }
     };
 
     // Add product to recently viewed
@@ -248,7 +318,7 @@ export const CartProvider = ({ children }) => {
         if (userId) {
             try {
                 await clearUserCart(userId);
-                setCartItems([]);
+                processBackendCart([]);
             } catch (e) { console.error("Failed to clear backend cart", e); }
         } else {
             setCartItems([]);

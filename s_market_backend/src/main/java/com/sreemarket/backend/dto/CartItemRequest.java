@@ -7,6 +7,7 @@ public class CartItemRequest {
     private Long productId;
     private Integer quantity;
     private String variant;
+    private Boolean isSaved;
 
     public Long getProductId() {
         return productId;
@@ -30,5 +31,13 @@ public class CartItemRequest {
 
     public void setVariant(String variant) {
         this.variant = variant;
+    }
+
+    public Boolean getIsSaved() {
+        return isSaved;
+    }
+
+    public void setIsSaved(Boolean isSaved) {
+        this.isSaved = isSaved;
     }
 }

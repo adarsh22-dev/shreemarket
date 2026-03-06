@@ -1010,3 +1010,31 @@ export const mergeUserCart = async (userId, items) => {
     });
     return handleResponse(response);
 };
+
+/**
+ * Moves a cart item to the saved for later list.
+ * @param {number|string} userId
+ * @param {number|string} itemId
+ */
+export const moveToSavedAPI = async (userId, itemId) => {
+    const response = await fetch(`${API_BASE_URL}/cart/${userId}/save/${itemId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Moves a saved item back to the cart.
+ * @param {number|string} userId
+ * @param {number|string} itemId
+ */
+export const moveToCartFromSavedAPI = async (userId, itemId) => {
+    const response = await fetch(`${API_BASE_URL}/cart/${userId}/move-to-cart/${itemId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};

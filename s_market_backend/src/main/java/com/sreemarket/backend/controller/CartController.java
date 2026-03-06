@@ -77,4 +77,24 @@ public class CartController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PutMapping("/{userId}/save/{itemId}")
+    public ResponseEntity<?> moveToSaved(@PathVariable Long userId, @PathVariable Long itemId) {
+        try {
+            Cart cart = cartService.moveToSaved(userId, itemId);
+            return ResponseEntity.ok(cart);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{userId}/move-to-cart/{itemId}")
+    public ResponseEntity<?> moveToCartFromSaved(@PathVariable Long userId, @PathVariable Long itemId) {
+        try {
+            Cart cart = cartService.moveToCartFromSaved(userId, itemId);
+            return ResponseEntity.ok(cart);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

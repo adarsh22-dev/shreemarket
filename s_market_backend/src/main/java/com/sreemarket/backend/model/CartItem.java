@@ -30,6 +30,8 @@ public class CartItem {
     @Column(columnDefinition = "TEXT")
     private String variant; // Stores JSON or string representation of variant/options
 
+    private Boolean isSaved = false;
+
     private Long addedAt;
 
     @Transient
@@ -91,5 +93,13 @@ public class CartItem {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public Boolean getIsSaved() {
+        return isSaved;
+    }
+
+    public void setIsSaved(Boolean isSaved) {
+        this.isSaved = isSaved;
     }
 }
