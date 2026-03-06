@@ -169,6 +169,36 @@
     color: #FF5722;
 }
 
+.price-container-modal {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.product-modal-price-new {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #000;
+}
+
+.product-modal-price-old {
+    font-size: 1.1rem;
+    color: #999;
+    text-decoration: line-through;
+    font-weight: 500;
+}
+
+.discount-badge-modal {
+    background-color: #E03E1A;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    align-self: center;
+}
+
 .product-modal-rating {
     display: flex;
     align-items: center;
@@ -187,8 +217,32 @@
 .product-modal-description {
     color: #666;
     line-height: 1.6;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     font-size: 0.95rem;
+}
+
+.brand-description-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #fdfdfd;
+    border-left: 3px solid #FFB800;
+    border-radius: 4px;
+}
+
+.brand-description-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.brand-description-text {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.5;
+    font-style: italic;
 }
 
 .product-specs {

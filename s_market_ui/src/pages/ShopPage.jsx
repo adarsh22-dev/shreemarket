@@ -299,6 +299,7 @@ const ShopPage = () => {
                                         <Link to={`/product/${product.id}`} key={product.id} className="shop-product-card" style={{ textDecoration: 'none', color: 'inherit' }}>
                                             <div className="sp-image-container">
                                                 <img src={productImageUrl} alt={product.name} className="sp-image" style={{ objectFit: 'contain', backgroundColor: 'white' }} />
+                                                <div className="inner-rating-badge">{(product.averageRating || 0).toFixed(1)} <span style={{ color: '#FFB800' }}>★</span> ({product.reviewCount || 0})</div>
                                             </div>
                                             <div className="sp-info">
                                                 <h4 className="sp-name">{product.name}</h4>

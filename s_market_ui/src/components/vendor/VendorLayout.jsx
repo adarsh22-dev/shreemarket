@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     Home,
@@ -17,12 +17,38 @@ import {
     Star
 } from 'lucide-react';
 import smarketLogo from '../../assets/smarketlogo.svg';
-import { logoutUser } from '../../api/api';
+import { logoutUser, fetchVendorNotifications } from '../../api/api';
 import '../../pages/vendor/VendorDashboard.css'; // Inheriting sidebar styling
+
 
 const VendorLayout = ({ children }) => {
     const location = useLocation();
     const currentPath = location.pathname;
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        const fetchUnreadCount = async () => {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const userObj = JSON.parse(userStr);
+                if (userObj.userId) {
+                    try {
+                        const notifications = await fetchVendorNotifications(userObj.userId);
+                        const unread = notifications.filter(n => n.unread).length;
+                        setUnreadCount(unread);
+                    } catch (error) {
+                        console.error("Failed to fetch unread notifications:", error);
+                    }
+                }
+            }
+        };
+
+        fetchUnreadCount();
+        // Optional: Set up interval for polling
+        const interval = setInterval(fetchUnreadCount, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, []);
+
 
     const handleLogout = async () => {
         try {
@@ -50,10 +76,16 @@ const VendorLayout = ({ children }) => {
                         <Home size={20} />
                         Dashboard
                     </Link>
-                    <Link to="/vendor/notifications" className={`nav-item ${currentPath.includes('/vendor/notifications') ? 'active' : ''}`}>
+                    <Link to="/vendor/notifications" className={`nav-item ${currentPath.includes('/vendor/notifications') ? 'active' : ''}`} style={{ position: 'relative' }}>
                         <Bell size={20} />
                         Notifications
+                        {unreadCount > 0 && (
+                            <span className="notification-badge-sidebar">
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                        )}
                     </Link>
+
                     <Link to="/vendor/products" className={`nav-item ${currentPath === '/vendor/products' ? 'active' : ''}`}>
                         <Package size={20} />
                         My Products

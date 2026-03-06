@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Minus, Plus, Star, ThumbsUp, ThumbsDown, Package, RotateCcw, ShieldCheck, HeartHandshake, Leaf, MapPin, Heart, Loader2, CornerDownRight } from 'lucide-react';
+import { Minus, Plus, Star, ThumbsUp, ThumbsDown, Package, RotateCcw, ShieldCheck, HeartHandshake, Leaf, MapPin, Heart, Loader2, CornerDownRight, Share2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 import { getProduct, getVendorById, getAllProducts, getProductReviews, submitProductReview, BACKEND_URL } from '../api/api';
 import './ProductPage.css';
@@ -89,9 +90,10 @@ const ProductPage = () => {
             setReviews(prev => [savedReview, ...prev]);
             setIsWritingReview(false);
             setNewReview({ rating: 5, title: '', text: '', reviewerName: '' });
+            toast.success("Review submitted successfully!");
         } catch (err) {
             console.error("Failed to submit review:", err);
-            alert("Could not submit the review. Please try again.");
+            toast.error("Could not submit the review. Please try again.");
         } finally {
             setSubmittingReview(false);
         }
@@ -100,7 +102,7 @@ const ProductPage = () => {
     // Derived Statistics
     const averageRating = reviews.length > 0
         ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1)
-        : "5.0";
+        : (product?.averageRating || 0).toFixed(1);
 
     const getRatingDistribution = () => {
         const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
@@ -145,6 +147,27 @@ const ProductPage = () => {
             price: product.discountPrice || product.regularPrice || 0,
             image: product.media && product.media.length > 0 ? `${BACKEND_URL}/uploads/products/${product.media.find(m => m.isPrimary)?.fileName || product.media[0].fileName}` : null
         }, quantity, null, true);
+    };
+
+    const handleShareClick = async (e) => {
+        e.preventDefault();
+        const shareData = {
+            title: product.name,
+            text: `Check out ${product.name} on SreeMarket!`,
+            url: window.location.href
+        };
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(window.location.href);
+                toast.success("Product link copied to clipboard!");
+            }
+        } catch (err) {
+            console.error("Error sharing:", err);
+            await navigator.clipboard.writeText(window.location.href);
+            toast.success("Product link copied to clipboard!");
+        }
     };
 
     if (loading) {
@@ -194,6 +217,29 @@ const ProductPage = () => {
                 <section className="product-hero">
                     <div className="product-gallery">
                         <div className="main-image-wrapper" style={{ position: 'relative' }}>
+                            <button
+                                className="share-btn"
+                                onClick={handleShareClick}
+                                style={{
+                                    position: 'absolute',
+                                    top: '64px',
+                                    right: '16px',
+                                    backgroundColor: 'white',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    width: '40px',
+                                    height: '40px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                    zIndex: 10
+                                }}
+                                title="Share Product"
+                            >
+                                <Share2 size={20} color="#555" />
+                            </button>
                             <button
                                 className="heart-btn"
                                 onClick={handleHeartClick}

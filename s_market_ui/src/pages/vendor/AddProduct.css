@@ -172,7 +172,7 @@ textarea.form-control {
     /* Darker border for visibility */
     border-radius: 8px;
     font-size: 0.95rem;
-    color: #334155;
+    color: #334155 !important;
     /* Updated font color */
     background-color: #fff;
     outline: none;
@@ -188,22 +188,22 @@ textarea.form-control {
 }
 
 .form-control::placeholder {
-    color: #777;
+    color: #777 !important;
     /* Darker, clearly visible placeholder */
     opacity: 1;
     /* Override default browser opacity for placeholders */
 }
 
 select.form-control.select-placeholder {
-    color: #777;
+    color: #777 !important;
 }
 
 select.form-control option {
-    color: #334155;
+    color: #334155 !important;
 }
 
 select.form-control option[value=""] {
-    color: #777;
+    color: #777 !important;
 }
 
 textarea.form-control {
@@ -440,4 +440,20 @@ textarea.form-control {
     justify-content: flex-end;
     gap: 1rem;
     margin-top: 1rem;
+}
+
+/* Validation Styles */
+.form-control.error {
+    border-color: #ff4d4f !important;
+}
+
+.form-control.error:focus {
+    box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.15);
+}
+
+.error-message {
+    color: #ff4d4f;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
 }

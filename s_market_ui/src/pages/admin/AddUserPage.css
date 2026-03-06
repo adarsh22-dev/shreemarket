@@ -97,13 +97,24 @@
 .form-group input[type="password"],
 .form-group select {
     padding: 0.75rem 1rem;
-    border: 1px solid #cbd5e1;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #94a3b8;
+    /* Darker and more visible border */
     border-radius: 6px;
     font-size: 0.95rem;
     color: #334155;
     background-color: white;
     outline: none;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
+}
+
+.form-group select.placeholder-selected {
+    color: #64748b;
+    /* Darker placeholder color for better visibility */
+}
+
+.form-group select option {
+    color: #334155;
 }
 
 .form-group input:focus,
@@ -137,10 +148,14 @@
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1.25rem;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    flex: 0 1 auto;
+    /* Don't grow to fill space */
+    min-width: 320px;
+    align-self: flex-start;
 }
 
 .status-label {

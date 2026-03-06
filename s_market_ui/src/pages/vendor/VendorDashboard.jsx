@@ -13,7 +13,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorDashboard.css';
-import { fetchVendorOrders, getVendorProducts, BACKEND_URL } from '../../api/api';
+import { fetchVendorOrders, getVendorProducts, BACKEND_URL, fetchVendorNotifications } from '../../api/api';
 
 const VendorDashboard = () => {
     const navigate = useNavigate();
@@ -22,6 +22,8 @@ const VendorDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [chartFilter, setChartFilter] = useState('Weekly');
     const [vendorName, setVendorName] = useState('');
+    const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -43,12 +45,15 @@ const VendorDashboard = () => {
                     setVendorName(name);
 
                     if (userObj.userId) {
-                        const [ordersData, productsData] = await Promise.all([
+                        const [ordersData, productsData, notificationsData] = await Promise.all([
                             fetchVendorOrders(userObj.userId),
-                            getVendorProducts(userObj.userId)
+                            getVendorProducts(userObj.userId),
+                            fetchVendorNotifications(userObj.userId)
                         ]);
                         setOrders(Array.isArray(ordersData) ? ordersData : []);
                         setProducts(productsData?.content || (Array.isArray(productsData) ? productsData : []));
+                        setUnreadNotificationsCount(Array.isArray(notificationsData) ? notificationsData.filter(n => n.unread).length : 0);
+
                     }
                 }
             } catch (error) {
@@ -210,9 +215,15 @@ const VendorDashboard = () => {
                             <Plus size={18} />
                             Add New Product
                         </button>
-                        <button className="icon-btn">
+                        <button className="icon-btn" onClick={() => navigate('/vendor/notifications')} style={{ position: 'relative' }}>
                             <Bell size={20} />
+                            {unreadNotificationsCount > 0 && (
+                                <span className="notification-badge-bell">
+                                    {unreadNotificationsCount > 99 ? '99+' : unreadNotificationsCount}
+                                </span>
+                            )}
                         </button>
+
                         {/* <div className="profile-avatar">
                             <img src="https://ui-avatars.com/api/?name=Artisan&background=e0d5c1&color=333" alt="Profile" style={{ width: '100%', height: '100%' }} />
                         </div> */}
@@ -361,7 +372,12 @@ const VendorDashboard = () => {
                                         <img src={imageUrl} alt={product.name} className="product-thumb" />
                                         <div className="product-info">
                                             <div className="product-name">{product.name}</div>
-                                            <div className="product-sales" style={{ color: '#888', fontSize: '12px' }}>{product.category || 'N/A'}</div>
+                                            <div className="product-sales" style={{ color: '#888', fontSize: '12px' }}>
+                                                {product.category || 'N/A'}
+                                                <span style={{ marginLeft: '10px', color: '#FFB800' }}>
+                                                    ★ {(product.averageRating || 0).toFixed(1)} ({product.reviewCount || 0})
+                                                </span>
+                                            </div>
                                         </div>
                                         <div className="product-meta">
                                             <div className="product-price">₹{(product.discountPrice || product.regularPrice || 0).toFixed(2)}</div>

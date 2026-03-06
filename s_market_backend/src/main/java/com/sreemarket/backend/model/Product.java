@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import org.hibernate.annotations.Formula;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,12 @@ public class Product {
     // Timestamps
     private Long createdAt;
     private Long updatedAt;
+
+    @Formula("(SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.product_id = id)")
+    private Double averageRating;
+
+    @Formula("(SELECT COUNT(*) FROM reviews r WHERE r.product_id = id)")
+    private Integer reviewCount;
 
     // Relationships (mapped by the child entity)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -254,6 +261,14 @@ public class Product {
 
     public Long getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Double getAverageRating() {
+        return averageRating != null ? averageRating : 0.0;
+    }
+
+    public Integer getReviewCount() {
+        return reviewCount != null ? reviewCount : 0;
     }
 
     public String getSku() {

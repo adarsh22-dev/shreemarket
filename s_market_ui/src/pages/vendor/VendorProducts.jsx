@@ -326,6 +326,7 @@ const VendorProducts = () => {
                                 <th>CATEGORY</th>
                                 <th>PRICE</th>
                                 <th>STOCK STATUS</th>
+                                <th>RATING</th>
                                 <th style={{ textAlign: 'right' }}>ACTIONS</th>
                             </tr>
                         </thead>
@@ -366,6 +367,11 @@ const VendorProducts = () => {
                                         <span className={`stock-badge ${getStockBadgeClass(product.initialStock || product.stock || 0)}`}>
                                             {getStockText(product.initialStock || product.stock || 0)}
                                         </span>
+                                    </td>
+                                    <td>
+                                        <div className="rating-text" style={{ color: '#FFB800' }}>
+                                            ★ {(product.averageRating || 0).toFixed(1)} <span style={{ color: '#888', fontSize: '11px' }}>({product.reviewCount || 0})</span>
+                                        </div>
                                     </td>
                                     <td>
                                         <div className="row-actions">

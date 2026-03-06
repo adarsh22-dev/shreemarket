@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Star, ArrowRight, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { BACKEND_URL } from '../api/api';
 import './ProductModal.css';
 
 const ProductModal = ({ product, onClose }) => {
@@ -9,14 +10,25 @@ const ProductModal = ({ product, onClose }) => {
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
 
-    // Mock extra data if not present in product object
-    const images = product.images || [product.image, product.image, product.image, product.image];
-    const details = product.details || {
-        material: "100% Organic Material",
-        dimensions: "Standard Size",
-        origin: "Handmade Locally",
-        care: "Hand wash only"
-    };
+    // Filter unique images and handle BACKEND_URL
+    const productImages = [];
+    if (product.media && product.media.length > 0) {
+        product.media.forEach(m => {
+            productImages.push(`${BACKEND_URL}/uploads/products/${m.fileName}`);
+        });
+    } else if (product.image) {
+        productImages.push(product.image);
+    }
+
+    if (productImages.length === 0) {
+        productImages.push('https://placehold.co/800x800?text=No+Image');
+    }
+
+    // Ensure only unique images are shown
+    const images = [...new Set(productImages)];
+
+    // Use original attributes if present
+    const attributes = product.attributes || [];
 
     if (!product) return null;
 
@@ -48,45 +60,77 @@ const ProductModal = ({ product, onClose }) => {
 
                     {/* Right Column: Details */}
                     <div className="product-modal-details-column">
-                        <div className="product-modal-breadcrumb">
-                            HOME &gt; ARTISAN SERIES &gt; <span className="highlight">{product.category || 'PRODUCTS'}</span>
-                        </div>
-
                         <h2 className="product-modal-title">{product.name}</h2>
 
                         <div className="product-modal-price-row">
-                            <span className="product-modal-price">₹{product.price.toFixed(2)}</span>
-                            <div className="product-modal-rating">
-                                <div className="stars">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={14} fill={i < 4 ? "#FFC107" : "#eee"} color={i < 4 ? "#FFC107" : "#eee"} />
-                                    ))}
-                                </div>
-                                <span className="review-count">({product.reviews || 0} reviews)</span>
+                            <div className="price-container-modal">
+                                {product.discountPrice && product.regularPrice && product.regularPrice > product.discountPrice ? (
+                                    <>
+                                        <span className="product-modal-price-new">₹{parseFloat(product.discountPrice).toFixed(2)}</span>
+                                        <span className="product-modal-price-old">₹{parseFloat(product.regularPrice).toFixed(2)}</span>
+                                        <span className="discount-badge-modal">
+                                            -{Math.round(((product.regularPrice - product.discountPrice) / product.regularPrice) * 100)}%
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="product-modal-price-new">₹{parseFloat(product.regularPrice || product.price || 0).toFixed(2)}</span>
+                                )}
                             </div>
                         </div>
 
+                        <div className="product-modal-rating">
+                            <span className="numeric-rating">{(product.averageRating || 0).toFixed(1)}</span>
+                            <div className="stars">
+                                {[...Array(5)].map((_, i) => (
+                                    <Star
+                                        key={i}
+                                        size={14}
+                                        fill={i < Math.round(product.averageRating || 0) ? "#FFB800" : "#eee"}
+                                        color={i < Math.round(product.averageRating || 0) ? "#FFB800" : "#eee"}
+                                    />
+                                ))}
+                            </div>
+                            <span className="review-count">({product.reviewCount || 0} reviews)</span>
+                        </div>
+
                         <p className="product-modal-description">
-                            Experience the warmth of artisanal craftsmanship. Each piece is meticulously handmade using traditional techniques, featuring unique details that complement any modern interior.
+                            {product.description || product.shortDescription || "Experience the warmth of artisanal craftsmanship. Each piece is meticulously handmade using traditional techniques."}
                         </p>
 
+                        {(product.brandDescription || product.vendor?.description) && (
+                            <div className="brand-description-section">
+                                <h4 className="brand-description-title">About the Brand</h4>
+                                <p className="brand-description-text">
+                                    {product.brandDescription || product.vendor?.description}
+                                </p>
+                            </div>
+                        )}
+
                         <div className="product-specs">
-                            <div className="spec-item">
-                                <span className="spec-label">MATERIAL</span>
-                                <span className="spec-value">{details.material}</span>
-                            </div>
-                            <div className="spec-item">
-                                <span className="spec-label">DIMENSIONS</span>
-                                <span className="spec-value">{details.dimensions}</span>
-                            </div>
-                            <div className="spec-item">
-                                <span className="spec-label">ORIGIN</span>
-                                <span className="spec-value">{details.origin}</span>
-                            </div>
-                            <div className="spec-item">
-                                <span className="spec-label">CARE</span>
-                                <span className="spec-value">{details.care}</span>
-                            </div>
+                            {product.brand && (
+                                <div className="spec-item">
+                                    <span className="spec-label">BRAND</span>
+                                    <span className="spec-value">{product.brand}</span>
+                                </div>
+                            )}
+                            {product.sku && (
+                                <div className="spec-item">
+                                    <span className="spec-label">SKU</span>
+                                    <span className="spec-value">{product.sku}</span>
+                                </div>
+                            )}
+                            {product.weight && (
+                                <div className="spec-item">
+                                    <span className="spec-label">WEIGHT</span>
+                                    <span className="spec-value">{product.weight} kg</span>
+                                </div>
+                            )}
+                            {attributes.map((attr, idx) => (
+                                <div className="spec-item" key={idx}>
+                                    <span className="spec-label">{attr.name?.toUpperCase()}</span>
+                                    <span className="spec-value">{attr.value}</span>
+                                </div>
+                            ))}
                         </div>
 
                         <div className="product-modal-actions">

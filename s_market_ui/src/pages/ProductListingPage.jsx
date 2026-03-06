@@ -231,9 +231,9 @@ const ProductListingPage = () => {
                                 <p className="lp-desc">{product.description}</p>
                                 <div className="lp-rating">
                                     {[...Array(5)].map((_, i) => (
-                                        <span key={i} style={{ color: i < Math.floor(product.rating) ? '#FF5722' : '#ddd' }}>★</span>
+                                        <span key={i} style={{ color: i < Math.floor(product.averageRating || 0) ? '#FF5722' : '#ddd' }}>★</span>
                                     ))}
-                                    <span className="lp-review-count">({product.reviews} REVIEWS)</span>
+                                    <span className="lp-review-count">({product.reviewCount || 0} REVIEWS)</span>
                                 </div>
                             </div>
                         </div>

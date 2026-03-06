@@ -211,6 +211,7 @@ const AddUserPage = () => {
                                         name="role"
                                         value={formData.role}
                                         onChange={handleInputChange}
+                                        className={!formData.role ? 'placeholder-selected' : ''}
                                     >
                                         <option value="" disabled>Choose a role...</option>
                                         <option value="Admin">Admin</option>

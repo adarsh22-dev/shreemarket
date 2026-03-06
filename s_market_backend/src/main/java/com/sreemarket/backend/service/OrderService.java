@@ -15,6 +15,7 @@ import com.sreemarket.backend.repository.ProductRepository;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
+import com.sreemarket.backend.model.Notification;
 
 @Service
 public class OrderService {
@@ -24,6 +25,9 @@ public class OrderService {
 
         @Autowired
         private ProductRepository productRepository;
+
+        @Autowired
+        private NotificationService notificationService;
 
         public List<Order> getUserOrders(Long userId) {
                 return orderRepository.findByUserIdOrderByDatePlacedDesc(userId);
@@ -54,7 +58,19 @@ public class OrderService {
                         }
                 }
 
-                return orderRepository.save(order);
+                Order savedOrder = orderRepository.save(order);
+
+                // Notify vendor about new order
+                if (savedOrder.getVendorId() != null) {
+                        Notification notification = new Notification();
+                        notification.setVendorId(savedOrder.getVendorId());
+                        notification.setTitle("New Order Received");
+                        notification.setMessage("You have received a new order " + savedOrder.getOrderNumber() + ".");
+                        notification.setType("ORDER");
+                        notificationService.createNotification(notification);
+                }
+
+                return savedOrder;
         }
 
         public List<Order> getVendorOrders(Long vendorId) {
@@ -65,7 +81,19 @@ public class OrderService {
                 Order order = orderRepository.findById(id)
                                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
                 order.setStatus(status);
-                return orderRepository.save(order);
+                Order updatedOrder = orderRepository.save(order);
+
+                // Notify vendor if order is cancelled
+                if ("CANCELLED".equalsIgnoreCase(status) && updatedOrder.getVendorId() != null) {
+                        Notification notification = new Notification();
+                        notification.setVendorId(updatedOrder.getVendorId());
+                        notification.setTitle("Order Cancelled");
+                        notification.setMessage("Order " + updatedOrder.getOrderNumber() + " has been cancelled.");
+                        notification.setType("ORDER");
+                        notificationService.createNotification(notification);
+                }
+
+                return updatedOrder;
         }
 
         public Order submitReturnRequest(Long orderId, String reason, List<MultipartFile> images) throws IOException {
@@ -97,7 +125,20 @@ public class OrderService {
                         }
                 }
 
-                return orderRepository.save(order);
+                Order savedOrder = orderRepository.save(order);
+
+                // Notify vendor about return request
+                if (savedOrder.getVendorId() != null) {
+                        Notification notification = new Notification();
+                        notification.setVendorId(savedOrder.getVendorId());
+                        notification.setTitle("Return Requested");
+                        notification.setMessage(
+                                        "A return has been requested for order " + savedOrder.getOrderNumber() + ".");
+                        notification.setType("ORDER");
+                        notificationService.createNotification(notification);
+                }
+
+                return savedOrder;
         }
 
         public void generateMockOrders(Long userId) {

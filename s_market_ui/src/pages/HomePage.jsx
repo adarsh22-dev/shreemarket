@@ -226,7 +226,7 @@ const HomePage = () => {
                                             />
                                         </button>
                                         <img src={productImageUrl} alt={product.name} />
-                                        <div className="inner-rating-badge">4.5 <span style={{ color: '#FFB800' }}>★</span> (256)</div>
+                                        <div className="inner-rating-badge">{(product.averageRating || 0).toFixed(1)} <span style={{ color: '#FFB800' }}>★</span> ({product.reviewCount || 0})</div>
                                     </div>
                                     <div className="deal-text-content">
                                         <h3 className="deal-title">{product.name}</h3>
@@ -261,7 +261,7 @@ const HomePage = () => {
                                         />
                                     </button>
                                     <img src={productImageUrl} alt={product.name} />
-                                    <div className="inner-rating-badge">4.5 <span style={{ color: '#FFB800' }}>★</span> (256)</div>
+                                    <div className="inner-rating-badge">{(product.averageRating || 0).toFixed(1)} <span style={{ color: '#FFB800' }}>★</span> ({product.reviewCount || 0})</div>
                                 </div>
                                 <div className="figma-info-wrapper">
                                     <h3 className="figma-product-title">{product.name}</h3>
@@ -329,7 +329,7 @@ const HomePage = () => {
                                             />
                                         </button>
                                         <img src={productImageUrl} alt={product.name} style={{ objectFit: 'contain', backgroundColor: 'white' }} />
-                                        <div className="inner-rating-badge">4.5 <span style={{ color: '#FFB800' }}>★</span> (256)</div>
+                                        <div className="inner-rating-badge">{(product.averageRating || 0).toFixed(1)} <span style={{ color: '#FFB800' }}>★</span> ({product.reviewCount || 0})</div>
                                     </div>
                                     <div className="figma-info-wrapper">
                                         <h3 className="figma-product-title">{product.name}</h3>
@@ -430,7 +430,7 @@ const HomePage = () => {
                                             />
                                         </button>
                                         <img src={productImageUrl} alt={product.name} style={{ objectFit: 'contain', backgroundColor: 'white' }} />
-                                        <div className="inner-rating-badge">4.5 <span style={{ color: '#FFB800' }}>★</span> (256)</div>
+                                        <div className="inner-rating-badge">{(product.averageRating || 0).toFixed(1)} <span style={{ color: '#FFB800' }}>★</span> ({product.reviewCount || 0})</div>
                                     </div>
                                     <div className="figma-info-wrapper">
                                         <h3 className="figma-product-title">{product.name}</h3>

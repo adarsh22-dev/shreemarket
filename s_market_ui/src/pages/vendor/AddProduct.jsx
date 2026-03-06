@@ -64,6 +64,8 @@ const AddProduct = () => {
   const [policyDocuments, setPolicyDocuments] = useState([]);
   const policyFileInputRef = useRef(null);
 
+  const [errors, setErrors] = useState({});
+
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -75,6 +77,7 @@ const AddProduct = () => {
         isNew: true,
       }));
       setMediaFiles((prev) => [...prev, ...newFiles]);
+      if (errors.media) setErrors(prev => ({ ...prev, media: "" }));
     }
   };
 
@@ -121,6 +124,7 @@ const AddProduct = () => {
         isNew: true,
       }));
       setMediaFiles((prev) => [...prev, ...newFiles]);
+      if (errors.media) setErrors(prev => ({ ...prev, media: "" }));
     }
   };
 
@@ -310,18 +314,9 @@ const AddProduct = () => {
   }, [id, isEditMode]);
 
   const handleSaveProduct = async () => {
-    if (!productName || !regularPrice) {
-      setSubmitError("Product name and regular price are required.");
-      return;
-    }
-
-    if (mediaFiles.length === 0) {
-      setSubmitError("You must upload at least one media file.");
-      return;
-    }
-
-    if (mediaFiles[0].type !== "image") {
-      setSubmitError("The primary media must be an image.");
+    if (!validateForm()) {
+      setSubmitError("Please fix the errors before saving.");
+      toast.error("Please fill all required fields correctly.");
       return;
     }
 
@@ -441,6 +436,9 @@ const AddProduct = () => {
   const handleRegularPriceChange = (e) => {
     const val = e.target.value;
     setRegularPrice(val);
+    if (errors.regularPrice) {
+      setErrors(prev => ({ ...prev, regularPrice: "" }));
+    }
     validatePrices(val, discountPrice);
   };
 
@@ -448,6 +446,28 @@ const AddProduct = () => {
     const val = e.target.value;
     setDiscountPrice(val);
     validatePrices(regularPrice, val);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!productName.trim()) newErrors.productName = "Product name is required";
+    if (!category) newErrors.category = "Category is required";
+    if (!regularPrice || parseFloat(regularPrice) <= 0) {
+      newErrors.regularPrice = "Valid regular price is required";
+    }
+    if (!sku.trim()) newErrors.sku = "SKU is required";
+    if (!shortDescription.trim()) newErrors.shortDescription = "Short description is required";
+    if (!description.trim()) newErrors.description = "Description is required";
+
+    if (mediaFiles.length === 0) {
+      newErrors.media = "At least one media file is required";
+    } else if (mediaFiles[0].type !== "image") {
+      newErrors.media = "Primary media must be an image";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const validatePrices = (reg, disc) => {
@@ -505,11 +525,15 @@ const AddProduct = () => {
             <label>Product Name</label>
             <input
               type="text"
-              className="form-control"
+              className={`form-control ${errors.productName ? "error" : ""}`}
               placeholder="e.g. Minimalist Oak Coffee Table"
               value={productName}
-              onChange={(e) => setProductName(e.target.value)}
+              onChange={(e) => {
+                setProductName(e.target.value);
+                if (errors.productName) setErrors(prev => ({ ...prev, productName: "" }));
+              }}
             />
+            {errors.productName && <span className="error-message">{errors.productName}</span>}
           </div>
 
           <div className="form-group">
@@ -528,9 +552,12 @@ const AddProduct = () => {
             <div className="form-group form-col">
               <label>Category</label>
               <select
-                className={`form-control ${!category ? 'select-placeholder' : ''}`}
+                className={`form-control ${!category ? 'select-placeholder' : ''} ${errors.category ? "error" : ""}`}
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  if (errors.category) setErrors(prev => ({ ...prev, category: "" }));
+                }}
               >
                 <option value="">Select Category</option>
                 <option value="grocery">Grocery & Gourmet Food</option>
@@ -542,6 +569,7 @@ const AddProduct = () => {
                 <option value="patio">Patio, Lawn & Garden</option>
                 <option value="musical">Musical Instruments</option>
               </select>
+              {errors.category && <span className="error-message">{errors.category}</span>}
             </div>
             <div className="form-group form-col">
               <label>Brand</label>
@@ -557,22 +585,30 @@ const AddProduct = () => {
           <div className="form-group" style={{ marginBottom: "1.5rem" }}>
             <label>Short Description</label>
             <textarea
-              className="form-control"
+              className={`form-control ${errors.shortDescription ? "error" : ""}`}
               rows="2"
               placeholder="Provide a brief overview of the product for search results..."
               value={shortDescription}
-              onChange={(e) => setShortDescription(e.target.value)}
+              onChange={(e) => {
+                setShortDescription(e.target.value);
+                if (errors.shortDescription) setErrors(prev => ({ ...prev, shortDescription: "" }));
+              }}
             ></textarea>
+            {errors.shortDescription && <span className="error-message">{errors.shortDescription}</span>}
           </div>
 
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label>Description</label>
             <textarea
-              className="form-control"
+              className={`form-control ${errors.description ? "error" : ""}`}
               placeholder="Provide a detailed description of the product features and benefits..."
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (errors.description) setErrors(prev => ({ ...prev, description: "" }));
+              }}
             ></textarea>
+            {errors.description && <span className="error-message">{errors.description}</span>}
           </div>
         </div>
 
@@ -593,6 +629,7 @@ const AddProduct = () => {
                 value={regularPrice}
                 onChange={handleRegularPriceChange}
               />
+              {errors.regularPrice && <span className="error-message">{errors.regularPrice}</span>}
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Discount Price (₹)</label>
@@ -608,11 +645,15 @@ const AddProduct = () => {
               <label>SKU</label>
               <input
                 type="text"
-                className="form-control"
+                className={`form-control ${errors.sku ? "error" : ""}`}
                 placeholder="EHOME-001"
                 value={sku}
-                onChange={(e) => setSku(e.target.value)}
+                onChange={(e) => {
+                  setSku(e.target.value);
+                  if (errors.sku) setErrors(prev => ({ ...prev, sku: "" }));
+                }}
               />
+              {errors.sku && <span className="error-message">{errors.sku}</span>}
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label>Initial Stock</label>
@@ -756,6 +797,7 @@ const AddProduct = () => {
               ref={fileInputRef}
               onChange={handleFileChange}
             />
+            {errors.media && <span className="error-message" style={{ marginTop: '1rem', display: 'block' }}>{errors.media}</span>}
           </div>
 
           <div className="image-preview-row" style={{ flexWrap: "wrap" }}>
@@ -839,31 +881,35 @@ const AddProduct = () => {
                   style={{ marginBottom: 0 }}
                 >
                   {index === 0 && <label>Attribute Value</label>}
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="e.g. Solid Oak"
-                    value={attr.value}
-                    onChange={(e) =>
-                      handleAttributeChange(index, "value", e.target.value)
-                    }
-                  />
-                </div>
-                <div style={{ paddingTop: index === 0 ? "24px" : "0" }}>
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    style={{
-                      padding: "0.75rem",
-                      borderColor: "#ffdddd",
-                      color: "#FF5722",
-                      backgroundColor: "#FFF0EB",
-                    }}
-                    onClick={() => handleRemoveAttribute(index)}
-                    disabled={attributes.length === 1}
-                  >
-                    &times;
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. Solid Oak"
+                      value={attr.value}
+                      onChange={(e) =>
+                        handleAttributeChange(index, "value", e.target.value)
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      style={{
+                        padding: "0.75rem",
+                        borderColor: "#ffdddd",
+                        color: "#FF5722",
+                        backgroundColor: "#FFF0EB",
+                        height: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      onClick={() => handleRemoveAttribute(index)}
+                      disabled={attributes.length === 1}
+                    >
+                      &times;
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
