@@ -308,18 +308,14 @@
 }
 
 .chart-area {
-    height: 200px;
     position: relative;
     margin-top: 1rem;
-    overflow: hidden;
-    /* Added to prevent overflow */
 }
 
 .chart-svg {
     width: 100%;
-    height: 100%;
+    height: 200px;
     overflow: visible;
-    /* SVGs naturally overflow visible, handled by container now */
 }
 
 .chart-labels {
@@ -553,6 +549,9 @@
     font-size: 0.8rem;
     font-weight: 600;
     display: inline-block;
+    white-space: nowrap;
+    width: max-content;
+    margin: 0 auto;
 }
 
 .status-processing {

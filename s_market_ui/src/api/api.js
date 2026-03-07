@@ -337,6 +337,23 @@ export const deleteProductsBulk = async (productIds) => {
 };
 
 /**
+ * Updates stock of multiple products by their IDs.
+ * @param {Array<number>} productIds - Array of product IDs to update
+ * @param {number} stock - New stock value
+ */
+export const updateProductsStockBulk = async (productIds, stock) => {
+    const response = await fetch(`${API_BASE_URL}/products/bulk/stock?stock=${stock}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(productIds),
+    });
+    return handleResponse(response);
+};
+
+/**
  * Uploads products in bulk via CSV file.
  * @param {File} file - CSV file
  * @param {number|string} vendorId - Vendor ID

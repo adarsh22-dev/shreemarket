@@ -172,6 +172,19 @@ public class ProductController {
         }
     }
 
+    @PutMapping("/bulk/stock")
+    public ResponseEntity<?> updateProductsStockBulk(
+            @RequestBody List<Long> ids,
+            @RequestParam("stock") Integer stock) {
+        try {
+            productService.updateProductsStockBulk(ids, stock);
+            return ResponseEntity.ok(Map.of("message", "Selected products stock updated successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Server Error", "message", "Failed to update products stock in bulk."));
+        }
+    }
+
     @PostMapping("/bulk-upload")
     public ResponseEntity<?> uploadProductsBulk(
             @RequestParam("file") MultipartFile file,

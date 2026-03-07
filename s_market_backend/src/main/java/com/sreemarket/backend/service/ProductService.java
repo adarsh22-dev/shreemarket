@@ -212,6 +212,38 @@ public class ProductService {
     }
 
     @Transactional
+    public void updateProductsStockBulk(List<Long> ids, Integer newStock) {
+        if (ids != null && !ids.isEmpty() && newStock != null) {
+            List<Product> products = productRepository.findAllById(ids);
+            for (Product product : products) {
+                Integer oldStock = product.getInitialStock();
+                product.setInitialStock(newStock);
+
+                // Notify if stock becomes low or out
+                if (!newStock.equals(oldStock)) {
+                    if (newStock == 0) {
+                        Notification notification = new Notification();
+                        notification.setVendorId(product.getVendorId());
+                        notification.setTitle("Out of Stock");
+                        notification.setMessage("Product " + product.getName() + " is now out of stock.");
+                        notification.setType("OUT_OF_STOCK");
+                        notificationService.createNotification(notification);
+                    } else if (newStock <= 5) {
+                        Notification notification = new Notification();
+                        notification.setVendorId(product.getVendorId());
+                        notification.setTitle("Low Stock Warning");
+                        notification.setMessage(
+                                "Product " + product.getName() + " has low stock (" + newStock + " remaining).");
+                        notification.setType("LOW_STOCK");
+                        notificationService.createNotification(notification);
+                    }
+                }
+            }
+            productRepository.saveAll(products);
+        }
+    }
+
+    @Transactional
     public List<Product> uploadProductsBulk(MultipartFile file, Long vendorId) throws IOException {
         List<Product> products = new ArrayList<>();
         try (java.io.BufferedReader br = new java.io.BufferedReader(
@@ -284,6 +316,7 @@ public class ProductService {
         existingProduct.setName(productData.getName());
         existingProduct.setType(productData.getType());
         existingProduct.setCategory(productData.getCategory());
+        existingProduct.setSubCategory(productData.getSubCategory());
         existingProduct.setBrand(productData.getBrand());
         existingProduct.setShortDescription(productData.getShortDescription());
         existingProduct.setDescription(productData.getDescription());

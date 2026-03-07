@@ -300,6 +300,13 @@ const ProductPage = () => {
                             )}
                         </p>
 
+                        <div className="product-rating-summary" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                            {renderStars(Math.round(parseFloat(averageRating)))}
+                            <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                                {averageRating} ({reviews.length} reviews)
+                            </span>
+                        </div>
+
                         <p className="product-description">{product.shortDescription || product.description?.substring(0, 150) + '...'}</p>
 
                         <div className="product-specs">
@@ -351,6 +358,96 @@ const ProductPage = () => {
                             {product.description.split('\n').map((line, index) => (
                                 <p key={index}>{line}</p>
                             ))}
+                        </div>
+
+                        {/* Additional details */}
+                        <div className="additional-details" style={{ marginTop: '2rem' }}>
+                            <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid #eee', paddingBottom: '0.5rem', fontSize: '1.2rem', color: '#333' }}>Specifications</h3>
+                            <table className="specs-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+                                <tbody>
+                                    {product.brand && (
+                                        <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555', width: '30%' }}>Brand</td>
+                                            <td style={{ padding: '12px 8px' }}>{product.brand}</td>
+                                        </tr>
+                                    )}
+                                    {product.sku && (
+                                        <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555' }}>SKU</td>
+                                            <td style={{ padding: '12px 8px' }}>{product.sku}</td>
+                                        </tr>
+                                    )}
+                                    {product.category && (
+                                        <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555' }}>Category</td>
+                                            <td style={{ padding: '12px 8px', textTransform: 'capitalize' }}>{product.category}</td>
+                                        </tr>
+                                    )}
+                                    {product.status && (
+                                        <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555' }}>Availability</td>
+                                            <td style={{ padding: '12px 8px', textTransform: 'capitalize' }}>
+                                                {product.status === 'in' ? 'In Stock' : product.status === 'low' ? 'Low Stock' : product.status === 'out' ? 'Out of Stock' : product.status}
+                                            </td>
+                                        </tr>
+                                    )}
+                                    {product.weight > 0 && (
+                                        <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555' }}>Weight</td>
+                                            <td style={{ padding: '12px 8px' }}>{product.weight} kg</td>
+                                        </tr>
+                                    )}
+                                    {(product.length > 0 || product.width > 0 || product.height > 0) && (
+                                        <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555' }}>Dimensions</td>
+                                            <td style={{ padding: '12px 8px' }}>
+                                                {product.length || 0} x {product.width || 0} x {product.height || 0} cm <span style={{ fontSize: '0.8rem', color: '#999' }}>(L x W x H)</span>
+                                            </td>
+                                        </tr>
+                                    )}
+                                    {product.shippingClass && (
+                                        <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555' }}>Shipping Class</td>
+                                            <td style={{ padding: '12px 8px', textTransform: 'capitalize' }}>{product.shippingClass}</td>
+                                        </tr>
+                                    )}
+                                    {product.taxStatus && product.taxStatus !== 'none' && (
+                                        <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555' }}>Tax Status</td>
+                                            <td style={{ padding: '12px 8px', textTransform: 'capitalize' }}>
+                                                {product.taxStatus} {product.taxClass && `(${product.taxClass})`}
+                                            </td>
+                                        </tr>
+                                    )}
+                                    {product.attributes && product.attributes.map(attr => (
+                                        <tr key={attr.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555' }}>{attr.name?.charAt(0).toUpperCase() + attr.name?.slice(1)}</td>
+                                            <td style={{ padding: '12px 8px' }}>{attr.value}</td>
+                                        </tr>
+                                    ))}
+                                    {product.tags && product.tags.length > 0 && (
+                                        <tr style={{ borderBottom: '1px solid #f5f5f5' }}>
+                                            <td style={{ padding: '12px 8px', fontWeight: '500', color: '#555' }}>Tags</td>
+                                            <td style={{ padding: '12px 8px' }}>
+                                                {product.tags.map((tag, index) => (
+                                                    <span key={tag.id || index} style={{
+                                                        display: 'inline-block',
+                                                        background: '#f0f0f0',
+                                                        padding: '4px 10px',
+                                                        borderRadius: '16px',
+                                                        fontSize: '0.85rem',
+                                                        marginRight: '8px',
+                                                        marginBottom: '4px',
+                                                        color: '#444'
+                                                    }}>
+                                                        {tag.name}
+                                                    </span>
+                                                ))}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </section>
                 )}

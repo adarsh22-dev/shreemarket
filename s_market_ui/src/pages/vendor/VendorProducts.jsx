@@ -12,12 +12,13 @@ import {
     ChevronRight,
     Upload,
     FileText,
-    Download
+    Download,
+    Package
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorProducts.css';
-import { getVendorProducts, getUserDetails, BACKEND_URL, deleteProduct, deleteProductsBulk, bulkUploadProducts } from '../../api/api';
+import { getVendorProducts, getUserDetails, BACKEND_URL, deleteProduct, deleteProductsBulk, bulkUploadProducts, updateProduct, updateProductsStockBulk } from '../../api/api';
 import toast from 'react-hot-toast';
 
 const VendorProducts = () => {
@@ -41,11 +42,18 @@ const VendorProducts = () => {
     // Multi-Selection State
     const [selectedProductIds, setSelectedProductIds] = useState([]);
     const [isBulkDelete, setIsBulkDelete] = useState(false);
+    const [isBulkStockUpdate, setIsBulkStockUpdate] = useState(false);
 
     // Bulk Upload State
     const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
     const [uploadFile, setUploadFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
+
+    // Stock Update Modal State
+    const [isStockModalOpen, setIsStockModalOpen] = useState(false);
+    const [productToUpdateStock, setProductToUpdateStock] = useState(null);
+    const [newStockCount, setNewStockCount] = useState('');
+    const [isUpdatingStock, setIsUpdatingStock] = useState(false);
 
     // Fetch vendor ID on mount
     useEffect(() => {
@@ -133,7 +141,19 @@ const VendorProducts = () => {
             return;
         }
         setIsBulkDelete(true);
+        setIsBulkStockUpdate(false);
         setIsDeleteModalOpen(true);
+    };
+
+    const handleBulkStockUpdateInitiate = () => {
+        if (selectedProductIds.length === 0) {
+            toast.error("Please select at least one product to update stock");
+            return;
+        }
+        setIsBulkStockUpdate(true);
+        setNewStockCount('');
+        setProductToUpdateStock(null);
+        setIsStockModalOpen(true);
     };
 
     const handleToggleAll = () => {
@@ -196,6 +216,45 @@ const VendorProducts = () => {
             toast.error(error.message || "Bulk upload failed. Please check your CSV format.");
         } finally {
             setIsUploading(false);
+        }
+    };
+
+    const handleUpdateStock = (product) => {
+        setProductToUpdateStock(product);
+        setNewStockCount(product.initialStock || product.stock || 0);
+        setIsStockModalOpen(true);
+    };
+
+    const confirmUpdateStock = async () => {
+        setIsUpdatingStock(true);
+        try {
+            if (isBulkStockUpdate) {
+                if (selectedProductIds.length === 0) return;
+                await updateProductsStockBulk(selectedProductIds, parseInt(newStockCount, 10));
+                toast.success(`${selectedProductIds.length} products stock updated successfully`);
+                setSelectedProductIds([]);
+            } else {
+                if (!productToUpdateStock) return;
+                const formData = new FormData();
+                const updatedProductData = {
+                    ...productToUpdateStock,
+                    initialStock: parseInt(newStockCount, 10)
+                };
+                formData.append("product", JSON.stringify(updatedProductData));
+
+                await updateProduct(productToUpdateStock.id, formData);
+                toast.success("Stock updated successfully");
+            }
+
+            setIsStockModalOpen(false);
+            setProductToUpdateStock(null);
+            setIsBulkStockUpdate(false);
+            fetchProducts(); // Refresh the list
+        } catch (error) {
+            console.error("Failed to update stock:", error);
+            toast.error("Failed to update stock. Please try again.");
+        } finally {
+            setIsUpdatingStock(false);
         }
     };
 
@@ -306,8 +365,12 @@ const VendorProducts = () => {
                         >
                             <Trash2 size={16} /> Delete Selected ({selectedProductIds.length})
                         </button>
-                        <button className="action-text-btn">
-                            <RefreshCw size={16} /> Change Status
+                        <button
+                            className={`action-text-btn ${selectedProductIds.length === 0 ? 'disabled' : ''}`}
+                            onClick={handleBulkStockUpdateInitiate}
+                            disabled={selectedProductIds.length === 0}
+                        >
+                            <RefreshCw size={16} /> Update Stock ({selectedProductIds.length})
                         </button>
                     </div>
                     <div className="showing-text">
@@ -357,7 +420,7 @@ const VendorProducts = () => {
                                     </td><td>
                                         <div className="row-actions">
                                             <button className="row-action-btn" onClick={() => navigate(`/vendor/products/edit/${product.id}`)} title="Edit Product"><Edit2 size={16} /></button>
-                                            <button className="row-action-btn" title="Duplicate Product"><Copy size={16} /></button>
+                                            <button className="row-action-btn" onClick={() => handleUpdateStock(product)} title="Update Stock"><Package size={16} /></button>
                                             <button className="row-action-btn" onClick={() => handleDeleteProduct(product)} title="Delete Product"><Trash2 size={16} /></button>
                                         </div>
                                     </td></tr>
@@ -439,6 +502,63 @@ const VendorProducts = () => {
                                         </>
                                     ) : (
                                         'Delete Forever'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Update Stock Modal */}
+                {isStockModalOpen && (
+                    <div className="modal-overlay">
+                        <div className="delete-modal-box">
+                            <div className="delete-modal-icon" style={{ background: '#e0f2fe', color: '#0ea5e9' }}>
+                                <Package size={32} />
+                            </div>
+                            <h2>{isBulkStockUpdate ? 'Update Stock Count (Bulk)?' : 'Update Stock Count'}</h2>
+                            <p>
+                                {isBulkStockUpdate
+                                    ? `Enter the new stock count for ${selectedProductIds.length} selected products.`
+                                    : <>Enter the new stock count for <strong>{productToUpdateStock?.name}</strong>.</>
+                                }
+                            </p>
+                            <div style={{ margin: '20px 0', textAlign: 'left' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#444' }}>New Stock Count</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={newStockCount}
+                                    onChange={(e) => setNewStockCount(e.target.value)}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+                                />
+                            </div>
+
+                            <div className="delete-modal-actions">
+                                <button
+                                    className="btn-cancel-modal"
+                                    onClick={() => {
+                                        setIsStockModalOpen(false);
+                                        setProductToUpdateStock(null);
+                                        setIsBulkStockUpdate(false);
+                                    }}
+                                    disabled={isUpdatingStock}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="btn-confirm-delete"
+                                    style={{ background: '#0ea5e9' }}
+                                    onClick={confirmUpdateStock}
+                                    disabled={isUpdatingStock}
+                                >
+                                    {isUpdatingStock ? (
+                                        <>
+                                            <RefreshCw className="spinning-icon" size={16} />
+                                            Updating...
+                                        </>
+                                    ) : (
+                                        'Update Stock'
                                     )}
                                 </button>
                             </div>

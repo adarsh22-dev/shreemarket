@@ -25,6 +25,7 @@ const AddProduct = () => {
   const [productName, setProductName] = useState("");
   const [productType, setProductType] = useState("single");
   const [category, setCategory] = useState("");
+  const [subCategory, setSubCategory] = useState("");
   const [brand, setBrand] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
@@ -56,9 +57,7 @@ const AddProduct = () => {
   const [length, setLength] = useState("");
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
-  const [shippingClass, setShippingClass] = useState("no-shipping-class");
-  const [taxStatus, setTaxStatus] = useState("taxable");
-  const [taxClass, setTaxClass] = useState("standard");
+
 
   // Policy Documents State
   const [policyDocuments, setPolicyDocuments] = useState([]);
@@ -169,7 +168,18 @@ const AddProduct = () => {
   const handleAddVariation = () => {
     setVariations([
       ...variations,
-      { name: "", sku: "", price: "", stock: "", useMainPricing: true },
+      {
+        name: "",
+        sku: "",
+        price: "",
+        stock: "",
+        useMainPricing: true,
+        useMainAttributesAndTags: true,
+        images: [],
+        attributes: [{ name: "", value: "" }],
+        tags: [],
+        tagInput: ""
+      },
     ]);
   };
 
@@ -182,6 +192,88 @@ const AddProduct = () => {
   const handleVariationChange = (index, field, value) => {
     const newVars = [...variations];
     newVars[index][field] = value;
+    setVariations(newVars);
+  };
+
+  const handleVariationFileChange = (index, e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files).map((file) => ({
+        file,
+        url: URL.createObjectURL(file),
+        type: file.type.startsWith("video/") ? "video" : "image",
+        isNew: true,
+      }));
+      const newVars = [...variations];
+      const currentImages = newVars[index].images || [];
+      newVars[index].images = [...currentImages, ...newFiles];
+      setVariations(newVars);
+    }
+  };
+
+  const setVariationPrimary = (varIndex, imgIndex) => {
+    if (imgIndex === 0) return;
+    setVariations((prev) => {
+      const newVars = [...prev];
+      const newImages = [...(newVars[varIndex].images || [])];
+      const item = newImages.splice(imgIndex, 1)[0];
+      newImages.unshift(item);
+      newVars[varIndex].images = newImages;
+      return newVars;
+    });
+  };
+
+  const removeVariationMedia = (varIndex, imgIndex, e) => {
+    if (e) e.stopPropagation();
+    const newVars = [...variations];
+    const newImages = [...(newVars[varIndex].images || [])];
+    if (newImages[imgIndex]) {
+      URL.revokeObjectURL(newImages[imgIndex].url);
+      newImages.splice(imgIndex, 1);
+      newVars[varIndex].images = newImages;
+      setVariations(newVars);
+    }
+  };
+
+  const handleAddVariationAttribute = (varIndex) => {
+    const newVars = [...variations];
+    const currentAttrs = newVars[varIndex].attributes || [];
+    newVars[varIndex].attributes = [...currentAttrs, { name: "", value: "" }];
+    setVariations(newVars);
+  };
+
+  const handleRemoveVariationAttribute = (varIndex, attrIndex) => {
+    const newVars = [...variations];
+    const currentAttrs = [...(newVars[varIndex].attributes || [])];
+    currentAttrs.splice(attrIndex, 1);
+    newVars[varIndex].attributes = currentAttrs;
+    setVariations(newVars);
+  };
+
+  const handleVariationAttributeChange = (varIndex, attrIndex, field, value) => {
+    const newVars = [...variations];
+    if (!newVars[varIndex].attributes) newVars[varIndex].attributes = [];
+    newVars[varIndex].attributes[attrIndex][field] = value;
+    setVariations(newVars);
+  };
+
+  const handleAddVariationTag = (varIndex, e) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const trimmedTag = (variations[varIndex].tagInput || "").trim();
+      const currentTags = variations[varIndex].tags || [];
+      if (trimmedTag && !currentTags.includes(trimmedTag)) {
+        const newVars = [...variations];
+        newVars[varIndex].tags = [...currentTags, trimmedTag];
+        newVars[varIndex].tagInput = "";
+        setVariations(newVars);
+      }
+    }
+  };
+
+  const handleRemoveVariationTag = (varIndex, tagToRemove) => {
+    const newVars = [...variations];
+    const currentTags = newVars[varIndex].tags || [];
+    newVars[varIndex].tags = currentTags.filter((tag) => tag !== tagToRemove);
     setVariations(newVars);
   };
 
@@ -282,6 +374,7 @@ const AddProduct = () => {
           setProductName(data.name || "");
           setProductType(data.type || "single");
           setCategory(data.category || "");
+          setSubCategory(data.subCategory || "");
           setBrand(data.brand || "");
           setShortDescription(data.shortDescription || "");
           setDescription(data.description || "");
@@ -297,9 +390,7 @@ const AddProduct = () => {
           setLength(data.length?.toString() || "");
           setWidth(data.width?.toString() || "");
           setHeight(data.height?.toString() || "");
-          setShippingClass(data.shippingClass || "no-shipping-class");
-          setTaxStatus(data.taxStatus || "taxable");
-          setTaxClass(data.taxClass || "standard");
+
 
           if (data.attributes) setAttributes(data.attributes);
           if (data.variations) setVariations(data.variations);
@@ -340,6 +431,7 @@ const AddProduct = () => {
         name: productName,
         type: productType,
         category: category,
+        subCategory: subCategory,
         brand: brand,
         shortDescription: shortDescription,
         description: description,
@@ -353,9 +445,7 @@ const AddProduct = () => {
         length: parseFloat(length) || null,
         width: parseFloat(width) || null,
         height: parseFloat(height) || null,
-        shippingClass: shippingClass,
-        taxStatus: taxStatus,
-        taxClass: taxClass,
+
         status: "in", // Setting default status as 'in' stock
 
         attributes: attributes
@@ -370,6 +460,9 @@ const AddProduct = () => {
             price: parseFloat(v.price) || null,
             stock: parseInt(v.stock) || 0,
             useMainPricing: v.useMainPricing,
+            useMainAttributesAndTags: v.useMainAttributesAndTags !== false,
+            attributes: v.useMainAttributesAndTags !== false ? [] : (v.attributes || []).filter((a) => a.name && a.value).map((a) => ({ name: a.name, value: a.value })),
+            tags: v.useMainAttributesAndTags !== false ? [] : (v.tags || []).map((t) => ({ name: t })),
           })),
         linkedProducts: [
           ...upsells.map((u) => ({
@@ -402,6 +495,22 @@ const AddProduct = () => {
       mediaFiles.forEach((media) => {
         if (media.isNew && media.file) {
           formData.append("mediaFiles", media.file);
+        }
+      });
+
+      variations.forEach((varItem, vIndex) => {
+        if (varItem.images) {
+          const variationMediaMetadata = [];
+          varItem.images.forEach((media, imgIndex) => {
+            if (media.isNew && media.file) {
+              formData.append(`variationMedia_${vIndex}`, media.file);
+            }
+            variationMediaMetadata.push({
+              isNew: media.isNew,
+              isPrimary: imgIndex === 0,
+            });
+          });
+          formData.append(`variationMediaMetadata_${vIndex}`, JSON.stringify(variationMediaMetadata));
         }
       });
 
@@ -585,14 +694,25 @@ const AddProduct = () => {
               {errors.category && <span className="error-message">{errors.category}</span>}
             </div>
             <div className="form-group form-col">
-              <label>Brand</label>
+              <label>Sub Category</label>
               <input
                 type="text"
                 className="form-control"
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
+                placeholder="e.g. Snacks, Makeup, etc."
+                value={subCategory}
+                onChange={(e) => setSubCategory(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label>Brand</label>
+            <input
+              type="text"
+              className="form-control"
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+            />
           </div>
 
           <div className="form-group" style={{ marginBottom: "1.5rem" }}>
@@ -1171,6 +1291,160 @@ const AddProduct = () => {
                       />
                     </div>
                   </div>
+
+                  {/* Variation Images Section */}
+                  <div style={{ marginTop: "1rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                      <label style={{ margin: 0, fontWeight: "600", fontSize: "0.9rem" }}>Variation Images</label>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        style={{ padding: "0.4rem 0.75rem", fontSize: "0.8rem", display: "flex", gap: "0.4rem", alignItems: "center", border: "1px solid #ccc", background: "#fff", color: "#333" }}
+                        onClick={(e) => e.currentTarget.nextElementSibling.click()}
+                      >
+                        <Plus size={14} /> Add Image
+                      </button>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        style={{ display: "none" }}
+                        onChange={(e) => handleVariationFileChange(index, e)}
+                      />
+                    </div>
+                    <div className="image-preview-row" style={{ flexWrap: "wrap", gap: "0.75rem", marginTop: "0.8rem" }}>
+                      {(variation.images || []).map((media, imgIndex) => (
+                        <div className={`image-thumbnail-wrapper ${imgIndex === 0 ? "primary" : ""}`} key={media.url || imgIndex} style={{ width: "80px", height: "80px", marginBottom: 0, position: "relative", border: "1px solid #ddd", borderRadius: "8px", padding: 0 }}>
+                          {media.type === "video" ? (
+                            <video src={media.url} className="image-thumbnail" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} muted />
+                          ) : (
+                            <img src={media.url} alt={`Var Preview ${imgIndex}`} className="image-thumbnail" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
+                          )}
+                          {imgIndex === 0 ? (
+                            <div className="primary-label" style={{ position: "absolute", bottom: 0, left: 0, width: "100%", background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: "0.6rem", textAlign: "center", padding: "0.1rem 0", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px" }}>Primary</div>
+                          ) : (
+                            <button
+                              type="button"
+                              className="set-primary-btn"
+                              style={{ position: "absolute", bottom: 0, left: 0, width: "100%", fontSize: "0.55rem", background: "rgba(255,255,255,0.9)", border: "none", borderTop: "1px solid #ccc", padding: "0.1rem 0", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px", cursor: "pointer" }}
+                              onClick={() => setVariationPrimary(index, imgIndex)}
+                            >
+                              Set Primary
+                            </button>
+                          )}
+                          <button
+                            className="remove-media-btn"
+                            onClick={(e) => removeVariationMedia(index, imgIndex, e)}
+                            title="Remove"
+                            type="button"
+                            style={{ cursor: "pointer", width: "18px", height: "18px", fontSize: "14px", right: "-6px", top: "-6px", position: "absolute", zIndex: 10, background: "#fff", color: "#ff5722", border: "1px solid #ffdddd", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Custom Variation Details Section */}
+                  <div className="checkbox-group" style={{ marginTop: "1rem", marginBottom: 0 }}>
+                    <input
+                      type="checkbox"
+                      id={`useMainAttrs-${index}`}
+                      className="checkbox-custom"
+                      checked={variation.useMainAttributesAndTags !== false}
+                      onChange={(e) =>
+                        handleVariationChange(
+                          index,
+                          "useMainAttributesAndTags",
+                          e.target.checked
+                        )
+                      }
+                    />
+                    <label htmlFor={`useMainAttrs-${index}`}>
+                      Use main product attributes and tags
+                    </label>
+                  </div>
+
+                  {variation.useMainAttributesAndTags === false && (
+                    <div style={{ marginTop: "1rem", padding: "1.2rem", backgroundColor: "#fdfdfd", borderRadius: "8px", border: "1px dashed #ccc" }}>
+                      <div style={{ marginBottom: "1.5rem" }}>
+                        <label style={{ display: "block", marginBottom: "0.8rem", fontWeight: "600", fontSize: "0.9rem" }}>Variation Attributes</label>
+                        {(variation.attributes || []).map((attr, attrIndex) => (
+                          <div key={attrIndex} className="form-row" style={{ marginBottom: "0.75rem", alignItems: "flex-start" }}>
+                            <div className="form-group form-col" style={{ marginBottom: 0 }}>
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Name (e.g. Size)"
+                                value={attr.name}
+                                onChange={(e) => handleVariationAttributeChange(index, attrIndex, "name", e.target.value)}
+                                style={{ fontSize: "0.9rem" }}
+                              />
+                            </div>
+                            <div className="form-group form-col" style={{ marginBottom: 0 }}>
+                              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder="Value (e.g. XL)"
+                                  value={attr.value}
+                                  onChange={(e) => handleVariationAttributeChange(index, attrIndex, "value", e.target.value)}
+                                  style={{ fontSize: "0.9rem" }}
+                                />
+                                <button
+                                  type="button"
+                                  className="btn-secondary"
+                                  style={{ padding: "0.4rem 0.6rem", color: "#FF5722", backgroundColor: "#FFF0EB", height: "auto", border: "1px solid #ffdddd" }}
+                                  onClick={() => handleRemoveVariationAttribute(index, attrIndex)}
+                                >
+                                  &times;
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ fontSize: "0.85rem", padding: "0.5rem 0.8rem", borderStyle: "dashed", display: "flex", alignItems: "center", gap: "0.3rem", background: "#fff", color: "#333", border: "1px dashed #ccc" }}
+                          onClick={() => handleAddVariationAttribute(index)}
+                        >
+                          <Plus size={14} /> Add Attribute
+                        </button>
+                      </div>
+
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label style={{ fontWeight: "600", fontSize: "0.9rem", marginBottom: "0.5rem" }}>Variation Tags</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Press enter to add tag"
+                          value={variation.tagInput || ""}
+                          onChange={(e) => handleVariationChange(index, "tagInput", e.target.value)}
+                          onKeyDown={(e) => handleAddVariationTag(index, e)}
+                          style={{ fontSize: "0.9rem" }}
+                        />
+                        {(variation.tags || []).length > 0 && (
+                          <div className="product-tags-container" style={{ marginTop: "0.8rem" }}>
+                            {(variation.tags || []).map((tag, tagIndex) => (
+                              <span key={tagIndex} className="product-tag">
+                                {tag}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveVariationTag(index, tag)}
+                                  className="product-tag-remove"
+                                >
+                                  &times;
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               </div>
             ))}
@@ -1335,46 +1609,6 @@ const AddProduct = () => {
                   onChange={(e) => setHeight(e.target.value)}
                 />
               </div>
-            </div>
-            <div className="form-group form-col" style={{ flex: 1 }}>
-              <label>Shipping class</label>
-              <select
-                className={`form-control ${!shippingClass ? 'select-placeholder' : ''}`}
-                value={shippingClass}
-                onChange={(e) => setShippingClass(e.target.value)}
-              >
-                <option value="" disabled>Select Shipping Class</option>
-                <option value="no-shipping-class">No shipping class</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="form-row" style={{ marginTop: "0.5rem" }}>
-            <div className="form-group form-col">
-              <label>Tax status</label>
-              <select
-                className={`form-control ${!taxStatus ? 'select-placeholder' : ''}`}
-                value={taxStatus}
-                onChange={(e) => setTaxStatus(e.target.value)}
-              >
-                <option value="" disabled>Select Tax Status</option>
-                <option value="taxable">Taxable</option>
-                <option value="shipping">Shipping only</option>
-                <option value="none">None</option>
-              </select>
-            </div>
-            <div className="form-group form-col">
-              <label>Tax class</label>
-              <select
-                className={`form-control ${!taxClass ? 'select-placeholder' : ''}`}
-                value={taxClass}
-                onChange={(e) => setTaxClass(e.target.value)}
-              >
-                <option value="" disabled>Select Tax Class</option>
-                <option value="standard">Standard</option>
-                <option value="reduced-rate">Reduced rate</option>
-                <option value="zero-rate">Zero rate</option>
-              </select>
             </div>
           </div>
 

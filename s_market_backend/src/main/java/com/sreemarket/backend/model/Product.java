@@ -24,6 +24,7 @@ public class Product {
     private String name;
     private String type; // "single" or "grouped"
     private String category;
+    private String subCategory;
     private String brand;
     private String sku;
     private String status; // e.g., "in", "low", "out", "draft"
@@ -128,6 +129,14 @@ public class Product {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getSubCategory() {
+        return subCategory;
+    }
+
+    public void setSubCategory(String subCategory) {
+        this.subCategory = subCategory;
     }
 
     public String getBrand() {
