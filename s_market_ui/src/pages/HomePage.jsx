@@ -40,12 +40,36 @@ const HomePage = () => {
         const fetchHomePageProducts = async () => {
             try {
                 const data = await getAllProducts();
-                // Set top deals (first 3 products)
-                setTopDeals(data.slice(0, 3));
-                // Set trending (next 4 products)
-                setTrendingProducts(data.length > 3 ? data.slice(3, 7) : data.slice(0, 4));
-                // Set featured (next 4 products)
-                setFeaturedProducts(data.length > 7 ? data.slice(7, 11) : data.slice(0, 4));
+
+                // Sort products by discount percentage
+                const sortedByDiscount = [...data].sort((a, b) => {
+                    const getDiscountPercentage = (p) => {
+                        if (!p.regularPrice || !p.discountPrice || p.regularPrice <= p.discountPrice) return 0;
+                        return ((p.regularPrice - p.discountPrice) / p.regularPrice) * 100;
+                    };
+                    return getDiscountPercentage(b) - getDiscountPercentage(a);
+                });
+
+                // Get top 3 discounted products
+                const top3 = sortedByDiscount.slice(0, 3);
+
+                // Reorder for display: [2nd highest, Highest, 3rd highest]
+                // Index 1 is the hero card in the middle
+                const reorderedTopDeals = [];
+                if (top3.length > 0) reorderedTopDeals[1] = top3[0]; // Highest in middle
+                if (top3.length > 1) reorderedTopDeals[0] = top3[1]; // 2nd highest on left
+                if (top3.length > 2) reorderedTopDeals[2] = top3[2]; // 3rd highest on right
+
+                // Filter out any undefined slots if there are fewer than 3 products
+                setTopDeals(reorderedTopDeals.filter(Boolean));
+
+                // Set trending products (Sort by bookingCount descending, max 12)
+                const trending = [...data]
+                    .sort((a, b) => (b.bookingCount || 0) - (a.bookingCount || 0))
+                    .slice(0, 12);
+                setTrendingProducts(trending);
+                // Set featured (next 4 products from the sorted list)
+                setFeaturedProducts(sortedByDiscount.length > 7 ? sortedByDiscount.slice(7, 11) : sortedByDiscount.slice(0, 4));
             } catch (error) {
                 console.error("Failed to load products for home page:", error);
             }
@@ -57,11 +81,16 @@ const HomePage = () => {
         e.preventDefault();
         e.stopPropagation();
         const isInCart = cartItems.some(item => item.id === product.id);
+        const productImageUrl = product.media && product.media.length > 0
+            ? `${BACKEND_URL}/uploads/products/${product.media[0].fileName}`
+            : 'https://placehold.co/800x800?text=No+Image';
+
         if (isInCart) {
             removeFromCart(product.id, product.variant);
         } else {
             addToCart({
                 ...product,
+                image: productImageUrl,
                 price: product.price || product.discountPrice || product.regularPrice || 0
             }, 1, product.variant);
         }
@@ -230,7 +259,7 @@ const HomePage = () => {
                                     </div>
                                     <div className="deal-text-content">
                                         <h3 className="deal-title">{product.name}</h3>
-                                        <p className="deal-desc">{product.description || 'An elegant rose gold pure silk saree crafted with fine zari detailing and a luxurious finish.'}</p>
+                                        <p className="deal-desc">{product.shortDescription || product.description || 'An elegant rose gold pure silk saree crafted with fine zari detailing and a luxurious finish.'}</p>
                                         <span className="deal-shop-link">Shop Now</span>
                                     </div>
                                 </div>
@@ -474,7 +503,7 @@ const HomePage = () => {
                                 <span className="vm-stat-label">PARTNER CO-OPS</span>
                             </div>
                             <div className="vm-stat">
-                                <span className="vm-stat-number">$2.4M</span>
+                                <span className="vm-stat-number">₹2.4M</span>
                                 <span className="vm-stat-label">DIRECT ARTISAN INCOME</span>
                             </div>
                         </div>

@@ -94,7 +94,7 @@ const ProductModal = ({ product, onClose }) => {
                         </div>
 
                         <p className="product-modal-description">
-                            {product.description || product.shortDescription || "Experience the warmth of artisanal craftsmanship. Each piece is meticulously handmade using traditional techniques."}
+                            {product.shortDescription || product.description || "Experience the warmth of artisanal craftsmanship. Each piece is meticulously handmade using traditional techniques."}
                         </p>
 
                         {(product.brandDescription || product.vendor?.description) && (
@@ -144,6 +144,7 @@ const ProductModal = ({ product, onClose }) => {
                                 onClick={() => {
                                     addToCart({
                                         ...product,
+                                        image: images[selectedImage],
                                         price: product.price || product.discountPrice || product.regularPrice || 0
                                     }, quantity, { size: 'Standard', color: 'Default' });
                                     onClose();

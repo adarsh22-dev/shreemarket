@@ -318,30 +318,17 @@ const VendorProducts = () => {
                 {/* Data Table Area */}
                 <div className="products-table-wrapper">
                     <table className="products-data-table">
-                        <thead>
-                            <tr>
-                                <th style={{ width: '40px' }}></th> {/* Checkbox column */}
-                                <th>PRODUCT INFO</th>
-                                <th>SKU</th>
-                                <th>CATEGORY</th>
-                                <th>PRICE</th>
-                                <th>STOCK STATUS</th>
-                                <th>RATING</th>
-                                <th style={{ textAlign: 'right' }}>ACTIONS</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th style={{ width: '40px' }}>{/* Checkbox column */}</th><th>PRODUCT INFO</th><th>SKU</th><th>CATEGORY</th><th>PRICE</th><th>STOCK STATUS</th><th>RATING</th><th style={{ textAlign: 'right' }}>ACTIONS</th></tr></thead>
                         <tbody>
                             {products.map((product) => (
-                                <tr key={product.id}>
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox-custom"
-                                            checked={selectedProductIds.includes(product.id)}
-                                            onChange={() => handleToggleProduct(product.id)}
-                                        />
-                                    </td>
-                                    <td>
+                                <tr key={product.id}><td>
+                                    <input
+                                        type="checkbox"
+                                        className="checkbox-custom"
+                                        checked={selectedProductIds.includes(product.id)}
+                                        onChange={() => handleToggleProduct(product.id)}
+                                    />
+                                </td><td>
                                         <div className="product-info-cell">
                                             <img
                                                 src={product.media && product.media.length > 0 ? `${BACKEND_URL}/uploads/products/${product.media[0].fileName}` : '/placeholder-image.png'}
@@ -353,34 +340,27 @@ const VendorProducts = () => {
                                                 <div className="product-desc">{product.shortDescription || product.description || 'No description available'}</div>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td>
+                                    </td><td>
                                         <div className="sku-text">{product.sku}</div>
-                                    </td>
-                                    <td>
+                                    </td><td>
                                         <span className="category-badge">{product.category}</span>
-                                    </td>
-                                    <td>
+                                    </td><td>
                                         <div className="price-text">₹{product.regularPrice || product.discountPrice || '0.00'}</div>
-                                    </td>
-                                    <td>
+                                    </td><td>
                                         <span className={`stock-badge ${getStockBadgeClass(product.initialStock || product.stock || 0)}`}>
                                             {getStockText(product.initialStock || product.stock || 0)}
                                         </span>
-                                    </td>
-                                    <td>
+                                    </td><td>
                                         <div className="rating-text" style={{ color: '#FFB800' }}>
                                             ★ {(product.averageRating || 0).toFixed(1)} <span style={{ color: '#888', fontSize: '11px' }}>({product.reviewCount || 0})</span>
                                         </div>
-                                    </td>
-                                    <td>
+                                    </td><td>
                                         <div className="row-actions">
                                             <button className="row-action-btn" onClick={() => navigate(`/vendor/products/edit/${product.id}`)} title="Edit Product"><Edit2 size={16} /></button>
                                             <button className="row-action-btn" title="Duplicate Product"><Copy size={16} /></button>
                                             <button className="row-action-btn" onClick={() => handleDeleteProduct(product)} title="Delete Product"><Trash2 size={16} /></button>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </td></tr>
                             ))}
                         </tbody>
                     </table>

@@ -73,29 +73,26 @@ const CreateRolePage = () => {
 
                     <div className="permissions-table-container">
                         <table className="permissions-table">
-                            <thead>
-                                <tr>
-                                    <th className="col-module">MODULE / PAGE</th>
-                                    {actions.map(action => (
-                                        <th key={action} className="col-action">{action.toUpperCase()}</th>
-                                    ))}
-                                </tr>
-                            </thead>
+                            <thead><tr>
+                                <th className="col-module">MODULE / PAGE</th>
+                                {actions.map(action => (
+                                    <th key={action} className="col-action">{action.toUpperCase()}</th>
+                                ))}
+                            </tr></thead>
                             <tbody>
                                 {modules.map(module => (
-                                    <tr key={module.id}>
-                                        <td>
-                                            <div className="module-info">
-                                                <div className="module-icon-placeholder">
-                                                    {/* Icons could be dynamic based on module */}
-                                                    <div className={`icon-${module.id}`}></div>
-                                                </div>
-                                                <div>
-                                                    <div className="module-name">{module.name}</div>
-                                                    <div className="module-desc">{module.desc}</div>
-                                                </div>
+                                    <tr key={module.id}><td>
+                                        <div className="module-info">
+                                            <div className="module-icon-placeholder">
+                                                {/* Icons could be dynamic based on module */}
+                                                <div className={`icon-${module.id}`}></div>
                                             </div>
-                                        </td>
+                                            <div>
+                                                <div className="module-name">{module.name}</div>
+                                                <div className="module-desc">{module.desc}</div>
+                                            </div>
+                                        </div>
+                                    </td>
                                         {actions.map(action => (
                                             <td key={action} className="text-center">
                                                 <label className="checkbox-container">
@@ -107,8 +104,7 @@ const CreateRolePage = () => {
                                                     <span className="checkmark"></span>
                                                 </label>
                                             </td>
-                                        ))}
-                                    </tr>
+                                        ))}</tr>
                                 ))}
                             </tbody>
                         </table>

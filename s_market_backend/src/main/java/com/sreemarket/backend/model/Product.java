@@ -64,6 +64,9 @@ public class Product {
     @Formula("(SELECT COUNT(*) FROM reviews r WHERE r.product_id = id)")
     private Integer reviewCount;
 
+    @Formula("(SELECT COALESCE(SUM(op.quantity), 0) FROM order_products op WHERE op.product_id = id)")
+    private Integer bookingCount;
+
     // Relationships (mapped by the child entity)
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductMedia> media = new ArrayList<>();
@@ -269,6 +272,14 @@ public class Product {
 
     public Integer getReviewCount() {
         return reviewCount != null ? reviewCount : 0;
+    }
+
+    public Integer getBookingCount() {
+        return bookingCount != null ? bookingCount : 0;
+    }
+
+    public void setBookingCount(Integer bookingCount) {
+        this.bookingCount = bookingCount;
     }
 
     public String getSku() {

@@ -404,20 +404,17 @@ const VendorDashboard = () => {
                     </div>
 
                     <table className="orders-table">
-                        <thead>
-                            <tr>
-                                <th>Order ID</th>
-                                <th>Customer</th>
-                                <th>Products</th>
-                                <th>Date</th>
-                                <th>Total</th>
-                                <th style={{ textAlign: 'center' }}>Status</th>
-                            </tr>
-                        </thead>
+                        <thead><tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Products</th>
+                            <th>Date</th>
+                            <th>Total</th>
+                            <th style={{ textAlign: 'center' }}>Status</th>
+                        </tr></thead>
                         <tbody>
                             {orders.slice(0, 5).map(order => (
-                                <tr key={order.id}>
-                                    <td className="order-id">{order.orderNumber || `#${order.id}`}</td>
+                                <tr key={order.id}><td className="order-id">{order.orderNumber || `#${order.id}`}</td>
                                     <td>
                                         <div className="customer-cell">
                                             <div className="customer-avatar">
@@ -449,13 +446,10 @@ const VendorDashboard = () => {
                                         <span className={`status-badge ${getStatusClass(order.status)}`}>
                                             {order.status || 'Pending'}
                                         </span>
-                                    </td>
-                                </tr>
+                                    </td></tr>
                             ))}
                             {orders.length === 0 && (
-                                <tr>
-                                    <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>No recent orders.</td>
-                                </tr>
+                                <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>No recent orders.</td></tr>
                             )}
                         </tbody>
                     </table>

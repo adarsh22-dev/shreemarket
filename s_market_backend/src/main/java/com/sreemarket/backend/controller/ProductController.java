@@ -188,7 +188,7 @@ public class ProductController {
         }
     }
 
-    @PutMapping(value = "/{id}", consumes = { "multipart/form-data" })
+    @PostMapping(value = "/{id}", consumes = { "multipart/form-data" })
     public ResponseEntity<?> updateProduct(
             @PathVariable Long id,
             @RequestParam("product") String productJson,

@@ -244,32 +244,29 @@ const VendorAnalytics = () => {
                     </div>
                     <div className="table-wrapper">
                         <table className="products-table">
-                            <thead>
-                                <tr>
-                                    <th>PRODUCT NAME</th>
-                                    <th>SKU</th>
-                                    <th>UNITS SOLD</th>
-                                    <th>REVENUE</th>
-                                    <th>STOCK STATUS</th>
-                                    <th>GROWTH</th>
-                                </tr>
-                            </thead>
+                            <thead><tr>
+                                <th>PRODUCT NAME</th>
+                                <th>SKU</th>
+                                <th>UNITS SOLD</th>
+                                <th>REVENUE</th>
+                                <th>STOCK STATUS</th>
+                                <th>GROWTH</th>
+                            </tr></thead>
                             <tbody>
                                 {topProducts.map((p, i) => (
-                                    <tr key={p.id || i}>
-                                        <td>
-                                            <div className="product-info-cell">
-                                                <img
-                                                    src={p.image && p.image !== '/placeholder-image.png' ? `${BACKEND_URL}/uploads/products/${p.image}` : '/placeholder-image.png'}
-                                                    alt={p.name}
-                                                    className="product-img"
-                                                />
-                                                <div>
-                                                    <div className="product-name">{p.name}</div>
-                                                    <div className="product-cat">{p.category}</div>
-                                                </div>
+                                    <tr key={p.id || i}><td>
+                                        <div className="product-info-cell">
+                                            <img
+                                                src={p.image && p.image !== '/placeholder-image.png' ? `${BACKEND_URL}/uploads/products/${p.image}` : '/placeholder-image.png'}
+                                                alt={p.name}
+                                                className="product-img"
+                                            />
+                                            <div>
+                                                <div className="product-name">{p.name}</div>
+                                                <div className="product-cat">{p.category}</div>
                                             </div>
-                                        </td>
+                                        </div>
+                                    </td>
                                         <td>{p.sku}</td>
                                         <td className="font-semibold">{p.unitsSold}</td>
                                         <td className="font-semibold">₹{p.revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
@@ -278,15 +275,12 @@ const VendorAnalytics = () => {
                                                 {p.status === 'out' ? 'OUT OF STOCK' : p.status === 'low' ? 'LOW STOCK' : 'IN STOCK'}
                                             </span>
                                         </td>
-                                        <td className="growth-positive">{p.growth}</td>
-                                    </tr>
+                                        <td className="growth-positive">{p.growth}</td></tr>
                                 ))}
                                 {topProducts.length === 0 && (
-                                    <tr>
-                                        <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-                                            No sales recorded yet.
-                                        </td>
-                                    </tr>
+                                    <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                                        No sales recorded yet.
+                                    </td></tr>
                                 )}
                             </tbody>
                         </table>

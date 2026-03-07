@@ -115,18 +115,14 @@ export default function ShippingPage() {
         <section className="shipping-section">
           <h2>Delivery Times</h2>
           <table className="delivery-table">
-            <thead>
-              <tr>
-                <th>Shipping Method</th>
-                <th>Estimated Delivery Time</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Shipping Method</th>
+              <th>Estimated Delivery Time</th>
+            </tr></thead>
             <tbody>
               {deliveryTable.map((row) => (
-                <tr key={row.method}>
-                  <td>{row.method}</td>
-                  <td>{row.time}</td>
-                </tr>
+                <tr key={row.method}><td>{row.method}</td>
+                  <td>{row.time}</td></tr>
               ))}
             </tbody>
           </table>

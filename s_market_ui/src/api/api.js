@@ -376,7 +376,7 @@ export const getProduct = async (productId) => {
  */
 export const updateProduct = async (productId, formData) => {
     const response = await fetch(`${API_BASE_URL}/products/${productId}`, {
-        method: "PUT",
+        method: "POST",
         credentials: "include",
         body: formData,
     });

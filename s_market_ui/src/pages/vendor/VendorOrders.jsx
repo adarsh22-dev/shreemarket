@@ -178,23 +178,20 @@ const VendorOrders = () => {
                             </div>
                         ) : (
                             <table className="orders-data-table">
-                                <thead>
-                                    <tr>
-                                        <th>ORDER ID</th>
-                                        <th>CUSTOMER NAME</th>
-                                        <th>DATE</th>
-                                        <th>TOTAL AMOUNT</th>
-                                        <th>CURRENT LOCATION</th>
-                                        <th>ESTIMATED DELIVERY</th>
-                                        <th>FULFILLMENT STATUS</th>
-                                        <th>ACTIONS</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
+                                <thead><tr>
+                                    <th>ORDER ID</th>
+                                    <th>CUSTOMER NAME</th>
+                                    <th>DATE</th>
+                                    <th>TOTAL AMOUNT</th>
+                                    <th>CURRENT LOCATION</th>
+                                    <th>ESTIMATED DELIVERY</th>
+                                    <th>FULFILLMENT STATUS</th>
+                                    <th>ACTIONS</th>
+                                    <th></th>
+                                </tr></thead>
                                 <tbody>
                                     {filteredOrders.map((order, index) => (
-                                        <tr key={index}>
-                                            <td className="order-id">{order.orderNumber || `#${order.id}`}</td>
+                                        <tr key={index}><td className="order-id">{order.orderNumber || `#${order.id}`}</td>
                                             <td className="customer-name">{order.displayCustomerName}</td>
                                             <td className="date-cell">
                                                 <div>{formatDate(order.datePlaced)}</div>
@@ -245,8 +242,7 @@ const VendorOrders = () => {
                                                         </button>
                                                     )}
                                                 </div>
-                                            </td>
-                                        </tr>
+                                            </td></tr>
                                     ))}
                                 </tbody>
                             </table>

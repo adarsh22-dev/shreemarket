@@ -195,7 +195,16 @@ export const CartProvider = ({ children }) => {
                     newItems[existingItemIndex].quantity += quantity;
                     return newItems;
                 } else {
-                    return [...prevItems, { ...product, quantity, variant }];
+                    // Proactively resolve image if missing to avoid broken thumbnails in dropdown
+                    let finalImage = product.image;
+                    if (!finalImage && product.media && product.media.length > 0) {
+                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8082/api";
+                        const backendUrl = apiBaseUrl.replace(/\/api$/, '');
+                        const primaryMedia = product.media.find(m => m.isPrimary) || product.media[0];
+                        finalImage = `${backendUrl}/uploads/products/${primaryMedia.fileName}`;
+                    }
+
+                    return [...prevItems, { ...product, image: finalImage, quantity, variant }];
                 }
             });
             if (openCartOnAdd) setIsCartOpen(true);

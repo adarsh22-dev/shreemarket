@@ -210,27 +210,24 @@ const PromotionDetails = () => {
                     </div>
                     <div className="pd-table-responsive">
                         <table className="pd-table">
-                            <thead>
-                                <tr>
-                                    <th>PRODUCT INFO</th>
-                                    <th>SKU</th>
-                                    <th>UNITS SOLD</th>
-                                    <th>REVENUE</th>
-                                    <th>TREND</th>
-                                </tr>
-                            </thead>
+                            <thead><tr>
+                                <th>PRODUCT INFO</th>
+                                <th>SKU</th>
+                                <th>UNITS SOLD</th>
+                                <th>REVENUE</th>
+                                <th>TREND</th>
+                            </tr></thead>
                             <tbody>
                                 {/* Row 1 */}
-                                <tr>
-                                    <td>
-                                        <div className="pd-product-cell">
-                                            <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=100&q=80" alt="Sofa" className="pd-product-img" />
-                                            <div>
-                                                <div className="pd-product-name">Nordic Velvet Sofa</div>
-                                                <div className="pd-product-cat">Furniture & Living</div>
-                                            </div>
+                                <tr><td>
+                                    <div className="pd-product-cell">
+                                        <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=100&q=80" alt="Sofa" className="pd-product-img" />
+                                        <div>
+                                            <div className="pd-product-name">Nordic Velvet Sofa</div>
+                                            <div className="pd-product-cat">Furniture & Living</div>
                                         </div>
-                                    </td>
+                                    </div>
+                                </td>
                                     <td>NV-SOFA-GR-01</td>
                                     <td className="pd-font-bold">142</td>
                                     <td className="pd-font-bold">₹8,450.00</td>
@@ -238,19 +235,17 @@ const PromotionDetails = () => {
                                         <span className="pd-trend-positive">
                                             <TrendingUp size={14} /> 24%
                                         </span>
-                                    </td>
-                                </tr>
+                                    </td></tr>
                                 {/* Row 2 */}
-                                <tr>
-                                    <td>
-                                        <div className="pd-product-cell">
-                                            <img src="https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=100&q=80" alt="Table" className="pd-product-img" />
-                                            <div>
-                                                <div className="pd-product-name">Minimalist Dining Table</div>
-                                                <div className="pd-product-cat">Dining Room</div>
-                                            </div>
+                                <tr><td>
+                                    <div className="pd-product-cell">
+                                        <img src="https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=100&q=80" alt="Table" className="pd-product-img" />
+                                        <div>
+                                            <div className="pd-product-name">Minimalist Dining Table</div>
+                                            <div className="pd-product-cat">Dining Room</div>
                                         </div>
-                                    </td>
+                                    </div>
+                                </td>
                                     <td>MN-DINE-WD-04</td>
                                     <td className="pd-font-bold">98</td>
                                     <td className="pd-font-bold">₹5,280.00</td>
@@ -258,19 +253,17 @@ const PromotionDetails = () => {
                                         <span className="pd-trend-positive">
                                             <TrendingUp size={14} /> 18%
                                         </span>
-                                    </td>
-                                </tr>
+                                    </td></tr>
                                 {/* Row 3 */}
-                                <tr>
-                                    <td>
-                                        <div className="pd-product-cell">
-                                            <img src="https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=100&q=80" alt="Chair" className="pd-product-img" />
-                                            <div>
-                                                <div className="pd-product-name">Pro-Series Office Chair</div>
-                                                <div className="pd-product-cat">Workspace</div>
-                                            </div>
+                                <tr><td>
+                                    <div className="pd-product-cell">
+                                        <img src="https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?w=100&q=80" alt="Chair" className="pd-product-img" />
+                                        <div>
+                                            <div className="pd-product-name">Pro-Series Office Chair</div>
+                                            <div className="pd-product-cat">Workspace</div>
                                         </div>
-                                    </td>
+                                    </div>
+                                </td>
                                     <td>PRO-CH-BK-22</td>
                                     <td className="pd-font-bold">76</td>
                                     <td className="pd-font-bold">₹3,420.00</td>
@@ -278,19 +271,17 @@ const PromotionDetails = () => {
                                         <span className="pd-trend-positive">
                                             <TrendingUp size={14} /> 12%
                                         </span>
-                                    </td>
-                                </tr>
+                                    </td></tr>
                                 {/* Row 4 */}
-                                <tr>
-                                    <td>
-                                        <div className="pd-product-cell">
-                                            <img src="https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=100&q=80" alt="Lamp" className="pd-product-img" />
-                                            <div>
-                                                <div className="pd-product-name">Industrial Floor Lamp</div>
-                                                <div className="pd-product-cat">Lighting</div>
-                                            </div>
+                                <tr><td>
+                                    <div className="pd-product-cell">
+                                        <img src="https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=100&q=80" alt="Lamp" className="pd-product-img" />
+                                        <div>
+                                            <div className="pd-product-name">Industrial Floor Lamp</div>
+                                            <div className="pd-product-cat">Lighting</div>
                                         </div>
-                                    </td>
+                                    </div>
+                                </td>
                                     <td>IND-LMP-MTL-09</td>
                                     <td className="pd-font-bold">54</td>
                                     <td className="pd-font-bold">₹2,150.00</td>
@@ -298,8 +289,7 @@ const PromotionDetails = () => {
                                         <span className="pd-trend-negative">
                                             <TrendingDown size={14} /> -3%
                                         </span>
-                                    </td>
-                                </tr>
+                                    </td></tr>
                             </tbody>
                         </table>
                     </div>

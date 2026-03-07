@@ -157,28 +157,25 @@ const AdminDashboard = () => {
                             <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading...</div>
                         ) : (
                             <table className="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>NAME</th>
-                                        <th>EMAIL ADDRESS</th>
-                                        <th>ASSIGNED ROLE</th>
-                                        <th>STATUS</th>
-                                        <th>DATE ADDED</th>
-                                        <th className="text-right">ACTIONS</th>
-                                    </tr>
-                                </thead>
+                                <thead><tr>
+                                    <th>NAME</th>
+                                    <th>EMAIL ADDRESS</th>
+                                    <th>ASSIGNED ROLE</th>
+                                    <th>STATUS</th>
+                                    <th>DATE ADDED</th>
+                                    <th className="text-right">ACTIONS</th>
+                                </tr></thead>
                                 <tbody>
                                     {vendors.length > 0 ? (
                                         vendors.map(user => (
-                                            <tr key={user.id}>
-                                                <td>
-                                                    <div className="user-info">
-                                                        <div className="user-avatar">
-                                                            {user.avatar ? <img src={user.avatar} alt={user.fullName} /> : <User size={20} />}
-                                                        </div>
-                                                        <span className="user-name">{user.fullName}</span>
+                                            <tr key={user.id}><td>
+                                                <div className="user-info">
+                                                    <div className="user-avatar">
+                                                        {user.avatar ? <img src={user.avatar} alt={user.fullName} /> : <User size={20} />}
                                                     </div>
-                                                </td>
+                                                    <span className="user-name">{user.fullName}</span>
+                                                </div>
+                                            </td>
                                                 <td className="user-email">{user.email}</td>
                                                 <td>
                                                     <span className={`role-badge role-${getRoleName(user.roleId).toLowerCase()}`}>
@@ -198,15 +195,12 @@ const AdminDashboard = () => {
                                                 <td className="user-date">{formatDate(user.createdAt)}</td>
                                                 <td className="text-right">
                                                     <button className="action-btn"><MoreVertical size={16} /></button>
-                                                </td>
-                                            </tr>
+                                                </td></tr>
                                         ))
                                     ) : (
-                                        <tr>
-                                            <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
-                                                No vendors found.
-                                            </td>
-                                        </tr>
+                                        <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                                            No vendors found.
+                                        </td></tr>
                                     )}
                                 </tbody>
                             </table>

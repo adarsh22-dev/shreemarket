@@ -519,17 +519,13 @@ const SettingsPage = () => {
                     </div>
                     <div className="settings-card p-0">
                         <table className="payment-table">
-                            <thead>
-                                <tr>
+                            <thead><tr>
                                     <th>CARD TYPE</th>
                                     <th>CARD NUMBER</th>
                                     <th>EXPIRY</th>
                                     <th>ACTIONS</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
+                                </tr></thead>
+                            <tbody><tr><td>
                                         <div className="payment-type">
                                             <span className="card-brand visa">VISA</span>
                                             <span>Visa Ending in 4242</span>
@@ -542,10 +538,8 @@ const SettingsPage = () => {
                                             <button className="btn-icon"><Pencil size={14} /></button>
                                             <button className="btn-icon"><Trash2 size={14} /></button>
                                         </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
+                                    </td></tr>
+                                <tr><td>
                                         <div className="payment-type">
                                             <span className="card-brand mastercard">
                                                 <div className="mc-circle-1"></div>
@@ -561,8 +555,7 @@ const SettingsPage = () => {
                                             <button className="btn-icon"><Pencil size={14} /></button>
                                             <button className="btn-icon"><Trash2 size={14} /></button>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </td></tr>
                             </tbody>
                         </table>
                     </div>

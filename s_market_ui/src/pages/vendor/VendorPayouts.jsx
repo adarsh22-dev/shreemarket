@@ -228,16 +228,14 @@ const VendorPayouts = () => {
             {/* Table */}
             <div className="vp-scrollable-table">
               <table className="vp-table">
-                <thead>
-                  <tr>
-                    {activeTab === 'Withdrawal' && <th>Select</th>}
-                    <th>Order ID</th>
-                    <th>My Earnings</th>
-                    <th>Charges</th>
-                    <th>Payment</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
+                <thead><tr>
+                  {activeTab === 'Withdrawal' && <th>Select</th>}
+                  <th>Order ID</th>
+                  <th>My Earnings</th>
+                  <th>Charges</th>
+                  <th>Payment</th>
+                  <th>Date</th>
+                </tr></thead>
                 <tbody>
                   {filteredData.map((item) => {
                     const eligible = checkEligibility(item.date);
@@ -245,17 +243,16 @@ const VendorPayouts = () => {
                       <tr
                         key={item.id}
                         className={!eligible && activeTab === 'Withdrawal' ? 'row-locked' : ''}
-                      >
-                        {activeTab === 'Withdrawal' && (
-                          <td>
-                            <input
-                              type="checkbox"
-                              disabled={!eligible}
-                              checked={selectedRows.has(item.id)}
-                              onChange={() => toggleRow(item.id)}
-                            />
-                          </td>
-                        )}
+                      >{activeTab === 'Withdrawal' && (
+                        <td>
+                          <input
+                            type="checkbox"
+                            disabled={!eligible}
+                            checked={selectedRows.has(item.id)}
+                            onChange={() => toggleRow(item.id)}
+                          />
+                        </td>
+                      )}
                         <td className="vp-order-id">{item.id}</td>
                         <td>&#8377;{item.earnings.toLocaleString()}</td>
                         <td>&#8377;{item.charges.toLocaleString()}</td>
@@ -268,8 +265,7 @@ const VendorPayouts = () => {
                               Locked (90 Days)
                             </span>
                           )}
-                        </td>
-                      </tr>
+                        </td></tr>
                     );
                   })}
                 </tbody>

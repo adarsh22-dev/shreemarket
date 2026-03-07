@@ -40,7 +40,14 @@ const CartDropdown = () => {
                         cartItems.map((item, index) => (
                             <div key={`${item.id}-${index}`} className="cart-item">
                                 <div className="cart-item-image">
-                                    <img src={item.image} alt={item.name} />
+                                    <img
+                                        src={item.image || (item.media && item.media.length > 0 ? `${BACKEND_URL}/uploads/products/${item.media.find(m => m.isPrimary)?.fileName || item.media[0].fileName}` : '/placeholder-product.png')}
+                                        alt={item.name}
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = 'https://placehold.co/100x100?text=No+Image';
+                                        }}
+                                    />
                                 </div>
                                 <div className="cart-item-details">
                                     <div className="cart-item-header">

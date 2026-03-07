@@ -168,24 +168,21 @@ const VendorPromotions = () => {
 
                     {/* Data Table */}
                     <table className="promo-data-table">
-                        <thead>
-                            <tr>
-                                <th>PROMOTION NAME</th>
-                                <th>TYPE</th>
-                                <th>DISCOUNT</th>
-                                <th>STATUS</th>
-                                <th>DURATION</th>
-                                <th>USAGE</th>
-                                <th>ACTIONS</th>
-                            </tr>
-                        </thead>
+                        <thead><tr>
+                            <th>PROMOTION NAME</th>
+                            <th>TYPE</th>
+                            <th>DISCOUNT</th>
+                            <th>STATUS</th>
+                            <th>DURATION</th>
+                            <th>USAGE</th>
+                            <th>ACTIONS</th>
+                        </tr></thead>
                         <tbody>
                             {promotions.map((promo, index) => (
-                                <tr key={index} onClick={() => navigate(`/vendor/promotions/${promo.id}`)} className="clickable-row">
-                                    <td className="promo-name-cell">
-                                        <div className="promo-name-title">{promo.name}</div>
-                                        <div className="promo-id">ID: {promo.id}</div>
-                                    </td>
+                                <tr key={index} onClick={() => navigate(`/vendor/promotions/${promo.id}`)} className="clickable-row"><td className="promo-name-cell">
+                                    <div className="promo-name-title">{promo.name}</div>
+                                    <div className="promo-id">ID: {promo.id}</div>
+                                </td>
                                     <td className="promo-type">{promo.type}</td>
                                     <td className="promo-discount">{promo.discount}</td>
                                     <td>
@@ -220,8 +217,7 @@ const VendorPromotions = () => {
                                                 <Trash2 size={18} />
                                             </button>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </td></tr>
                             ))}
                         </tbody>
                     </table>

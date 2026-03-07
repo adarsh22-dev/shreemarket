@@ -300,7 +300,7 @@ const ProductPage = () => {
                             )}
                         </p>
 
-                        <p className="product-description">{product.shortDescription || product.description}</p>
+                        <p className="product-description">{product.shortDescription || product.description?.substring(0, 150) + '...'}</p>
 
                         <div className="product-specs">
                             {product.brand && (
@@ -342,6 +342,18 @@ const ProductPage = () => {
                         </div>
                     </div>
                 </section>
+
+                {/* Full Description Section */}
+                {product.description && (
+                    <section className="product-full-description">
+                        <h2 className="section-heading">Product Details</h2>
+                        <div className="description-content">
+                            {product.description.split('\n').map((line, index) => (
+                                <p key={index}>{line}</p>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 {/* Artisan Section */}
                 {store && (

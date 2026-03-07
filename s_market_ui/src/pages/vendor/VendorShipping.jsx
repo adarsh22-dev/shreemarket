@@ -180,21 +180,18 @@ const VendorShipping = () => {
 
                     <div className="tracking-table-responsive">
                         <table className="tracking-table">
-                            <thead>
-                                <tr>
-                                    <th>ORDER ID</th>
-                                    <th>CUSTOMER</th>
-                                    <th>CARRIER</th>
-                                    <th>STATUS</th>
-                                    <th>SHIPPING DATE</th>
-                                    <th>EST. DELIVERY</th>
-                                    <th>ACTIONS</th>
-                                </tr>
-                            </thead>
+                            <thead><tr>
+                                <th>ORDER ID</th>
+                                <th>CUSTOMER</th>
+                                <th>CARRIER</th>
+                                <th>STATUS</th>
+                                <th>SHIPPING DATE</th>
+                                <th>EST. DELIVERY</th>
+                                <th>ACTIONS</th>
+                            </tr></thead>
                             <tbody>
                                 {shipments.map((shipment, index) => (
-                                    <tr key={index}>
-                                        <td className="cell-order-id">{shipment.id}</td>
+                                    <tr key={index}><td className="cell-order-id">{shipment.id}</td>
                                         <td>
                                             <div className="customer-name">{shipment.customerName}</div>
                                             <div className="customer-location">{shipment.customerLocation}</div>
@@ -225,8 +222,7 @@ const VendorShipping = () => {
                                                     <Printer size={18} className="text-grey" />
                                                 </button>
                                             </div>
-                                        </td>
-                                    </tr>
+                                        </td></tr>
                                 ))}
                             </tbody>
                         </table>
