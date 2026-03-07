@@ -104,12 +104,15 @@ public class OrderService {
                 order.setStatus(status);
                 Order updatedOrder = orderRepository.save(order);
 
-                // Notify vendor if order is cancelled
-                if ("CANCELLED".equalsIgnoreCase(status) && updatedOrder.getVendorId() != null) {
+                // Notify vendor if order is cancelled or rejected
+                if (("CANCELLED".equalsIgnoreCase(status) || "REJECTED".equalsIgnoreCase(status))
+                                && updatedOrder.getVendorId() != null) {
                         Notification notification = new Notification();
                         notification.setVendorId(updatedOrder.getVendorId());
-                        notification.setTitle("Order Cancelled");
-                        notification.setMessage("Order " + updatedOrder.getOrderNumber() + " has been cancelled.");
+                        notification.setTitle(
+                                        "Order " + (status.equalsIgnoreCase("REJECTED") ? "Rejected" : "Cancelled"));
+                        notification.setMessage("Order " + updatedOrder.getOrderNumber() + " has been "
+                                        + status.toLowerCase() + ".");
                         notification.setType("ORDER");
                         notificationService.createNotification(notification);
                 }

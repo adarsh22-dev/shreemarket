@@ -110,9 +110,12 @@ const VendorOrders = () => {
         if (!status) return '';
         switch (status.toLowerCase()) {
             case 'pending': return 'status-pending';
+            case 'accepted': return 'status-accepted';
             case 'shipped': return 'status-shipped';
             case 'processing': return 'status-processing';
             case 'delivered': return 'status-delivered';
+            case 'rejected':
+            case 'cancelled': return 'status-returned'; // Reuse red for cancelled/rejected
             case 'returned':
             case 'return requested': return 'status-returned';
             default: return '';
@@ -149,9 +152,11 @@ const VendorOrders = () => {
                         <div className="order-tabs">
                             <button className={`tab-btn ${activeTab === 'All Orders' ? 'active' : ''}`} onClick={() => handleTabClick('All Orders')}>All Orders</button>
                             <button className={`tab-btn ${activeTab === 'Pending' ? 'active' : ''}`} onClick={() => handleTabClick('Pending')}>Pending</button>
+                            <button className={`tab-btn ${activeTab === 'Accepted' ? 'active' : ''}`} onClick={() => handleTabClick('Accepted')}>Accepted</button>
                             <button className={`tab-btn ${activeTab === 'Processing' ? 'active' : ''}`} onClick={() => handleTabClick('Processing')}>Processing</button>
                             <button className={`tab-btn ${activeTab === 'Shipped' ? 'active' : ''}`} onClick={() => handleTabClick('Shipped')}>Shipped</button>
                             <button className={`tab-btn ${activeTab === 'Delivered' ? 'active' : ''}`} onClick={() => handleTabClick('Delivered')}>Delivered</button>
+                            <button className={`tab-btn ${activeTab === 'Cancelled' ? 'active' : ''}`} onClick={() => handleTabClick('Cancelled')}>Cancelled</button>
                             <button className={`tab-btn ${activeTab === 'Returned' ? 'active' : ''}`} onClick={() => handleTabClick('Returned')}>Returned</button>
                         </div>
                         <div className="search-wrapper">
@@ -214,7 +219,23 @@ const VendorOrders = () => {
                                                     <button className="icon-action-btn" title="View Details">
                                                         <Eye size={18} />
                                                     </button>
-                                                    {(!order.status || order.status.toLowerCase() === 'pending' || order.status.toLowerCase() === 'processing') && (
+                                                    {(!order.status || order.status.toLowerCase() === 'pending') && (
+                                                        <>
+                                                            <button
+                                                                className="btn-accept"
+                                                                onClick={() => handleStatusUpdate(order.id, 'ACCEPTED')}
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button
+                                                                className="btn-reject"
+                                                                onClick={() => handleStatusUpdate(order.id, 'REJECTED')}
+                                                            >
+                                                                Reject
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {(order.status?.toLowerCase() === 'accepted' || order.status?.toLowerCase() === 'processing') && (
                                                         <button
                                                             className="btn-mark-shipped"
                                                             onClick={() => handleStatusUpdate(order.id, 'SHIPPED')}

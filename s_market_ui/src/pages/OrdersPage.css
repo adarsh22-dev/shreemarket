@@ -223,8 +223,18 @@
     color: #F57C00;
 }
 
+.status-pill.rejected,
+.status-pill.cancelled {
+    background-color: #FFEBEE;
+    color: #D32F2F;
+}
+
 .status-dot.orange {
     background-color: #F57C00;
+}
+
+.status-dot.red {
+    background-color: #D32F2F;
 }
 
 /* Order Body Layout */

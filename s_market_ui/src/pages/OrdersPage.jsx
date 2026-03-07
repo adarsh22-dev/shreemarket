@@ -37,7 +37,7 @@ const OrdersPage = () => {
     // Store requested returns locally
     const [returnedOrderIds, setReturnedOrderIds] = useState(new Set());
 
-    const tabs = ['All Orders', 'Processing', 'Shipped', 'Delivered'];
+    const tabs = ['All Orders', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -322,8 +322,10 @@ const OrdersPage = () => {
 
     // Filter orders based on active tab
     const filteredOrders = orders.filter(order => {
-        // Filter by tab
-        const matchesTab = activeTab === 'All Orders' || order.status?.toUpperCase() === activeTab.toUpperCase();
+        const orderStatus = order.status?.toUpperCase();
+        const matchesTab = activeTab === 'All Orders' ||
+            (activeTab === 'Processing' && (orderStatus === 'PROCESSING' || orderStatus === 'ACCEPTED')) ||
+            orderStatus === activeTab.toUpperCase();
         if (!matchesTab) return false;
 
         // Filter by search query
@@ -422,7 +424,8 @@ const OrdersPage = () => {
                                             <div className={`status-pill ${order.status?.toLowerCase()}`}>
                                                 {statusUpper === 'DELIVERED' && <div className="status-dot green"></div>}
                                                 {statusUpper === 'SHIPPED' && <Package size={12} />}
-                                                {statusUpper === 'PROCESSING' && <div className="status-dot orange"></div>}
+                                                {(statusUpper === 'PROCESSING' || statusUpper === 'ACCEPTED') && <div className="status-dot orange"></div>}
+                                                {(statusUpper === 'REJECTED' || statusUpper === 'CANCELLED') && <div className="status-dot red"></div>}
                                                 {order.status}
                                             </div>
                                         </div>

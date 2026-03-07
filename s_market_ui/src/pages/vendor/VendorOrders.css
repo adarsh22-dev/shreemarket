@@ -221,7 +221,11 @@
 .status-pending {
     background-color: #FFF8E1;
     color: #B8860B;
-    /* Golden/Yellow text */
+}
+
+.status-accepted {
+    background-color: #E8F5E9;
+    color: #2E7D32;
 }
 
 .status-shipped {
@@ -287,6 +291,38 @@
 
 .btn-mark-shipped:hover {
     background-color: #FFE4DE;
+}
+
+.btn-accept {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #C8E6C9;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-accept:hover {
+    background-color: #C8E6C9;
+}
+
+.btn-reject {
+    background-color: #FFEBEE;
+    color: #D32F2F;
+    border: 1px solid #FFCDD2;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-reject:hover {
+    background-color: #FFCDD2;
 }
 
 /* Pagination Footer */
