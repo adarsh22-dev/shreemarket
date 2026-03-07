@@ -49,8 +49,29 @@ public class OrderService {
                                                 product.setInitialStock(newStock);
                                                 if (newStock == 0) {
                                                         product.setStatus("out");
+                                                        // Notify vendor about out of stock
+                                                        if (product.getVendorId() != null) {
+                                                                Notification notification = new Notification();
+                                                                notification.setVendorId(product.getVendorId());
+                                                                notification.setTitle("Out of Stock");
+                                                                notification.setMessage("Product " + product.getName()
+                                                                                + " is now out of stock.");
+                                                                notification.setType("OUT_OF_STOCK");
+                                                                notificationService.createNotification(notification);
+                                                        }
                                                 } else if (newStock <= 5) {
                                                         product.setStatus("low");
+                                                        // Notify vendor about low stock
+                                                        if (product.getVendorId() != null) {
+                                                                Notification notification = new Notification();
+                                                                notification.setVendorId(product.getVendorId());
+                                                                notification.setTitle("Low Stock Warning");
+                                                                notification.setMessage("Product " + product.getName()
+                                                                                + " has low stock (" + newStock
+                                                                                + " remaining).");
+                                                                notification.setType("LOW_STOCK");
+                                                                notificationService.createNotification(notification);
+                                                        }
                                                 }
                                                 productRepository.save(product);
                                         }

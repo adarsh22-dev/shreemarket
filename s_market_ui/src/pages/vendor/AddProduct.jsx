@@ -128,6 +128,16 @@ const AddProduct = () => {
     }
   };
 
+  const setPrimary = (index) => {
+    if (index === 0) return;
+    setMediaFiles((prev) => {
+      const copy = [...prev];
+      const item = copy.splice(index, 1)[0];
+      copy.unshift(item);
+      return copy;
+    });
+  };
+
   const removeMedia = (index, e) => {
     if (e) {
       e.stopPropagation();
@@ -301,7 +311,10 @@ const AddProduct = () => {
               id: m.id,
               url: `${BACKEND_URL}/uploads/products/${m.fileName}`,
               type: m.fileType,
+              isPrimary: m.isPrimary,
             }));
+            // Sort to ensure primary image is at index 0
+            existingMedia.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
             setMediaFiles(existingMedia);
           }
         } catch (error) {
@@ -825,7 +838,17 @@ const AddProduct = () => {
                     draggable="false"
                   />
                 )}
-                {index === 0 && <div className="primary-label">Primary</div>}
+                {index === 0 ? (
+                  <div className="primary-label">Primary</div>
+                ) : (
+                  <button
+                    type="button"
+                    className="set-primary-btn"
+                    onClick={() => setPrimary(index)}
+                  >
+                    Set Primary
+                  </button>
+                )}
                 <button
                   className="remove-media-btn"
                   onClick={(e) => removeMedia(index, e)}

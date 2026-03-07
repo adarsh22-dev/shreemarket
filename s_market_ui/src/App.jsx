@@ -18,9 +18,6 @@ import AddProduct from './pages/vendor/AddProduct';
 import VendorOrders from './pages/vendor/VendorOrders';
 import VendorShipping from './pages/vendor/VendorShipping';
 import VendorNotifications from './pages/vendor/VendorNotifications';
-import VendorPromotions from './pages/vendor/VendorPromotions';
-import CreatePromotion from './pages/vendor/CreatePromotion';
-import PromotionDetails from './pages/vendor/PromotionDetails';
 import VendorAnalytics from './pages/vendor/VendorAnalytics';
 import ProtectedRoute from './components/ProtectedRoute';
 import SettingsPage from './pages/SettingsPage';
@@ -80,9 +77,6 @@ function App() {
               <Route path="/vendor/orders" element={<VendorOrders />} />
               <Route path="/vendor/shipping" element={<VendorShipping />} />
               <Route path="/vendor/notifications" element={<VendorNotifications />} />
-              <Route path="/vendor/promotions" element={<VendorPromotions />} />
-              <Route path="/vendor/promotions/create" element={<CreatePromotion />} />
-              <Route path="/vendor/promotions/:id" element={<PromotionDetails />} />
               <Route path="/vendor/analytics" element={<VendorAnalytics />} />
               <Route path="/vendor/staffmanagement" element={<StaffInventorySystem />} />
               <Route path="/vendor/guide" element={<VendorGuide />} />

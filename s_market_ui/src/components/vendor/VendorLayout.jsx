@@ -106,10 +106,7 @@ const VendorLayout = ({ children }) => {
                         <Truck size={20} />
                         Shipping
                     </Link>
-                    <Link to="/vendor/promotions" className={`nav-item ${currentPath.includes('/vendor/promotions') ? 'active' : ''}`}>
-                        <Tag size={20} />
-                        Promotions
-                    </Link>
+
                     <Link to="/vendor/payouts" className={`nav-item ${currentPath === '/vendor/payouts' ? 'active' : ''}`}>
                         <CreditCard size={20} />
                         Payouts

@@ -11,4 +11,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findByVendorIdOrderByCreatedAtDesc(Long vendorId);
 
     List<Notification> findByVendorIdAndTypeOrderByCreatedAtDesc(Long vendorId, String type);
+
+    List<Notification> findByVendorIdAndTypeInOrderByCreatedAtDesc(Long vendorId, List<String> types);
 }

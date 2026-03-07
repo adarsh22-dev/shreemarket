@@ -8,7 +8,9 @@ import {
     Banknote,
     Wrench,
     RefreshCw,
-    Loader2
+    Loader2,
+    AlertTriangle,
+    Package
 } from 'lucide-react';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorNotifications.css';
@@ -20,7 +22,7 @@ const VendorNotifications = () => {
     const [activeTab, setActiveTab] = useState('All');
     const [vendorId, setVendorId] = useState(null);
 
-    const tabs = ['All', 'Orders', 'Payments', 'Deliveries', 'Platform'];
+    const tabs = ['All', 'Orders', 'Stock', 'Payments', 'Deliveries', 'Platform'];
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -37,10 +39,11 @@ const VendorNotifications = () => {
         setLoading(true);
         try {
             const typeFilter = activeTab === 'Orders' ? 'ORDER'
-                : activeTab === 'Payments' ? 'PAYMENT'
-                    : activeTab === 'Deliveries' ? 'DELIVERY'
-                        : activeTab === 'Platform' ? 'PLATFORM'
-                            : 'All';
+                : activeTab === 'Stock' ? 'STOCK'
+                    : activeTab === 'Payments' ? 'PAYMENT'
+                        : activeTab === 'Deliveries' ? 'DELIVERY'
+                            : activeTab === 'Platform' ? 'PLATFORM'
+                                : 'All';
             const data = await fetchVendorNotifications(vendorId, typeFilter);
             setNotifications(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -76,6 +79,8 @@ const VendorNotifications = () => {
     const getIcon = (type) => {
         switch (type?.toUpperCase()) {
             case 'ORDER': return { icon: CreditCard, bg: 'bg-red-light', color: 'text-red' };
+            case 'LOW_STOCK': return { icon: AlertTriangle, bg: 'bg-yellow-light', color: 'text-yellow' };
+            case 'OUT_OF_STOCK': return { icon: Package, bg: 'bg-orange-light', color: 'text-orange' };
             case 'PAYMENT': return { icon: Banknote, bg: 'bg-green-light', color: 'text-green' };
             case 'DELIVERY': return { icon: Truck, bg: 'bg-blue-light', color: 'text-blue' };
             case 'PLATFORM': return { icon: Megaphone, bg: 'bg-yellow-light', color: 'text-yellow' };

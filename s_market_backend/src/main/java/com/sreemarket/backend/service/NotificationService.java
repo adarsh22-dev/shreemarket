@@ -21,6 +21,10 @@ public class NotificationService {
         if ("All".equalsIgnoreCase(type)) {
             return getNotificationsByVendor(vendorId);
         }
+        if ("STOCK".equalsIgnoreCase(type)) {
+            return notificationRepository.findByVendorIdAndTypeInOrderByCreatedAtDesc(vendorId,
+                    List.of("LOW_STOCK", "OUT_OF_STOCK"));
+        }
         return notificationRepository.findByVendorIdAndTypeOrderByCreatedAtDesc(vendorId, type.toUpperCase());
     }
 

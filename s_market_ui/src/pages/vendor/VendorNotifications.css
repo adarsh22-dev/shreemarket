@@ -230,6 +230,14 @@
     color: #e91e63;
 }
 
+.bg-orange-light {
+    background-color: #fff2e6;
+}
+
+.text-orange {
+    color: #f39c12;
+}
+
 
 .nc-middle {
     flex-grow: 1;

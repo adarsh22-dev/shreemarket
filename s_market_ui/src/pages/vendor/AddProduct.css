@@ -368,6 +368,35 @@ textarea.form-control {
     padding: 2px 8px;
     border-radius: 12px;
     font-weight: 500;
+    z-index: 2;
+}
+
+.set-primary-btn {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    color: #334155;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0;
+    z-index: 2;
+}
+
+.image-thumbnail-wrapper:hover .set-primary-btn {
+    opacity: 1;
+}
+
+.set-primary-btn:hover {
+    background: #fff;
+    border-color: #E03E1A;
+    color: #E03E1A;
 }
 
 /* === Custom Attribute & Tags Styling === */

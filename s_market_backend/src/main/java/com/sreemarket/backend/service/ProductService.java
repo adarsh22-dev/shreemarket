@@ -1,6 +1,7 @@
 package com.sreemarket.backend.service;
 
 import com.sreemarket.backend.model.*;
+import com.sreemarket.backend.model.Notification;
 import com.sreemarket.backend.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     private final String UPLOAD_DIR = "uploads/products/";
 
@@ -64,27 +68,47 @@ public class ProductService {
 
         // Process Media - Only if new files are provided
         if (mediaFiles != null && !mediaFiles.isEmpty()) {
-            // Check if there's already a primary image
-            boolean hasPrimary = savedProduct.getMedia().stream().anyMatch(m -> Boolean.TRUE.equals(m.getIsPrimary()));
+            List<ProductMedia> metadataList = product.getMedia();
+            // Filter metadata to find only entries intended for new files (isNew=true or
+            // id=null)
+            List<ProductMedia> newMediaMetadata = new ArrayList<>();
+            if (metadataList != null) {
+                for (ProductMedia m : metadataList) {
+                    if (m.getId() == null) {
+                        newMediaMetadata.add(m);
+                    }
+                }
+            }
 
-            for (MultipartFile file : mediaFiles) {
+            for (int i = 0; i < mediaFiles.size(); i++) {
+                MultipartFile file = mediaFiles.get(i);
                 if (!file.isEmpty()) {
                     String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
                     Path filePath = Paths.get(UPLOAD_DIR, fileName);
                     Files.copy(file.getInputStream(), filePath);
 
-                    ProductMedia media = new ProductMedia();
+                    ProductMedia media;
+                    if (i < newMediaMetadata.size()) {
+                        // Use the metadata object that came from JSON
+                        media = newMediaMetadata.get(i);
+                    } else {
+                        // Fallback if metadata wasn't provided correctly
+                        media = new ProductMedia();
+                        // If no image is primary yet, and this is the first file, make it primary
+                        boolean hasPrimary = savedProduct.getMedia().stream()
+                                .anyMatch(m -> Boolean.TRUE.equals(m.getIsPrimary()));
+                        media.setIsPrimary(!hasPrimary);
+                    }
+
                     media.setProduct(savedProduct);
                     media.setFileName(fileName);
                     media.setFileType(
                             file.getContentType() != null && file.getContentType().startsWith("video/") ? "video"
                                     : "image");
 
-                    // If no image is primary yet, make this one primary
-                    media.setIsPrimary(!hasPrimary);
-                    hasPrimary = true;
-
-                    savedProduct.getMedia().add(media);
+                    if (!savedProduct.getMedia().contains(media)) {
+                        savedProduct.getMedia().add(media);
+                    }
                 }
             }
         }
@@ -272,8 +296,30 @@ public class ProductService {
         existingProduct.setWholesaleDiscountType(productData.getWholesaleDiscountType());
 
         // Update Inventory & Status
-        existingProduct.setInitialStock(productData.getInitialStock());
+        Integer oldStock = existingProduct.getInitialStock();
+        Integer newStock = productData.getInitialStock();
+        existingProduct.setInitialStock(newStock);
         existingProduct.setStatus(productData.getStatus());
+
+        // Notify if stock becomes low or out
+        if (newStock != null && (oldStock == null || !newStock.equals(oldStock))) {
+            if (newStock == 0) {
+                Notification notification = new Notification();
+                notification.setVendorId(existingProduct.getVendorId());
+                notification.setTitle("Out of Stock");
+                notification.setMessage("Product " + existingProduct.getName() + " is now out of stock.");
+                notification.setType("OUT_OF_STOCK");
+                notificationService.createNotification(notification);
+            } else if (newStock <= 5) {
+                Notification notification = new Notification();
+                notification.setVendorId(existingProduct.getVendorId());
+                notification.setTitle("Low Stock Warning");
+                notification.setMessage(
+                        "Product " + existingProduct.getName() + " has low stock (" + newStock + " remaining).");
+                notification.setType("LOW_STOCK");
+                notificationService.createNotification(notification);
+            }
+        }
 
         // Update Shipping & Tax
         existingProduct.setWeight(productData.getWeight());
@@ -321,7 +367,7 @@ public class ProductService {
             });
         }
 
-        // --- NEW: Sync Media List (Deletions & Primary Status) ---
+        // --- NEW: Sync Media List (Deletions, Primary Status & New Metadata) ---
         if (productData.getMedia() != null) {
             List<Long> keptMediaIds = new ArrayList<>();
             for (ProductMedia m : productData.getMedia()) {
@@ -333,22 +379,21 @@ public class ProductService {
             // Remove those not in kept list (orphanRemoval will handle DB deletion)
             existingProduct.getMedia().removeIf(m -> m.getId() != null && !keptMediaIds.contains(m.getId()));
 
-            // Update primary status for existing images based on the new order from
-            // frontend
-            if (!productData.getMedia().isEmpty()) {
-                ProductMedia metadata0 = productData.getMedia().get(0);
-                if (metadata0.getId() != null) {
-                    // One of the existing images is now primary
-                    for (ProductMedia m : existingProduct.getMedia()) {
-                        m.setIsPrimary(m.getId().equals(metadata0.getId()));
+            // Update primary status for existing images
+            for (ProductMedia existingMedia : existingProduct.getMedia()) {
+                for (ProductMedia incomingMedia : productData.getMedia()) {
+                    if (existingMedia.getId().equals(incomingMedia.getId())) {
+                        existingMedia.setIsPrimary(Boolean.TRUE.equals(incomingMedia.getIsPrimary()));
+                        break;
                     }
-                } else {
-                    // The first item is a NEW image (id is null).
-                    // Set all existing ones to NOT primary.
-                    // saveProduct will then make the first new file primary.
-                    for (ProductMedia m : existingProduct.getMedia()) {
-                        m.setIsPrimary(false);
-                    }
+                }
+            }
+
+            // Bring in metadata for NEW images so saveProduct can pair them with files
+            for (ProductMedia incomingMedia : productData.getMedia()) {
+                if (incomingMedia.getId() == null) {
+                    incomingMedia.setProduct(existingProduct);
+                    existingProduct.getMedia().add(incomingMedia);
                 }
             }
         }

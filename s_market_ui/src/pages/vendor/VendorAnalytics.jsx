@@ -189,20 +189,17 @@ const VendorAnalytics = () => {
                         <h2 className="card-title">Sales by Category</h2>
                         <div className="donut-container">
                             <div className="donut-chart">
-                                <div className="donut-inner">
-                                    <div className="donut-value">₹{(metrics.totalRevenue / 1000).toFixed(0)}k</div>
-                                    <div className="donut-label">Total</div>
-                                </div>
-                                <svg width="100%" height="100%" viewBox="0 0 36 36" className="donut-ring">
-                                    <circle className="donut-ring-bg" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#f3f4f6" strokeWidth="3"></circle>
-                                    {categorySales.map((cat, i) => {
-                                        // Simple representation - first category as main ring
-                                        if (i !== 0) return null;
-                                        return (
-                                            <circle key={i} className="donut-segment" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#e84c1e" strokeWidth="3.2" strokeDasharray={`${cat.percentage} ${100 - cat.percentage}`} strokeDashoffset="25"></circle>
-                                        );
-                                    })}
-                                </svg>
+
+
+                                <circle className="donut-ring-bg" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#f3f4f6" strokeWidth="3"></circle>
+                                {categorySales.map((cat, i) => {
+                                    // Simple representation - first category as main ring
+                                    if (i !== 0) return null;
+                                    return (
+                                        <circle key={i} className="donut-segment" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#e84c1e" strokeWidth="3.2" strokeDasharray={`${cat.percentage} ${100 - cat.percentage}`} strokeDashoffset="25"></circle>
+                                    );
+                                })}
+
                             </div>
                             <div className="donut-legend">
                                 {categorySales.map((cat, i) => (
