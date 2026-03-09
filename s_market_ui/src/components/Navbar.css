@@ -448,3 +448,38 @@
 .animate-spin {
     animation: spin 1s linear infinite;
 }
+/* --- Wishlist Badge and Link --- */
+.navbar-heart-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #333;
+    position: relative;
+    padding: 6px 12px;
+    border-radius: 20px;
+    transition: all 0.2s;
+}
+
+.navbar-heart-link:hover {
+    background-color: #fff9f7;
+    color: #FF5722;
+}
+
+.wishlist-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #FF5722;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid white;
+}

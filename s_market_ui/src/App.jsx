@@ -42,57 +42,65 @@ import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
+import WishlistPage from './pages/WishlistPage';
 
 function App() {
   return (
     <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
       <CartProvider>
-        <Router>
-          <Toaster position="top-center" reverseOrder={false} />
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/shop" element={<ShopPage />} />
-            <Route path="/our-story" element={<OurStory />} />
-            <Route path="/product/:id" element={<ProductPage />} />
-            <Route path="/shop/:category" element={<ProductListingPage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/support/contact" element={<ContactPage />} />
-            <Route path="/support/privacy" element={<PrivacyPage />} />
-            <Route path="/support/terms" element={<TermsPage />} />
-            <Route path="/support/shipping" element={<ShippingPage />} />
-            <Route path="/support/returns" element={<ReturnsPage />} />
-            <Route path="/support/faq" element={<FAQPage />} />
-            <Route element={<ProtectedRoute allowedRoles={[3]} />}>
-              <Route path="/vendor/dashboard" element={<VendorDashboard />} />
-              <Route path="/vendor/products" element={<VendorProducts />} />
-              <Route path="/vendor/products/add" element={<AddProduct />} />
-              <Route path="/vendor/products/edit/:id" element={<AddProduct />} />
-              <Route path="/vendor/orders" element={<VendorOrders />} />
-              <Route path="/vendor/shipping" element={<VendorShipping />} />
-              <Route path="/vendor/notifications" element={<VendorNotifications />} />
-              <Route path="/vendor/analytics" element={<VendorAnalytics />} />
-              <Route path="/vendor/staffmanagement" element={<StaffInventorySystem />} />
-              <Route path="/vendor/guide" element={<VendorGuide />} />
-              <Route path="/vendor/payouts" element={<VendorPayout />} />
-              <Route path="/vendor/help" element={<VendorHelpCenter />} />
-              <Route path="/vendor/settings" element={<VendorSettings />} />
-              <Route path="/vendor/reviews" element={<VendorReviews />} />
-            </Route>
+        <WishlistProvider>
+          <Router>
+            <Toaster position="top-center" reverseOrder={false} />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/shop" element={<ShopPage />} />
+              <Route path="/our-story" element={<OurStory />} />
+              <Route path="/product/:id" element={<ProductPage />} />
+              <Route path="/shop/:category" element={<ProductListingPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/support/contact" element={<ContactPage />} />
+              <Route path="/support/privacy" element={<PrivacyPage />} />
+              <Route path="/support/terms" element={<TermsPage />} />
+              <Route path="/support/shipping" element={<ShippingPage />} />
+              <Route path="/support/returns" element={<ReturnsPage />} />
+              <Route path="/support/faq" element={<FAQPage />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/wishlist" element={<WishlistPage />} />
+              </Route>
+              <Route element={<ProtectedRoute allowedRoles={[3]} />}>
+                <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+                <Route path="/vendor/products" element={<VendorProducts />} />
+                <Route path="/vendor/products/add" element={<AddProduct />} />
+                <Route path="/vendor/products/edit/:id" element={<AddProduct />} />
+                <Route path="/vendor/orders" element={<VendorOrders />} />
+                <Route path="/vendor/shipping" element={<VendorShipping />} />
+                <Route path="/vendor/notifications" element={<VendorNotifications />} />
+                <Route path="/vendor/analytics" element={<VendorAnalytics />} />
+                <Route path="/vendor/staffmanagement" element={<StaffInventorySystem />} />
+                <Route path="/vendor/guide" element={<VendorGuide />} />
+                <Route path="/vendor/payouts" element={<VendorPayout />} />
+                <Route path="/vendor/help" element={<VendorHelpCenter />} />
+                <Route path="/vendor/settings" element={<VendorSettings />} />
+                <Route path="/vendor/reviews" element={<VendorReviews />} />
+              </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={[1]} />}>
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/users/create" element={<AddUserPage />} />
-              <Route path="/admin/roles/create" element={<CreateRolePage />} />
-            </Route>
-          </Routes>
-        </Router>
+              <Route element={<ProtectedRoute allowedRoles={[1]} />}>
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/users/create" element={<AddUserPage />} />
+                <Route path="/admin/roles/create" element={<CreateRolePage />} />
+              </Route>
+            </Routes>
+          </Router>
+        </WishlistProvider>
       </CartProvider>
     </GoogleOAuthProvider>
   );

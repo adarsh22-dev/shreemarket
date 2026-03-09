@@ -94,6 +94,7 @@ const CartDropdown = () => {
                         <div className="cart-actions">
                             <Link to="/checkout" className="btn-checkout" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }} onClick={closeCart}>Checkout</Link>
                             <Link to="/cart" className="btn-view-cart" onClick={closeCart} style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>View Cart</Link>
+                            <Link to="/wishlist" className="btn-view-wishlist" onClick={closeCart} style={{ display: 'block', textAlign: 'center', textDecoration: 'none', marginTop: '8px', color: '#666', fontSize: '0.9rem' }}>Go to Wishlist</Link>
                         </div>
                     </div>
                 )}

@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import { Minus, Plus, Star, ThumbsUp, ThumbsDown, Package, RotateCcw, ShieldCheck, HeartHandshake, Leaf, MapPin, Heart, Loader2, CornerDownRight, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { getProduct, getVendorById, getAllProducts, getProductReviews, submitProductReview, BACKEND_URL } from '../api/api';
 import './ProductPage.css';
 
@@ -12,6 +13,7 @@ const ProductPage = () => {
     const { id } = useParams();
     const [quantity, setQuantity] = useState(1);
     const { cartItems, addToCart, removeFromCart, isProductInCart, addToRecentlyViewed } = useCart();
+    const { isInWishlist, addToWishlist, removeFromWishlist, isLoggedIn } = useWishlist();
 
     const [product, setProduct] = useState(null);
     const [vendor, setVendor] = useState(null);
@@ -128,15 +130,14 @@ const ProductPage = () => {
 
     const handleHeartClick = (e) => {
         e.preventDefault();
-        if (isProductInCart(product.id)) {
-            removeFromCart(product.id);
+        if (isInWishlist(product.id)) {
+            removeFromWishlist(product.id);
         } else {
-            addToCart({
+            addToWishlist({
                 ...product,
-                title: product.name,
-                price: product.discountPrice || product.regularPrice || 0,
-                image: product.media && product.media.length > 0 ? `${BACKEND_URL}/uploads/products/${product.media.find(m => m.isPrimary)?.fileName || product.media[0].fileName}` : null
-            }, 1, null, false);
+                image: product.media && product.media.length > 0 ? `${BACKEND_URL}/uploads/products/${product.media.find(m => m.isPrimary)?.fileName || product.media[0].fileName}` : "https://via.placeholder.com/400x400",
+                price: product.discountPrice || product.regularPrice || 0
+            });
         }
     };
 
@@ -240,32 +241,39 @@ const ProductPage = () => {
                             >
                                 <Share2 size={20} color="#555" />
                             </button>
-                            <button
-                                className="heart-btn"
-                                onClick={handleHeartClick}
-                                style={{
-                                    position: 'absolute',
-                                    top: '16px',
-                                    right: '16px',
-                                    backgroundColor: 'white',
-                                    border: 'none',
-                                    borderRadius: '50%',
-                                    width: '40px',
-                                    height: '40px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    cursor: 'pointer',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                    zIndex: 10
-                                }}
-                            >
-                                <Heart
-                                    size={20}
-                                    fill={isProductInCart(product.id) ? "#FF0000" : "#ccc"}
-                                    color={isProductInCart(product.id) ? "#FF0000" : "#ccc"}
-                                />
-                            </button>
+                            {isLoggedIn && (
+                                <button
+                                    className="heart-btn"
+                                    onClick={handleHeartClick}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '16px',
+                                        right: '16px',
+                                        backgroundColor: 'white',
+                                        border: 'none',
+                                        borderRadius: '20px',
+                                        padding: '0 12px',
+                                        height: '40px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                        zIndex: 10,
+                                        fontSize: '0.85rem',
+                                        fontWeight: '600',
+                                        color: '#555'
+                                    }}
+                                >
+                                    <Heart
+                                        size={18}
+                                        fill={isInWishlist(product.id) ? "#FF0000" : "none"}
+                                        color={isInWishlist(product.id) ? "#FF0000" : "#ccc"}
+                                    />
+                                    Wishlist
+                                </button>
+                            )}
                             <img src={mainImageUrl} alt={product.name} className="main-image" />
                         </div>
                         <div className="thumbnails">

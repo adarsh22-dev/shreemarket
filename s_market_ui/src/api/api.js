@@ -1055,3 +1055,60 @@ export const moveToCartFromSavedAPI = async (userId, itemId) => {
     });
     return handleResponse(response);
 };
+
+// --- WISHLIST API METHODS ---
+
+/**
+ * Fetches the wishlist for a user.
+ * @param {number|string} userId
+ */
+export const fetchUserWishlist = async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/wishlist/${userId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Adds a product to the user's wishlist.
+ * @param {number|string} userId
+ * @param {number|string} productId
+ */
+export const addToUserWishlist = async (userId, productId) => {
+    const response = await fetch(`${API_BASE_URL}/wishlist/${userId}/add/${productId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Removes a product from the user's wishlist.
+ * @param {number|string} userId
+ * @param {number|string} productId
+ */
+export const removeUserWishlist = async (userId, productId) => {
+    const response = await fetch(`${API_BASE_URL}/wishlist/${userId}/remove/${productId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Checks if a product is in the user's wishlist.
+ * @param {number|string} userId
+ * @param {number|string} productId
+ */
+export const checkInWishlist = async (userId, productId) => {
+    const response = await fetch(`${API_BASE_URL}/wishlist/${userId}/check/${productId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};

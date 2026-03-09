@@ -898,3 +898,52 @@
     object-fit: cover;
     max-height: 500px;
 }
+/* --- Wishlist and Cart Button Styles --- */
+.card-add-to-cart-btn {
+    margin-top: 12px;
+    padding: 10px 16px;
+    background-color: #111;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.figma-product-card:hover .card-add-to-cart-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.card-add-to-cart-btn:hover {
+    background-color: #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-add-to-cart-btn:active {
+    transform: scale(0.98);
+}
+
+/* Adjust heart button for active state */
+.heart-btn path {
+    transition: fill 0.2s ease;
+}
+
+/* Ensure deal-shop-link feels like a button too */
+.deal-shop-link {
+    padding: 8px 0;
+    transition: color 0.2s;
+}
+
+.deal-shop-link:hover {
+    color: #E64A19;
+}

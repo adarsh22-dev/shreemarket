@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { ChevronDown, SlidersHorizontal, LayoutGrid, List, X, Loader } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, LayoutGrid, List, X, Loader, Heart, ShoppingBag } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import { BACKEND_URL } from '../api/api';
 import './ProductListingPage.css';
 
 const ProductListingPage = () => {
@@ -10,6 +13,8 @@ const ProductListingPage = () => {
     const [loading, setLoading] = useState(true);
     const [viewMode, setViewMode] = useState('grid');
     const [sortBy, setSortBy] = useState('newest');
+    const { addToCart } = useCart();
+    const { isInWishlist, addToWishlist, removeFromWishlist, isLoggedIn } = useWishlist();
 
     // Mock category data - in a real app this would come from an API
     const categoryData = {
@@ -136,6 +141,30 @@ const ProductListingPage = () => {
         setTimeout(() => setLoading(false), 800);
     }, [category]);
 
+    const handleHeartClick = (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isInWishlist(product.id)) {
+            removeFromWishlist(product.id);
+        } else {
+            addToWishlist({
+                ...product,
+                image: product.image,
+                price: product.price
+            });
+        }
+    };
+
+    const handleAddToCart = (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
+        addToCart({
+            ...product,
+            image: product.image,
+            price: product.price
+        });
+    };
+
     if (loading) {
         return (
             <div className="loading-screen">
@@ -215,6 +244,18 @@ const ProductListingPage = () => {
                                     </span>
                                 )}
                                 <img src={product.image} alt={product.name} />
+                                {isLoggedIn && (
+                                    <button
+                                        className="lp-heart-btn"
+                                        onClick={(e) => handleHeartClick(e, product)}
+                                    >
+                                        <Heart
+                                            size={18}
+                                            color={isInWishlist(product.id) ? "red" : "white"}
+                                            fill={isInWishlist(product.id) ? "red" : "none"}
+                                        />
+                                    </button>
+                                )}
                             </div>
                             <div className="lp-details">
                                 <div className="lp-header">
@@ -235,6 +276,9 @@ const ProductListingPage = () => {
                                     ))}
                                     <span className="lp-review-count">({product.reviewCount || 0} REVIEWS)</span>
                                 </div>
+                                <button className="lp-add-to-cart-btn" onClick={(e) => handleAddToCart(e, product)}>
+                                    <ShoppingBag size={14} /> Add to Cart
+                                </button>
                             </div>
                         </div>
                     ))}

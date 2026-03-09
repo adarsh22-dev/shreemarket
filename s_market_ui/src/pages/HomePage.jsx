@@ -2,10 +2,11 @@ import React, { useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import './HomePage.css';
-import { ArrowRight, ChevronRight, ChevronLeft, Heart, Users, DollarSign } from 'lucide-react';
+import { ArrowRight, ChevronRight, ChevronLeft, Heart, Users, DollarSign, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ProductModal from '../components/ProductModal';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { getAllProducts, BACKEND_URL } from '../api/api';
 import homepageim1 from '../assets/homepgI1.png'
 import GroceryGourmentFoodCatImg from '../assets/Grocery_&_Gourmet_Food.svg'
@@ -31,7 +32,8 @@ import logo from '../assets/smarketlogo.svg';
 
 const HomePage = () => {
     const [selectedProduct, setSelectedProduct] = React.useState(null);
-    const { cartItems, addToCart, removeFromCart } = useCart();
+    const { cartItems, addToCart } = useCart();
+    const { isInWishlist, addToWishlist, removeFromWishlist, isLoggedIn } = useWishlist();
     const [topDeals, setTopDeals] = React.useState([]);
     const [trendingProducts, setTrendingProducts] = React.useState([]);
     const [featuredProducts, setFeaturedProducts] = React.useState([]);
@@ -80,20 +82,35 @@ const HomePage = () => {
     const handleHeartClick = (e, product) => {
         e.preventDefault();
         e.stopPropagation();
-        const isInCart = cartItems.some(item => item.id === product.id);
+
+        if (isInWishlist(product.id)) {
+            removeFromWishlist(product.id);
+        } else {
+            const productImageUrl = product.media && product.media.length > 0
+                ? `${BACKEND_URL}/uploads/products/${product.media[0].fileName}`
+                : 'https://placehold.co/800x800?text=No+Image';
+
+            addToWishlist({
+                ...product,
+                image: productImageUrl,
+                price: product.price || product.discountPrice || product.regularPrice || 0
+            });
+        }
+    };
+
+    const handleAddToCart = (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
+
         const productImageUrl = product.media && product.media.length > 0
             ? `${BACKEND_URL}/uploads/products/${product.media[0].fileName}`
             : 'https://placehold.co/800x800?text=No+Image';
 
-        if (isInCart) {
-            removeFromCart(product.id, product.variant);
-        } else {
-            addToCart({
-                ...product,
-                image: productImageUrl,
-                price: product.price || product.discountPrice || product.regularPrice || 0
-            }, 1, product.variant);
-        }
+        addToCart({
+            ...product,
+            image: productImageUrl,
+            price: product.price || product.discountPrice || product.regularPrice || 0
+        }, 1, product.variant);
     };
 
     const isProductInCart = (id) => cartItems.some(item => item.id === id);
@@ -250,8 +267,8 @@ const HomePage = () => {
                                         >
                                             <Heart
                                                 size={18}
-                                                color={isProductInCart(product.id) ? "red" : "white"}
-                                                fill={isProductInCart(product.id) ? "red" : "none"}
+                                                color={isInWishlist(product.id) ? "red" : "white"}
+                                                fill={isInWishlist(product.id) ? "red" : "none"}
                                             />
                                         </button>
                                         <img src={productImageUrl} alt={product.name} />
@@ -260,7 +277,7 @@ const HomePage = () => {
                                     <div className="deal-text-content">
                                         <h3 className="deal-title">{product.name}</h3>
                                         <p className="deal-desc">{product.shortDescription || product.description || 'An elegant rose gold pure silk saree crafted with fine zari detailing and a luxurious finish.'}</p>
-                                        <span className="deal-shop-link">Shop Now</span>
+                                        <span className="deal-shop-link" onClick={(e) => handleAddToCart(e, product)}>Add to Cart</span>
                                     </div>
                                 </div>
                             );
@@ -285,8 +302,8 @@ const HomePage = () => {
                                     >
                                         <Heart
                                             size={18}
-                                            color={isProductInCart(product.id) ? "red" : "white"}
-                                            fill={isProductInCart(product.id) ? "red" : "none"}
+                                            color={isInWishlist(product.id) ? "red" : "white"}
+                                            fill={isInWishlist(product.id) ? "red" : "none"}
                                         />
                                     </button>
                                     <img src={productImageUrl} alt={product.name} />
@@ -295,6 +312,9 @@ const HomePage = () => {
                                 <div className="figma-info-wrapper">
                                     <h3 className="figma-product-title">{product.name}</h3>
                                     <p className="figma-product-subtitle">{product.vendor?.storeName || 'Handwoven'}</p>
+                                    <button className="card-add-to-cart-btn" onClick={(e) => handleAddToCart(e, product)}>
+                                        <ShoppingBag size={14} /> Add to Cart
+                                    </button>
                                 </div>
                             </div>
                         );
@@ -353,8 +373,8 @@ const HomePage = () => {
                                         >
                                             <Heart
                                                 size={18}
-                                                color={isProductInCart(product.id) ? "red" : "white"}
-                                                fill={isProductInCart(product.id) ? "red" : "none"}
+                                                color={isInWishlist(product.id) ? "red" : "white"}
+                                                fill={isInWishlist(product.id) ? "red" : "none"}
                                             />
                                         </button>
                                         <img src={productImageUrl} alt={product.name} style={{ objectFit: 'contain', backgroundColor: 'white' }} />
@@ -454,8 +474,8 @@ const HomePage = () => {
                                         >
                                             <Heart
                                                 size={18}
-                                                color={isProductInCart(product.id) ? "red" : "white"}
-                                                fill={isProductInCart(product.id) ? "red" : "none"}
+                                                color={isInWishlist(product.id) ? "red" : "white"}
+                                                fill={isInWishlist(product.id) ? "red" : "none"}
                                             />
                                         </button>
                                         <img src={productImageUrl} alt={product.name} style={{ objectFit: 'contain', backgroundColor: 'white' }} />

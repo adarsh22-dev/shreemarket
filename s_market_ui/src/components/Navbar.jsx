@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, ShoppingBag, User, Globe, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, ShoppingBag, User, Globe, ChevronDown, ChevronRight, Loader2, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { searchProducts, BACKEND_URL } from '../api/api';
 import CartDropdown from './CartDropdown';
 import UserDropdown from './UserDropdown';
@@ -11,6 +12,7 @@ import './Navbar.css';
 
 const Navbar = () => {
     const { cartCount, toggleCart, isCartOpen } = useCart();
+    const { wishlistCount, isLoggedIn } = useWishlist();
     const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
@@ -181,6 +183,16 @@ const Navbar = () => {
                                         </button>
                                     ))}
                                 </div>
+                            )}
+                        </div>
+
+                        <div className="wishlist-nav-container">
+                            {isLoggedIn && (
+                                <Link to="/wishlist" className="navbar-heart-link">
+                                    <Heart size={20} />
+                                    <span className="action-text">Wishlist</span>
+                                    {wishlistCount > 0 && <span className="wishlist-badge">{wishlistCount}</span>}
+                                </Link>
                             )}
                         </div>
 
