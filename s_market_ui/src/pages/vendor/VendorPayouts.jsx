@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import * as XLSX from 'xlsx';
+import { getVendorOwnPayouts, getVendorEligibleOrders, submitVendorWithdrawalRequest, log, logError } from '../../api/api';
 import './VendorPayouts.css';
 
-/* ── Inline SVG Icons (no emoji, no external deps) ── */
 const IconTrendingUp = () => (
   <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
 );
@@ -26,87 +27,117 @@ const VendorPayouts = () => {
   const [activeTab, setActiveTab] = useState('Transactions');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRows, setSelectedRows] = useState(new Set());
+  const [payouts, setPayouts] = useState([]);
+  const [eligibleOrders, setEligibleOrders] = useState([]);
+  const [ineligibleOrders, setIneligibleOrders] = useState([]);
+  const [eligibleTotal, setEligibleTotal] = useState(0);
+  const [fetchError, setFetchError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [data] = useState([
-    { id: 'ORD-826041', earnings: 3400, charges: 136, payment: 3264, date: '2025-10-10' },
-    { id: 'ORD-826189', earnings: 1850, charges: 74, payment: 1776, date: '2025-11-15' },
-    { id: 'ORD-826478', earnings: 2150, charges: 86, payment: 2064, date: '2026-01-20' },
-    { id: 'ORD-826504', earnings: 980, charges: 39, payment: 941, date: '2026-02-15' },
-  ]);
-
-  const today = new Date('2026-02-24');
-
-  const checkEligibility = (dateStr) => {
-    const diffDays = Math.ceil((today - new Date(dateStr)) / (1000 * 60 * 60 * 24));
-    return diffDays >= 90;
+  const loadEligibleOrders = () => {
+    getVendorEligibleOrders().then((res) => {
+      setEligibleOrders(res.orders || []);
+      setIneligibleOrders(res.ineligibleOrders || []);
+      setEligibleTotal(res.totalGrossAmount || 0);
+    }).catch((err) => {
+      logError('VENDOR_PAGE', 'Eligible orders fetch failed:', err.message);
+    });
   };
 
-  const filteredData = useMemo(
-    () => data.filter(item => item.id.toLowerCase().includes(searchTerm.toLowerCase())),
-    [data, searchTerm]
+  useEffect(() => {
+    log('VENDOR_PAGE', 'VendorPayouts mounted');
+    setFetchError(null);
+    getVendorOwnPayouts().then(setPayouts).catch((err) => {
+      logError('VENDOR_PAGE', 'VendorPayouts fetch failed:', err.message);
+      setFetchError(err.message);
+    });
+    loadEligibleOrders();
+  }, []);
+
+  const filteredPayouts = useMemo(
+    () => payouts.filter(item => String(item.payoutId || item.id).toLowerCase().includes(searchTerm.toLowerCase())),
+    [payouts, searchTerm]
   );
 
-  const totalEarnings = data.reduce((s, i) => s + i.earnings, 0);
-  const totalCharges = data.reduce((s, i) => s + i.charges, 0);
-  const totalNet = data.reduce((s, i) => s + i.payment, 0);
+  const parseAmount = (val) => {
+    if (!val) return 0;
+    const num = parseFloat(val.toString().replace(/[^\d.-]/g, ''));
+    return isNaN(num) ? 0 : num;
+  };
+
+  const totalEarnings = payouts.reduce((s, i) => s + parseAmount(i.netAmount != null ? i.netAmount : i.amount), 0);
+  const totalCharges = payouts.reduce((s, i) => s + (parseAmount(i.commission) + parseAmount(i.fee) + parseAmount(i.tds) + parseAmount(i.penalty)), 0);
+  const totalNet = payouts.reduce((s, i) => s + parseAmount(i.netAmount != null ? i.netAmount : i.amount), 0);
 
   const getFormattedDate = () => new Date().toISOString().slice(0, 10);
 
   const handlePrint = () => {
     const w = window.open('', '_blank');
     if (!w) return;
+    const data = activeTab === 'Transactions' ? filteredPayouts : eligibleOrders;
+    const isOrders = activeTab === 'Withdrawal';
     w.document.write(`
-      <html><head><title>Payout Report</title>
+      <html><head><title>${isOrders ? 'Eligible Orders' : 'Payout Report'}</title>
       <style>
         body{font-family:Arial,sans-serif;margin:20px}
         h2{color:#006d77}
         table{width:100%;border-collapse:collapse;margin-top:20px}
         th,td{border:1px solid #ccc;padding:10px;text-align:left}
         th{background:#008a99;color:#fff}
-        .oid{color:#e53935;font-weight:bold}
         .bold{font-weight:bold}
-        .locked{color:#666;font-style:italic}
       </style></head><body>
-      <h2>EmpowerHome — Payout Report</h2>
+      <h2>EmpowerHome — ${isOrders ? 'Eligible Orders for Withdrawal' : 'Payout Report'}</h2>
       <p>Generated: ${new Date().toLocaleString()}</p>
       <table><thead><tr>
-        <th>Order ID</th><th>My Earnings</th><th>Charges</th><th>Net Payment</th><th>Date</th>
+        ${isOrders ? '<th>Order ID</th><th>Order Number</th><th>Amount</th><th>Delivered</th><th>Lock Days</th>' : '<th>Payout ID</th><th>Gross Amount</th><th>Commission</th><th>Charges</th><th>Net Payment</th><th>Date</th><th>Status</th>'}
       </tr></thead><tbody>
-      ${filteredData.map(item => `
-        <tr>
-          <td class="oid">${item.id}</td>
-          <td>&#8377;${item.earnings.toLocaleString()}</td>
-          <td>&#8377;${item.charges.toLocaleString()}</td>
-          <td class="bold">&#8377;${item.payment.toLocaleString()}</td>
-          <td>${item.date}${!checkEligibility(item.date) ? ' <span class="locked">(Locked - 90 days)</span>' : ''}</td>
-        </tr>`).join('')}
+      ${data.map(item => {
+        if (isOrders) {
+          return `<tr><td>${item.id}</td><td>${item.orderNumber}</td><td>&#8377;${parseAmount(item.totalAmount).toLocaleString()}</td><td>${item.deliveredAt ? new Date(item.deliveredAt).toLocaleDateString() : '—'}</td><td>${item.withdrawalLockDays || 90}</td></tr>`;
+        }
+        const gross = parseAmount(item.grossAmount);
+        const comm = parseAmount(item.commission);
+        const net = parseAmount(item.netAmount != null ? item.netAmount : item.amount);
+        return `<tr><td class="bold">${item.payoutId || item.id}</td><td>&#8377;${gross.toLocaleString()}</td><td>&#8377;${comm.toLocaleString()}</td><td>&#8377;0</td><td class="bold">&#8377;${net.toLocaleString()}</td><td>${item.date}</td><td>${item.status || '—'}</td></tr>`;
+      }).join('')}
       </tbody></table></body></html>`);
     w.document.close();
     w.focus();
     setTimeout(() => w.print(), 300);
   };
 
-  const toSheet = () =>
-    filteredData.map(item => ({
-      'Order ID': item.id,
-      Earnings: item.earnings,
-      Charges: item.charges,
-      'Net Payout': item.payment,
-      Date: item.date,
-      Status: checkEligibility(item.date) ? 'Eligible' : 'Locked (90 days)',
+  const toSheet = () => {
+    if (activeTab === 'Withdrawal') {
+      return eligibleOrders.map(item => ({
+        'Order ID': item.id,
+        'Order Number': item.orderNumber,
+        'Amount': parseAmount(item.totalAmount),
+        'Delivered': item.deliveredAt ? new Date(item.deliveredAt).toLocaleDateString() : '',
+        'Lock Days': item.withdrawalLockDays || 90,
+      }));
+    }
+    return filteredPayouts.map(item => ({
+      'Payout ID': item.payoutId || item.id,
+      'Gross': parseAmount(item.grossAmount),
+      'Commission': parseAmount(item.commission),
+      'Charges': 0,
+      'Net Payout': parseAmount(item.netAmount != null ? item.netAmount : item.amount),
+      'Date': item.date,
+      'Status': item.status || '',
     }));
+  };
 
   const handleExportExcel = () => {
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(toSheet()), 'Payouts');
-    XLSX.writeFile(wb, `Vendor_Payouts_${getFormattedDate()}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(toSheet()), activeTab === 'Withdrawal' ? 'EligibleOrders' : 'Payouts');
+    XLSX.writeFile(wb, `${activeTab === 'Withdrawal' ? 'Eligible_Orders' : 'Vendor_Payouts'}_${getFormattedDate()}.xlsx`);
   };
 
   const handleExportCSV = () => {
     const csv = XLSX.utils.sheet_to_csv(XLSX.utils.json_to_sheet(toSheet()));
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
     const a = Object.assign(document.createElement('a'), {
-      href: url, download: `Vendor_Payouts_${getFormattedDate()}.csv`,
+      href: url, download: `${activeTab === 'Withdrawal' ? 'Eligible_Orders' : 'Vendor_Payouts'}_${getFormattedDate()}.csv`,
     });
     document.body.appendChild(a);
     a.click();
@@ -114,9 +145,24 @@ const VendorPayouts = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleAdminRequest = () => {
-    alert(`Withdrawal request for ${selectedRows.size} order(s) sent to admin.`);
-    setSelectedRows(new Set());
+  const handleAdminRequest = async () => {
+    if (selectedRows.size === 0) return;
+    setSubmitting(true);
+    try {
+      const orderIds = Array.from(selectedRows).map(Number);
+      const result = await submitVendorWithdrawalRequest(orderIds);
+      toast.success('Withdrawal request sent to admin successfully.');
+      setSelectedRows(new Set());
+      const res = await getVendorEligibleOrders();
+      setEligibleOrders(res.orders || []);
+      setIneligibleOrders(res.ineligibleOrders || []);
+      setEligibleTotal(res.totalGrossAmount || 0);
+      getVendorOwnPayouts().then(setPayouts).catch(() => {});
+    } catch (error) {
+      toast.error('Failed to send withdrawal request: ' + error.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const toggleRow = (id) => {
@@ -124,6 +170,21 @@ const VendorPayouts = () => {
     next.has(id) ? next.delete(id) : next.add(id);
     setSelectedRows(next);
   };
+
+  const formatDate = (epoch) => {
+    if (!epoch) return '—';
+    return new Date(epoch).toLocaleDateString();
+  };
+
+  const remainingDays = (remainingMs) => {
+    if (!remainingMs || remainingMs <= 0) return 0;
+    return Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
+  };
+
+  const selectedAmount = Array.from(selectedRows).reduce((sum, id) => {
+    const order = eligibleOrders.find(o => o.id === id);
+    return sum + (order ? parseAmount(order.totalAmount) : 0);
+  }, 0);
 
   return (
     <VendorLayout>
@@ -139,7 +200,7 @@ const VendorPayouts = () => {
               <p className="vp-page-subtitle">
                 {activeTab === 'Transactions'
                   ? 'View and export your complete transaction ledger.'
-                  : 'Select eligible orders to request a withdrawal.'}
+                  : 'Select eligible delivered orders to request a withdrawal.'}
               </p>
             </div>
             <div className="vp-tab-pills">
@@ -163,48 +224,41 @@ const VendorPayouts = () => {
             <div className="vp-stat-card">
               <div className="vp-stat-top-row">
                 <div className="vp-stat-icon-box"><IconTrendingUp /></div>
-                <span className="vp-stat-badge positive">+4% from last month</span>
               </div>
-              <div className="vp-stat-label">Total Earnings</div>
+              <div className="vp-stat-label">Total Earnings (Net Paid)</div>
               <div className="vp-stat-value">&#8377;{totalEarnings.toLocaleString()}</div>
             </div>
 
             <div className="vp-stat-card">
               <div className="vp-stat-top-row">
                 <div className="vp-stat-icon-box"><IconTag /></div>
-                <span className="vp-stat-badge negative">-2% from last month</span>
               </div>
-              <div className="vp-stat-label">Total Charges</div>
+              <div className="vp-stat-label">Total Deductions</div>
               <div className="vp-stat-value">&#8377;{totalCharges.toLocaleString()}</div>
             </div>
 
             <div className="vp-stat-card">
               <div className="vp-stat-top-row">
                 <div className="vp-stat-icon-box"><IconWallet /></div>
-                <span className="vp-stat-badge positive">+1.8% from last month</span>
               </div>
-              <div className="vp-stat-label">Net Payout</div>
-              <div className="vp-stat-value">&#8377;{totalNet.toLocaleString()}</div>
-            </div>
-          </div>
-
-          {/* ── Profile Completeness ── */}
-          <div className="vp-completeness-box">
-            <div className="vp-flex-between">
-              <span>Profile Completeness</span>
-              <span>42%</span>
-            </div>
-            <div className="vp-bar-outer">
-              <div className="vp-bar-inner" style={{ width: '42%' }} />
+              <div className="vp-stat-label">Available for Withdrawal</div>
+              <div className="vp-stat-value">&#8377;{eligibleTotal.toLocaleString()}</div>
             </div>
           </div>
 
           {/* ── Main Table Card ── */}
           <div className="vp-main-card">
-            {activeTab === 'Withdrawal' && (
+            {activeTab === 'Withdrawal' && eligibleTotal > 0 && (
               <p className="vp-pending-label">
-                Pending Withdrawals: <strong>&#8377;272,040.00</strong>
+                Available for Withdrawal: <strong>&#8377;{eligibleTotal.toLocaleString()}</strong>
+                &nbsp;(from {eligibleOrders.length} eligible orders)
               </p>
+            )}
+
+            {fetchError && (
+              <div className="vp-error" style={{ padding: '16px', color: '#dc2626', background: '#fef2f2', borderRadius: '8px', marginBottom: '16px' }}>
+                Failed to load data: {fetchError}
+              </div>
             )}
 
             {/* Toolbar */}
@@ -218,7 +272,7 @@ const VendorPayouts = () => {
                 <IconSearch />
                 <input
                   type="text"
-                  placeholder="Search Order ID..."
+                  placeholder={activeTab === 'Withdrawal' ? 'Search Order ID...' : 'Search Payout ID...'}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -227,52 +281,112 @@ const VendorPayouts = () => {
 
             {/* Table */}
             <div className="vp-scrollable-table">
-              <table className="vp-table">
-                <thead><tr>
-                  {activeTab === 'Withdrawal' && <th>Select</th>}
-                  <th>Order ID</th>
-                  <th>My Earnings</th>
-                  <th>Charges</th>
-                  <th>Payment</th>
-                  <th>Date</th>
-                </tr></thead>
-                <tbody>
-                  {filteredData.map((item) => {
-                    const eligible = checkEligibility(item.date);
-                    return (
-                      <tr
-                        key={item.id}
-                        className={!eligible && activeTab === 'Withdrawal' ? 'row-locked' : ''}
-                      >{activeTab === 'Withdrawal' && (
-                        <td>
-                          <input
-                            type="checkbox"
-                            disabled={!eligible}
-                            checked={selectedRows.has(item.id)}
-                            onChange={() => toggleRow(item.id)}
-                          />
-                        </td>
-                      )}
-                        <td className="vp-order-id">{item.id}</td>
-                        <td>&#8377;{item.earnings.toLocaleString()}</td>
-                        <td>&#8377;{item.charges.toLocaleString()}</td>
-                        <td className="vp-bold">&#8377;{item.payment.toLocaleString()}</td>
-                        <td>
-                          {item.date}
-                          {!eligible && (
-                            <span className="vp-lock-tag">
-                              <IconLock />
-                              Locked (90 Days)
-                            </span>
-                          )}
-                        </td></tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              {activeTab === 'Withdrawal' ? (
+                <>
+                  {eligibleOrders.length > 0 && (
+                    <>
+                      <p style={{padding: '8px 18px', fontWeight: 600, color: '#16a34a', fontSize: '.85rem'}}>
+                        Eligible Orders (lock period passed)
+                      </p>
+                      <table className="vp-table">
+                        <thead><tr>
+                          <th>Select</th>
+                          <th>Order ID</th>
+                          <th>Order Number</th>
+                          <th>Amount</th>
+                          <th>Delivered On</th>
+                          <th>Lock Days</th>
+                        </tr></thead>
+                        <tbody>
+                          {eligibleOrders.map((order) => (
+                            <tr key={order.id}>
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRows.has(order.id)}
+                                  onChange={() => toggleRow(order.id)}
+                                />
+                              </td>
+                              <td className="vp-order-id">{order.id}</td>
+                              <td>{order.orderNumber}</td>
+                              <td>&#8377;{parseAmount(order.totalAmount).toLocaleString()}</td>
+                              <td>{formatDate(order.deliveredAt)}</td>
+                              <td>{order.withdrawalLockDays || 90}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </>
+                  )}
 
-              {filteredData.length === 0 && (
-                <p className="vp-empty">No records found matching your search.</p>
+                  {ineligibleOrders.length > 0 && (
+                    <>
+                      <p style={{padding: '8px 18px', fontWeight: 600, color: '#92400e', fontSize: '.85rem', marginTop: 16}}>
+                        Locked Orders (awaiting release)
+                      </p>
+                      <table className="vp-table">
+                        <thead><tr>
+                          <th></th>
+                          <th>Order ID</th>
+                          <th>Order Number</th>
+                          <th>Amount</th>
+                          <th>Delivered On</th>
+                          <th>Lock Days</th>
+                          <th>Releases In</th>
+                        </tr></thead>
+                        <tbody>
+                          {ineligibleOrders.map((order) => (
+                            <tr key={order.id} className="row-locked">
+                              <td><IconLock /></td>
+                              <td className="vp-order-id">{order.id}</td>
+                              <td>{order.orderNumber}</td>
+                              <td>&#8377;{parseAmount(order.totalAmount).toLocaleString()}</td>
+                              <td>{formatDate(order.deliveredAt)}</td>
+                              <td>{order.withdrawalLockDays || 90}</td>
+                              <td>
+                                <span className="vp-lock-tag">
+                                  {remainingDays(order.remainingLockMs)} days remaining
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </>
+                  )}
+
+                  {eligibleOrders.length === 0 && ineligibleOrders.length === 0 && !fetchError && (
+                    <p className="vp-empty">No delivered orders found.</p>
+                  )}
+                </>
+              ) : (
+                <table className="vp-table">
+                  <thead><tr>
+                    <th>Payout ID</th>
+                    <th>Gross Amount</th>
+                    <th>Commission</th>
+                    <th>TDS</th>
+                    <th>Net Payment</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr></thead>
+                  <tbody>
+                    {filteredPayouts.map((item) => (
+                      <tr key={item.id}>
+                        <td className="vp-order-id">{item.payoutId || item.id}</td>
+                        <td>&#8377;{parseAmount(item.grossAmount).toLocaleString()}</td>
+                        <td>&#8377;{parseAmount(item.commission).toLocaleString()}</td>
+                        <td>&#8377;{parseAmount(item.tds).toLocaleString()}</td>
+                        <td className="vp-bold">&#8377;{parseAmount(item.netAmount != null ? item.netAmount : item.amount).toLocaleString()}</td>
+                        <td>{item.date}</td>
+                        <td><span className={`vp-status-badge vp-status-${(item.status || '').toLowerCase()}`}>{item.status || '—'}</span></td>
+                      </tr>
+                    ))}
+                    {!fetchError && filteredPayouts.length === 0 && (
+                      <tr><td colSpan="7" className="vp-empty">No records found matching your search.</td></tr>
+                    )}
+                  </tbody>
+                </table>
               )}
             </div>
 
@@ -280,14 +394,15 @@ const VendorPayouts = () => {
             {activeTab === 'Withdrawal' && (
               <div className="vp-footer">
                 <p className="vp-note">
-                  ** Withdrawal charges will be re-calculated depending upon total amount.
+                  <strong>Calculation Preview:</strong> Selected: &#8377;{selectedAmount.toLocaleString()} |
+                  Commission and TDS will be calculated by admin upon processing.
                 </p>
                 <button
                   className="vp-request-btn"
-                  disabled={selectedRows.size === 0}
+                  disabled={selectedRows.size === 0 || submitting}
                   onClick={handleAdminRequest}
                 >
-                  REQUEST
+                  {submitting ? 'SUBMITTING...' : `REQUEST WITHDRAWAL (${selectedRows.size} orders)`}
                 </button>
               </div>
             )}

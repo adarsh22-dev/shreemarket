@@ -2,11 +2,12 @@ package com.sreemarket.backend.controller;
 
 import com.sreemarket.backend.model.Notification;
 import com.sreemarket.backend.service.NotificationService;
+import com.sreemarket.backend.util.AuthUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,9 +19,13 @@ public class NotificationController {
     private NotificationService notificationService;
 
     @GetMapping("/vendor/{vendorId}")
-    public ResponseEntity<List<Notification>> getVendorNotifications(
+    public ResponseEntity<?> getVendorNotifications(
             @PathVariable Long vendorId,
-            @RequestParam(required = false) String type) {
+            @RequestParam(required = false) String type,
+            HttpServletRequest request) {
+        if (!AuthUtil.isOwnerOrAdmin(vendorId, request)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
         if (type != null && !type.isEmpty() && !"All".equalsIgnoreCase(type)) {
             return ResponseEntity.ok(notificationService.getNotificationsByVendorAndType(vendorId, type));
         }
@@ -34,13 +39,19 @@ public class NotificationController {
     }
 
     @PutMapping("/vendor/{vendorId}/read-all")
-    public ResponseEntity<?> markAllAsRead(@PathVariable Long vendorId) {
+    public ResponseEntity<?> markAllAsRead(@PathVariable Long vendorId, HttpServletRequest request) {
+        if (!AuthUtil.isOwnerOrAdmin(vendorId, request)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
         notificationService.markAllAsRead(vendorId);
         return ResponseEntity.ok(Map.of("message", "All notifications marked as read"));
     }
 
     @PostMapping
-    public ResponseEntity<Notification> createNotification(@RequestBody Notification notification) {
+    public ResponseEntity<?> createNotification(@RequestBody Notification notification, HttpServletRequest request) {
+        if (!AuthUtil.isAdmin()) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
         return ResponseEntity.ok(notificationService.createNotification(notification));
     }
 }

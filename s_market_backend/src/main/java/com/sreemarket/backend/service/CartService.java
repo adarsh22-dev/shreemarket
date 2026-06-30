@@ -3,9 +3,13 @@ package com.sreemarket.backend.service;
 import com.sreemarket.backend.dto.CartItemRequest;
 import com.sreemarket.backend.model.Cart;
 import com.sreemarket.backend.model.CartItem;
+import com.sreemarket.backend.model.Product;
+import com.sreemarket.backend.model.WholesaleTier;
 import com.sreemarket.backend.repository.CartItemRepository;
 import com.sreemarket.backend.repository.CartRepository;
 import com.sreemarket.backend.repository.ProductRepository;
+import com.sreemarket.backend.repository.WholesaleTierRepository;
+import com.sreemarket.backend.repository.WholesalerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +29,12 @@ public class CartService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private WholesalerRepository wholesalerRepository;
+
+    @Autowired
+    private WholesaleTierRepository wholesaleTierRepository;
+
     @Transactional
     public Cart getCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId).orElseGet(() -> {
@@ -33,9 +43,44 @@ public class CartService {
             return cartRepository.save(newCart);
         });
 
-        // Populate products for each item
+        boolean isWholesaler = wholesalerRepository.findById(userId)
+                .map(w -> w.getRoleId() != null && w.getRoleId() == 4L)
+                .orElse(false);
+
+        // Populate products and calculate wholesale pricing for each item
         for (CartItem item : cart.getItems()) {
-            productRepository.findById(item.getProductId()).ifPresent(item::setProduct);
+            Optional<Product> productOpt = productRepository.findById(item.getProductId());
+            productOpt.ifPresent(item::setProduct);
+
+            if (isWholesaler && productOpt.isPresent()) {
+                Product product = productOpt.get();
+                if (Boolean.TRUE.equals(product.getSupportsWholesale())
+                        && product.getWholesalePrice() != null
+                        && item.getQuantity() >= (product.getMinimumWholesaleQuantity() != null ? product.getMinimumWholesaleQuantity() : 1)) {
+
+                    double baseWholesalePrice = product.getWholesalePrice();
+                    String tierLabel = null;
+
+                    // Check WholesaleTier for better pricing
+                    List<WholesaleTier> tiers = wholesaleTierRepository.findByProductIdOrderByMinQtyAsc(product.getId());
+                    for (WholesaleTier tier : tiers) {
+                        if (item.getQuantity() >= tier.getMinQty()
+                                && (tier.getMaxQty() == null || item.getQuantity() <= tier.getMaxQty())) {
+                            baseWholesalePrice = tier.getUnitPrice();
+                            tierLabel = "Tier " + tier.getMinQty() + "+";
+                            break;
+                        }
+                    }
+
+                    item.setWholesalePrice(baseWholesalePrice);
+                    item.setAppliedTier(tierLabel);
+
+                    double retailPrice = product.getDiscountPrice() != null ? product.getDiscountPrice() : product.getRegularPrice() != null ? product.getRegularPrice() : 0;
+                    if (retailPrice > baseWholesalePrice) {
+                        item.setSavings((retailPrice - baseWholesalePrice) * item.getQuantity());
+                    }
+                }
+            }
         }
 
         return cart;

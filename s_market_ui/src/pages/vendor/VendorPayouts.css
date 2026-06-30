@@ -445,6 +445,23 @@
   box-shadow: none;
 }
 
+/* ── Status Badges ── */
+.vp-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.vp-status-pending { background: #fef3c7; color: #92400e; }
+.vp-status-approved { background: #dbeafe; color: #1e40af; }
+.vp-status-processing { background: #e0e7ff; color: #3730a3; }
+.vp-status-paid { background: #dcfce7; color: #166534; }
+.vp-status-failed { background: #fee2e2; color: #991b1b; }
+.vp-status-rejected { background: #fce4ec; color: #c62828; }
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .vp-container { padding: 16px; }

@@ -1,0 +1,30 @@
+.vendor-review-templates { padding: 24px; }
+.vrt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+.vrt-header h1 { display: flex; align-items: center; gap: 10px; font-size: 24px; color: #111; margin: 0; }
+.vrt-header-actions { display: flex; gap: 12px; }
+.vrt-refresh-btn, .vrt-create-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; }
+.vrt-refresh-btn { background: #f5f5f5; color: #333; }
+.vrt-create-btn { background: #FF5722; color: white; }
+.vrt-loading, .vrt-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; color: #888; }
+.vrt-empty h3 { color: #333; margin: 16px 0 8px; }
+.vrt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.vrt-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid #eee; }
+.vrt-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.vrt-card-header h3 { font-size: 16px; color: #111; margin: 0; }
+.vrt-card-actions { display: flex; gap: 6px; }
+.vrt-icon-btn { padding: 6px; background: #f5f5f5; border: none; border-radius: 6px; cursor: pointer; color: #888; }
+.vrt-icon-btn:hover { background: #eee; color: #333; }
+.vrt-rating-badge { display: inline-block; padding: 2px 8px; background: #fff3e0; color: #e65100; border-radius: 6px; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+.vrt-content { font-size: 13px; color: #555; line-height: 1.6; margin: 0 0 16px; white-space: pre-wrap; }
+.vrt-copy-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #f5f5f5; color: #555; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.vrt-copy-btn:hover { background: #FF5722; color: white; }
+.vrt-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.vrt-modal { background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 520px; }
+.vrt-modal h2 { margin: 0 0 24px; font-size: 20px; }
+.vrt-form-group { margin-bottom: 16px; }
+.vrt-form-group label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 6px; }
+.vrt-form-group input, .vrt-form-group select, .vrt-form-group textarea { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+.vrt-modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.vrt-cancel-btn, .vrt-submit-btn { padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; }
+.vrt-cancel-btn { background: #f5f5f5; color: #333; }
+.vrt-submit-btn { background: #FF5722; color: white; }

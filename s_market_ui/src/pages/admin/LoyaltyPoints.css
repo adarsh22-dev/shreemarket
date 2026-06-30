@@ -1,0 +1,145 @@
+/* ================================================================
+   LoyaltyPoints.css
+   ================================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.vm * { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+/* ── Points value ── */
+.lp-points-value { font-weight: 800; font-size: .9rem; }
+
+/* ── Toast animation ── */
+@keyframes lp-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Expand row animation ── */
+@keyframes lp-slide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Add button hover ── */
+.lp-btn-add:hover {
+  border-color: #bbf7d0 !important;
+  color: #16a34a !important;
+  background: #dcfce7 !important;
+}
+
+/* ── Tier badge variants (used by vm-badge in JSX) ── */
+.vm-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:6px; font-size:.71rem; font-weight:700; white-space:nowrap; }
+.vm-badge__dot { width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0; }
+.vm-badge--platinum { background:#f5f3ff; color:#6d28d9; }
+.vm-badge--gold     { background:#fef9c3; color:#d97706; }
+.vm-badge--silver   { background:#f1f5f9; color:#64748b; }
+.vm-badge--bronze   { background:#fff7ed; color:#f97316; }
+
+/* ── vm-* classes used from VendorShared layout ── */
+.vm { display:flex; flex-direction:column; gap:18px; color:#0f172a; }
+.vm-hdr { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; }
+.vm-hdr__title { margin:0 0 4px; font-size:1.3rem; font-weight:800; color:#0f172a; letter-spacing:-.4px; }
+.vm-hdr__sub   { margin:0; font-size:.8rem; color:#94a3b8; }
+.vm-hdr__actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+
+.vm-kpi-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.vm-kpi { background:#fff; border-radius:14px; border:1px solid #e8ecf0; padding:16px 18px; display:flex; flex-direction:column; gap:8px; transition:all .18s ease; }
+.vm-kpi:hover { box-shadow:0 4px 18px rgba(0,0,0,.08); transform:translateY(-2px); }
+.vm-kpi__top { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; }
+.vm-kpi__icon { width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; }
+.vm-kpi__trend { font-size:.72rem; font-weight:700; padding:3px 8px; border-radius:6px; background:#dcfce7; color:#16a34a; white-space:nowrap; }
+.vm-kpi__trend--up { background:#dcfce7; color:#16a34a; }
+.vm-kpi__value { font-size:1.5rem; font-weight:800; color:#0f172a; letter-spacing:-.5px; line-height:1; }
+.vm-kpi__label { font-size:.72rem; color:#94a3b8; font-weight:500; margin-top:4px; }
+
+.vm-2col { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+.vm-card { background:#fff; border-radius:14px; border:1px solid #e8ecf0; padding:18px 20px; overflow:hidden; }
+.vm-sh { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+.vm-sh__title { margin:0 0 2px; font-size:.95rem; font-weight:800; color:#0f172a; }
+.vm-sh__sub   { margin:0; font-size:.75rem; color:#94a3b8; }
+.vm-sh__right { display:flex; flex-direction:column; gap:8px; }
+
+.vm-search { position:relative; display:flex; align-items:center; }
+.vm-search__icon { position:absolute; left:10px; display:flex; pointer-events:none; }
+.vm-search__input {
+  padding:0 12px 0 33px; height:36px; border-radius:8px;
+  border:1px solid #e8ecf0; font-size:.81rem; color:#0f172a;
+  background:#f8fafc; outline:none; width:100%;
+  transition:all .15s ease; font-family:'Plus Jakarta Sans',sans-serif;
+}
+.vm-search__input:focus { border-color:#E03E1A; background:#fff; box-shadow:0 0 0 3px rgba(224,62,26,.10); }
+.vm-search__input::placeholder { color:#94a3b8; }
+
+.vm-pills { display:flex; background:#f8fafc; border-radius:8px; padding:3px; gap:2px; border:1px solid #f1f5f9; overflow-x:auto; scrollbar-width:none; }
+.vm-pills::-webkit-scrollbar { display:none; }
+.vm-pill { padding:5px 12px; border-radius:6px; border:none; background:transparent; font-size:.73rem; font-weight:600; color:#64748b; cursor:pointer; white-space:nowrap; transition:all .14s ease; font-family:'Plus Jakarta Sans',sans-serif; }
+.vm-pill--active { background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(0,0,0,.07); }
+
+.vm-tw { overflow-x:auto; margin:0 -20px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:#e2e8f0 transparent; }
+.vm-tw::-webkit-scrollbar { height:5px; }
+.vm-tw::-webkit-scrollbar-thumb { background:#e2e8f0; border-radius:99px; }
+
+.vm-tbl { width:100%; border-collapse:collapse; font-size:.81rem; min-width:860px; }
+.vm-tbl thead th { padding:10px 12px; text-align:left; font-size:.69rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.4px; border-bottom:1px solid #f1f5f9; white-space:nowrap; background:#f8fafc; }
+.vm-tbl tbody tr { border-bottom:1px solid #f8fafc; transition:background .13s ease; }
+.vm-tbl tbody tr:hover td { background:#fafbfc; }
+.vm-tbl tbody td { padding:11px 12px; vertical-align:middle; }
+
+.vm-vcell { display:flex; align-items:center; gap:8px; }
+.vm-av { border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; flex-shrink:0; }
+.vm-av--sm { width:30px; height:30px; font-size:.65rem; border-radius:7px; }
+.vm-vcell__name { font-size:.83rem; font-weight:700; color:#0f172a; white-space:nowrap; }
+.vm-vcell__id   { font-size:.67rem; color:#94a3b8; margin-top:2px; }
+
+.vm-btn { display:inline-flex; align-items:center; gap:5px; padding:7px 13px; border-radius:8px; border:none; font-size:.78rem; font-weight:700; cursor:pointer; transition:all .15s ease; font-family:'Plus Jakarta Sans',sans-serif; white-space:nowrap; }
+.vm-btn--outline { background:#fff; border:1px solid #e2e8f0; color:#475569; }
+.vm-btn--outline:hover { border-color:#94a3b8; background:#f8fafc; }
+.vm-btn--primary { background:#E03E1A; color:#fff; }
+.vm-btn--primary:hover { background:#c73516; }
+.vm-btn--sm { padding:5px 10px; font-size:.72rem; }
+
+.vm-pag { display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid #f1f5f9; }
+.vm-pag__info { font-size:.75rem; color:#94a3b8; }
+.vm-pag__ctrl { display:flex; align-items:center; gap:6px; }
+.vm-pag__btn { width:28px; height:28px; border-radius:6px; border:1px solid #e8ecf0; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#475569; transition:all .13s; }
+.vm-pag__btn:disabled { opacity:.35; cursor:not-allowed; }
+.vm-pag__btn:hover:not(:disabled) { background:#f1f5f9; }
+.vm-pag__label { font-size:.75rem; font-weight:600; color:#0f172a; min-width:40px; text-align:center; }
+
+@media (min-width:480px) {
+  .vm-kpi-grid { grid-template-columns:repeat(4,1fr); }
+  .vm-kpi__value { font-size:1.6rem; }
+  .vm-2col { grid-template-columns:repeat(4,1fr); }
+}
+@media (min-width:640px) {
+  .vm-sh { flex-direction:row; justify-content:space-between; align-items:flex-start; }
+  .vm-sh__right { flex-direction:row; align-items:center; flex-wrap:wrap; gap:8px; }
+  .vm-search__input { width:200px; }
+  .vm-search__input:focus { width:240px; }
+}
+@media (min-width:768px) {
+  .vm { gap:20px; }
+  .vm-hdr__title { font-size:1.45rem; }
+  .vm-card { padding:20px 22px; }
+  .vm-kpi { padding:18px 20px; }
+  .vm-kpi__value { font-size:1.75rem; }
+  .vm-tw { margin:0 -22px; }
+}
+@media (min-width:1100px) {
+  .vm { gap:22px; }
+  .vm-card { padding:22px 26px; }
+  .vm-tw { margin:0 -26px; }
+  .vm-kpi__value { font-size:1.9rem; }
+}
+
+/* responsive KPI top */
+@media only screen and (min-width:300px) and (max-width:768px) {
+  .vm-kpi__top { flex-direction:column; }
+}
+
+@media print {
+  .vm-btn, .vm-pag { display:none !important; }
+  .vm-card { box-shadow:none !important; }
+}

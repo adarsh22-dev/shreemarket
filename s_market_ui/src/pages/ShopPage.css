@@ -126,6 +126,17 @@
     opacity: 1;
 }
 
+.category-count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: #999;
+    font-weight: 400;
+}
+
+.category-item.active .category-count {
+    color: #FF5722;
+}
+
 /* Price Slider (Visual Only) */
 .price-slider-container {
     padding: 0.5rem 0;
@@ -371,6 +382,19 @@
 .shop-product-card {
     display: flex;
     flex-direction: column;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.shop-product-card:hover {
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .sp-image-container {
@@ -382,15 +406,123 @@
     background-color: #ededed;
 }
 
+.sp-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    transform: translateX(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 5;
+}
+
+.shop-product-card:hover .sp-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.shop-product-card:hover .sp-action-btn {
+    color: white;
+}
+
+.shop-product-card:hover .sp-action-btn svg {
+    stroke: white !important;
+    fill: white !important;
+}
+
+.sp-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgb(0 0 0 / 90%) !important;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.sp-action-btn:hover {
+    background: #FF5722 !important;
+    color: white;
+    transform: scale(1.1);
+}
+
+.sp-share-wrapper {
+    position: relative;
+}
+
+.sp-share-dropdown {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    padding: 12px;
+    z-index: 20;
+    animation: fadeIn 0.2s ease;
+    white-space: nowrap;
+}
+
+.sp-share-dropdown-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #8A7F75;
+    margin: 0 0 8px 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.sp-share-icons-row {
+    display: flex;
+    gap: 6px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (hover: none) {
+    .shop-product-card .sp-image-secondary { opacity: 1; }
+    .shop-product-card .sp-image-secondary ~ .sp-image-primary { opacity: 0; }
+    .shop-product-card .sp-actions { opacity: 1; transform: translateX(0); }
+}
+
 .sp-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
+    object-fit: contain;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.shop-product-card:hover .sp-image {
+.sp-image-primary {
+    position: relative;
+    z-index: 1;
+}
+
+.sp-image-secondary {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    z-index: 2;
+    transition: opacity 0.3s ease;
+}
+
+.shop-product-card:hover .sp-image-primary {
     transform: scale(1.05);
+}
+
+.shop-product-card:hover .sp-image-secondary {
+    opacity: 1;
 }
 
 .sp-badge {
@@ -407,6 +539,7 @@
 }
 
 .sp-info {
+    padding: 15px !important;
     display: flex;
     flex-direction: column;
 }
@@ -563,6 +696,29 @@
     margin: 0;
 }
 
+.sp-add-to-cart-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 10px 16px;
+    margin-top: 10px;
+    background: #FF5722;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sp-add-to-cart-btn:hover {
+    background: #e64a19;
+    transform: translateY(-1px);
+}
+
 /* Disabled Pagination */
 .page-btn:disabled {
     opacity: 0.4;
@@ -576,4 +732,93 @@
 /* Responsive grid at 3 columns for shop */
 .shop-products.grid {
     grid-template-columns: repeat(3, 1fr);
+}
+
+/* Mobile filter toggle button (hidden on desktop) */
+.shop-mobile-filter-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: #FF5722;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — Tablet (≤ 1024px)
+══════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .shop-page-main { padding: 1.5rem 24px; }
+    .shop-layout-grid { gap: 2rem; grid-template-columns: 220px 1fr; }
+    .shop-products { grid-template-columns: repeat(3, 1fr); }
+    .shop-products.grid { grid-template-columns: repeat(3, 1fr); }
+    .shop-title { font-size: 1.6rem; }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — Mobile (≤ 768px)
+══════════════════════════════════════ */
+@media (max-width: 768px) {
+    .shop-page-main { padding: 1rem 16px; }
+    .shop-header { margin-bottom: 1.5rem; }
+    .shop-title { font-size: 1.4rem; }
+    .shop-description { font-size: 0.88rem; }
+
+    .shop-layout-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .shop-sidebar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: white;
+        z-index: 1100;
+        padding: 1.5rem;
+        overflow-y: auto;
+    }
+    .shop-sidebar.mobile-open { display: block; }
+
+    .shop-mobile-filter-toggle { display: flex; }
+
+    .shop-products { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .shop-products.grid { grid-template-columns: repeat(2, 1fr); }
+
+    .shop-top-bar { flex-wrap: wrap; gap: 0.75rem; }
+    .top-bar-controls { gap: 0.75rem; }
+
+    .shop-pagination { gap: 0.5rem; }
+    .page-btn { width: 32px; height: 32px; font-size: 0.85rem; }
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE — Small phones (≤ 480px)
+══════════════════════════════════════ */
+@media (max-width: 480px) {
+    .shop-page-main { padding: 0.75rem 12px; }
+    .shop-title { font-size: 1.2rem; }
+
+    .shop-products { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .shop-products.grid { grid-template-columns: repeat(2, 1fr); }
+
+    .sp-name { font-size: 0.85rem; }
+    .sp-price { font-size: 0.85rem; }
+    .sp-author { font-size: 0.73rem; }
+    .sp-image-container { margin-bottom: 0.5rem; }
+
+    .sort-dropdown { font-size: 0.78rem; padding: 0.4rem 1.5rem 0.4rem 0.75rem; }
+    .product-count { font-size: 0.78rem; }
 }

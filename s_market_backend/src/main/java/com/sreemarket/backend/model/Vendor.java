@@ -32,11 +32,11 @@ public class Vendor {
     private List<Store> stores = new ArrayList<>();
 
     @Column(name = "fullname")
+    @com.fasterxml.jackson.annotation.JsonProperty("name")
     private String fullName;
     @Column(name = "email_address")
     private String email;
     @Column(name = "phonenumber")
-    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private String phone;
     @Column(name = "password")
     @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
@@ -64,6 +64,33 @@ public class Vendor {
 
     @Column(name = "newsletter")
     private Boolean newsletter;
+
+    @Column(name = "pan")
+    private String pan;
+
+    @Column(name = "gst")
+    private String gst;
+
+    @Column(name = "rating")
+    private Double rating;
+
+    @Column(name = "order_count")
+    private Integer orderCount;
+
+    @Column(name = "total_revenue")
+    private Double totalRevenue;
+
+    @Column(name = "tier")
+    private String tier;
+
+    @Column(name = "kyc_status")
+    private String kycStatus;
+
+    @Column(name = "commission_rate")
+    private Double commissionRate;
+
+    @Column(columnDefinition = "TEXT")
+    private String settings;
 
     private Long createdAt;
     private Long updatedAt;
@@ -192,6 +219,78 @@ public class Vendor {
 
     public void setNewsletter(Boolean newsletter) {
         this.newsletter = newsletter;
+    }
+
+    public String getPan() {
+        return pan;
+    }
+
+    public void setPan(String pan) {
+        this.pan = pan;
+    }
+
+    public String getGst() {
+        return gst;
+    }
+
+    public void setGst(String gst) {
+        this.gst = gst;
+    }
+
+    public Double getRating() {
+        return rating;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
+    }
+
+    public Integer getOrderCount() {
+        return orderCount;
+    }
+
+    public void setOrderCount(Integer orderCount) {
+        this.orderCount = orderCount;
+    }
+
+    public Double getTotalRevenue() {
+        return totalRevenue;
+    }
+
+    public void setTotalRevenue(Double totalRevenue) {
+        this.totalRevenue = totalRevenue;
+    }
+
+    public String getTier() {
+        return tier;
+    }
+
+    public void setTier(String tier) {
+        this.tier = tier;
+    }
+
+    public String getKycStatus() {
+        return kycStatus;
+    }
+
+    public void setKycStatus(String kycStatus) {
+        this.kycStatus = kycStatus;
+    }
+
+    public Double getCommissionRate() {
+        return commissionRate;
+    }
+
+    public void setCommissionRate(Double commissionRate) {
+        this.commissionRate = commissionRate;
+    }
+
+    public String getSettings() {
+        return settings;
+    }
+
+    public void setSettings(String settings) {
+        this.settings = settings;
     }
 
     public Long getCreatedAt() {

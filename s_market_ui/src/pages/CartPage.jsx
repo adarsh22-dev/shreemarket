@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCart } from '../context/CartContext';
 import { Heart, ShieldCheck, Award, Lock, ArrowRight, Minus, Plus, Loader2 } from 'lucide-react';
-import { getAllProducts, BACKEND_URL } from '../api/api';
+import { getAllProducts, BACKEND_URL, getPrimaryGalleryImage, PLACEHOLDER_IMG, getActiveTaxRatesPublic } from '../api/api';
 import './CartPage.css';
 
 const CartPage = () => {
@@ -24,6 +24,24 @@ const CartPage = () => {
 
     const [suggestedProducts, setSuggestedProducts] = React.useState([]);
     const [loadingSuggestions, setLoadingSuggestions] = React.useState(true);
+    const [taxRate, setTaxRate] = React.useState(8);
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    const currentUser = userStr ? JSON.parse(userStr) : null;
+    const isWholesaler = currentUser?.roleId === 4;
+
+    // Fetch active tax rates on mount
+    useEffect(() => {
+        const loadTaxRates = async () => {
+            try {
+                const data = await getActiveTaxRatesPublic();
+                const defaultRate = data.find(r => r.isDefault) || data[0];
+                if (defaultRate) setTaxRate(defaultRate.rate);
+            } catch (error) {
+                console.error("Failed to load tax rates:", error);
+            }
+        };
+        loadTaxRates();
+    }, []);
 
     // Scroll to the top when the page loads
     useEffect(() => {
@@ -46,9 +64,7 @@ const CartPage = () => {
                             id: p.id,
                             name: p.name,
                             price: p.discountPrice || p.regularPrice,
-                            image: p.media && p.media.length > 0
-                                ? `${BACKEND_URL}/uploads/products/${p.media.find(m => m.isPrimary)?.fileName || p.media[0].fileName}`
-                                : "https://via.placeholder.com/400x400",
+                            image: getPrimaryGalleryImage(p) || PLACEHOLDER_IMG,
                             category: p.category
                         }));
 
@@ -68,9 +84,7 @@ const CartPage = () => {
         fetchSuggestions();
     }, [recentlyViewed, cartItems]);
 
-    // In a real app, these values would come from context or props based on actual items
-    const taxRate = 0.08;
-    const estimatedTax = cartTotal * taxRate;
+    const estimatedTax = cartTotal * (taxRate / 100);
     const finalTotal = cartTotal + estimatedTax;
 
     return (
@@ -121,7 +135,21 @@ const CartPage = () => {
                                                     <h3 className="cart-item-title">{item.name}</h3>
                                                     <p className="cart-item-author">By {item.author || "Artisan"} in {item.details?.origin || "Global"}</p>
                                                 </div>
-                                                <span className="cart-item-price">₹{item.price.toFixed(2)}</span>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    {isWholesaler && item.wholesalePrice && (
+                                                        <div>
+                                                            <span style={{ fontSize: '0.75rem', background: '#fffbeb', color: '#d97706', padding: '0.15rem 0.5rem', borderRadius: '4px', fontWeight: '600' }}>Wholesale</span>
+                                                            {item.appliedTier && <span style={{ fontSize: '0.7rem', color: '#92400e', marginLeft: '0.35rem' }}>{item.appliedTier}</span>}
+                                                        </div>
+                                                    )}
+                                                    <span className="cart-item-price">₹{item.price.toFixed(2)}</span>
+                                                    {isWholesaler && item.savings > 0 && (
+                                                        <div style={{ fontSize: '0.75rem', color: '#059669', fontWeight: '500' }}>Save ₹{item.savings.toFixed(2)}</div>
+                                                    )}
+                                                    {!isWholesaler && item.supportsWholesale && (
+                                                        <div style={{ fontSize: '0.7rem', color: '#d97706', marginTop: '0.2rem' }}>Wholesale available</div>
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <div className="cart-item-actions">
@@ -155,10 +183,15 @@ const CartPage = () => {
                                                         REMOVE
                                                     </button>
                                                 </div>
+                                                </div>
                                             </div>
+                                            {isWholesaler && item.minimumWholesaleQuantity && item.quantity < item.minimumWholesaleQuantity && (
+                                                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#92400e', background: '#fffbeb', padding: '0.35rem 0.75rem', borderRadius: '6px', display: 'inline-block' }}>
+                                                    Add {item.minimumWholesaleQuantity - item.quantity} more to reach wholesale pricing
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                ))
+                                    ))
                             )}
                         </div>
 

@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import { Download, Wallet, Truck, ShoppingBag, Zap, ArrowUpRight, ArrowDownRight, Package, AlertTriangle, RefreshCw } from 'lucide-react';
 import './VendorAnalytics.css';
-import { getVendorAnalytics, getUserDetails, BACKEND_URL } from '../../api/api';
+import toast from 'react-hot-toast';
+import { getVendorAnalytics, getUserDetails, BACKEND_URL, PLACEHOLDER_IMG } from '../../api/api';
+import { exportCSV } from '../admin/VendorShared';
 
 const VendorAnalytics = () => {
     const [filter, setFilter] = useState('Daily');
@@ -76,7 +78,27 @@ const VendorAnalytics = () => {
                                 </button>
                             ))}
                         </div>
-                        <button className="export-btn">
+                        <button className="export-btn" onClick={() => {
+                            const rows = [
+                                ['Metric', 'Value'],
+                                ['Total Revenue', metrics.totalRevenue || 0],
+                                ['Total Orders', metrics.totalOrders || 0],
+                                ['Avg Order Value', metrics.avgOrderValue || 0],
+                                ['Conversion Rate', metrics.conversionRate || 0],
+                                ['Revenue Growth', metrics.revenueGrowth || '--'],
+                                ['Orders Growth', metrics.ordersGrowth || '--'],
+                            ];
+                            if (topProducts?.length > 0) {
+                                rows.push([]);
+                                rows.push(['Top Products', '', '', '', '']);
+                                rows.push(['Name', 'SKU', 'Units Sold', 'Revenue', 'Stock Status']);
+                                topProducts.forEach(p => {
+                                    rows.push([p.name, p.sku || '', p.unitsSold || 0, p.revenue || 0, p.status || '']);
+                                });
+                            }
+                            exportCSV(rows, 'vendor-analytics.csv');
+                            toast.success('Analytics exported to CSV');
+                        }}>
                             <Download size={16} /> Export CSV
                         </button>
                     </div>
@@ -187,48 +209,75 @@ const VendorAnalytics = () => {
                 <div className="category-demographics-grid">
                     <div className="chart-card">
                         <h2 className="card-title">Sales by Category</h2>
-                        <div className="donut-container">
-                            <div className="donut-chart">
-
-
-                                <circle className="donut-ring-bg" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#f3f4f6" strokeWidth="3"></circle>
-                                {categorySales.map((cat, i) => {
-                                    // Simple representation - first category as main ring
-                                    if (i !== 0) return null;
-                                    return (
-                                        <circle key={i} className="donut-segment" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#e84c1e" strokeWidth="3.2" strokeDasharray={`${cat.percentage} ${100 - cat.percentage}`} strokeDashoffset="25"></circle>
-                                    );
-                                })}
-
+                        {categorySales && categorySales.length > 0 ? (
+                            <div className="donut-container">
+                                <div className="donut-chart">
+                                    <svg viewBox="0 0 36 36" className="donut-svg">
+                                        <circle className="donut-ring-bg" cx="18" cy="18" r="15.9155" fill="transparent" stroke="#f3f4f6" strokeWidth="3"></circle>
+                                        {(() => {
+                                            const colors = ['#e84c1e', '#f59e0b', '#6b7280', '#3b82f6', '#10b981', '#8b5cf6'];
+                                            let offset = 25;
+                                            return categorySales.map((cat, i) => {
+                                                const segment = (
+                                                    <circle
+                                                        key={i}
+                                                        className="donut-segment"
+                                                        cx="18" cy="18" r="15.9155"
+                                                        fill="transparent"
+                                                        stroke={colors[i % colors.length]}
+                                                        strokeWidth="3.2"
+                                                        strokeDasharray={`${cat.percentage} ${100 - cat.percentage}`}
+                                                        strokeDashoffset={offset}
+                                                    />
+                                                );
+                                                offset -= cat.percentage;
+                                                return segment;
+                                            });
+                                        })()}
+                                    </svg>
+                                </div>
+                                <div className="donut-legend">
+                                    {categorySales.map((cat, i) => {
+                                        const dotColors = ['bg-orange-dark', 'bg-yellow', 'bg-grey-light', 'bg-blue', 'bg-green', 'bg-purple'];
+                                        return (
+                                            <div className="legend-row" key={i}>
+                                                <div className={`legend-dot ${dotColors[i % dotColors.length]}`}></div>
+                                                <div className="legend-info">
+                                                    <span className="legend-title">{cat.category}</span>
+                                                    <span className="legend-stats">{cat.percentage}% • ₹{cat.value >= 1000 ? (cat.value / 1000).toFixed(1) + 'k' : cat.value.toFixed(0)}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                            <div className="donut-legend">
-                                {categorySales.map((cat, i) => (
-                                    <div className="legend-row" key={i}>
-                                        <div className={`legend-dot ${i === 0 ? 'bg-orange-dark' : i === 1 ? 'bg-yellow' : 'bg-grey-light'}`}></div>
-                                        <div className="legend-info">
-                                            <span className="legend-title">{cat.category}</span>
-                                            <span className="legend-stats">{cat.percentage}% • ₹{(cat.value / 1000).toFixed(1)}k</span>
-                                        </div>
-                                    </div>
-                                ))}
+                        ) : (
+                            <div className="empty-section">
+                                <p>No category sales data yet. Sales data will appear once orders are placed.</p>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     <div className="chart-card demographics-card">
                         <h2 className="card-title">Customer Demographics</h2>
                         <div className="demographics-content">
-                            <div className="progress-bars">
-                                {demographics.map(item => (
-                                    <div className="progress-row" key={item.country}>
-                                        <span className="country-label">{item.country}</span>
-                                        <div className="progress-track">
-                                            <div className="progress-fill" style={{ width: item.width }}></div>
+                            {demographics && demographics.length > 0 ? (
+                                <div className="progress-bars">
+                                    {demographics.map((item, index) => (
+                                        <div className="progress-row" key={item.country + '-' + index}>
+                                            <span className="country-label">{item.country}</span>
+                                            <div className="progress-track">
+                                                <div className="progress-fill" style={{ width: item.width }}></div>
+                                            </div>
+                                            <span className="country-value">{item.val}</span>
                                         </div>
-                                        <span className="country-value">{item.val}</span>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-section">
+                                    <p>No customer location data yet. Demographics will appear as orders come in.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -254,7 +303,7 @@ const VendorAnalytics = () => {
                                     <tr key={p.id || i}><td>
                                         <div className="product-info-cell">
                                             <img
-                                                src={p.image && p.image !== '/placeholder-image.png' ? `${BACKEND_URL}/uploads/products/${p.image}` : '/placeholder-image.png'}
+                                                src={p.image && p.image !== '/placeholder-image.png' ? `${BACKEND_URL}/uploads/products/${p.image}` : PLACEHOLDER_IMG}
                                                 alt={p.name}
                                                 className="product-img"
                                             />

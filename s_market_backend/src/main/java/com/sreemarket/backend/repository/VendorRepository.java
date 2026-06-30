@@ -21,15 +21,21 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
 
     Page<Vendor> findByStatus(String status, Pageable pageable);
 
-    @Query("SELECT v FROM Vendor v WHERE " +
+    @Query("SELECT DISTINCT v FROM Vendor v LEFT JOIN v.stores s WHERE " +
             "v.status = :status AND (" +
             "LOWER(v.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(v.email) LIKE LOWER(CONCAT('%', :search, '%')))")
+            "LOWER(v.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(v.phone) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(s.storeName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(s.city) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Vendor> searchVendorsByStatus(@Param("search") String search, @Param("status") String status,
             Pageable pageable);
 
-    @Query("SELECT v FROM Vendor v WHERE " +
+    @Query("SELECT DISTINCT v FROM Vendor v LEFT JOIN v.stores s WHERE " +
             "LOWER(v.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(v.email) LIKE LOWER(CONCAT('%', :search, '%'))")
+            "LOWER(v.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(v.phone) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(s.storeName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(s.city) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Vendor> searchVendors(@Param("search") String search, Pageable pageable);
 }

@@ -3,6 +3,8 @@ package com.sreemarket.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sreemarket.backend.model.Review;
 import com.sreemarket.backend.service.ReviewService;
+import com.sreemarket.backend.util.AuthUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +35,10 @@ public class ReviewController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Review>> getUserReviews(@PathVariable Long userId) {
+    public ResponseEntity<?> getUserReviews(@PathVariable Long userId, HttpServletRequest request) {
+        if (!AuthUtil.isOwnerOrAdmin(userId, request)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+        }
         List<Review> reviews = reviewService.getReviewsByUser(userId);
         return ResponseEntity.ok(reviews);
     }
@@ -47,7 +52,7 @@ public class ReviewController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(defaultValue = "desc") String sortDir, HttpServletRequest request) {
 
         try {
             Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
@@ -77,9 +82,16 @@ public class ReviewController {
     @PostMapping("/{reviewId}/reply")
     public ResponseEntity<?> replyToReview(
             @PathVariable Long reviewId,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body,
+            HttpServletRequest request) {
         try {
+            if (!AuthUtil.isAdmin() && !AuthUtil.isVendor()) {
+                return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
+            }
             String reply = body.get("reply");
+            if (reply == null || reply.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Reply is required"));
+            }
             Review updatedReview = reviewService.addVendorReply(reviewId, reply);
             return ResponseEntity.ok(updatedReview);
         } catch (Exception e) {
@@ -92,10 +104,16 @@ public class ReviewController {
     @CrossOrigin
     public ResponseEntity<?> submitReview(
             @RequestParam("review") String reviewJson,
-            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
+            @RequestParam(value = "videos", required = false) List<MultipartFile> videos) {
         try {
             Review review = objectMapper.readValue(reviewJson, Review.class);
-            Review savedReview = reviewService.submitReview(review, images);
+            if (review.getRating() == null || review.getRating() < 1 || review.getRating() > 5) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Rating must be between 1 and 5"));
+            }
+            Review savedReview = (videos != null && !videos.isEmpty())
+                ? reviewService.submitReview(review, images, videos)
+                : reviewService.submitReview(review, images);
             return ResponseEntity.ok(savedReview);
         } catch (Exception e) {
             return ResponseEntity.badRequest()

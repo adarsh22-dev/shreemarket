@@ -1,36 +1,33 @@
 package com.sreemarket.backend.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "roles")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Role {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true, nullable = false)
     private String name;
 
-    public Long getId() {
-        return id;
-    }
+    private String description;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @Column(columnDefinition = "TEXT")
+    private String permissions;
 
-    public String getName() {
-        return name;
-    }
+    private String color;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public Role() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getPermissions() { return permissions; }
+    public void setPermissions(String permissions) { this.permissions = permissions; }
+    public String getColor() { return color; }
+    public void setColor(String color) { this.color = color; }
 }

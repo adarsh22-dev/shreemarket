@@ -36,6 +36,11 @@ public class Review {
     @Column(name = "file_name")
     private List<String> images = new ArrayList<>();
 
+    @ElementCollection
+    @CollectionTable(name = "review_videos", joinColumns = @JoinColumn(name = "review_id"))
+    @Column(name = "video_url")
+    private List<String> videos = new ArrayList<>();
+
     private Boolean verifiedBuyer = false;
 
     private Integer helpfulCount = 0;
@@ -59,6 +64,14 @@ public class Review {
         this.rating = rating;
         this.title = title;
         this.text = text;
+    }
+
+    public List<String> getVideos() {
+        return videos;
+    }
+
+    public void setVideos(List<String> videos) {
+        this.videos = videos;
     }
 
     @PrePersist

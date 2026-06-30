@@ -1,0 +1,111 @@
+/* ═══════════════ Multi-Currency Management ═══════════════ */
+.cur-root { padding: 24px; max-width: 1400px; margin: 0 auto; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+.cur-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.cur-title { font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
+.cur-sub { color: #64748b; font-size: 0.875rem; margin: 0; }
+.cur-add-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.cur-add-btn:hover { background: #4f46e5; transform: translateY(-1px); }
+
+/* ── Overview Cards ── */
+.cur-overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.cur-card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s; }
+.cur-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-2px); }
+.cur-card--default { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); }
+.cur-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.cur-card-symbol { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
+.cur-card-badge { font-size: 0.625rem; font-weight: 700; background: #6366f1; color: #fff; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
+.cur-card-code { font-size: 1.125rem; font-weight: 700; color: #1e293b; }
+.cur-card-name { font-size: 0.75rem; color: #64748b; margin-bottom: 6px; }
+.cur-card-rate { font-size: 0.75rem; color: #475569; font-family: monospace; }
+.cur-card-status { display: inline-block; font-size: 0.6875rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-top: 6px; }
+.cur-card-status--act { background: #dcfce7; color: #166534; }
+.cur-card-status--inact { background: #fee2e2; color: #991b1b; }
+
+/* ── Stats Row ── */
+.cur-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.cur-stat-card { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 12px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.cur-list-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.cur-stat-val { font-size: 1.25rem; font-weight: 700; color: #1e293b; }
+.cur-stat-lbl { font-size: 0.75rem; color: #64748b; }
+
+/* ── Exchange Rate Reference ── */
+.cur-exchange-ref { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 24px; }
+.cur-exchange-ref__title { font-size: 0.875rem; font-weight: 600; color: #475569; margin-bottom: 12px; }
+.cur-exchange-ref__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.cur-exchange-card { background: #f8fafc; border-radius: 8px; padding: 12px 16px; }
+.cur-exchange-pair { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.cur-exchange-rate { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 4px 0; }
+.cur-exchange-recip { font-size: 0.6875rem; color: #94a3b8; }
+
+/* ── Toolbar ── */
+.cur-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.cur-tabs { display: flex; gap: 4px; background: #f1f5f9; border-radius: 8px; padding: 4px; }
+.cur-tab { padding: 6px 16px; border: none; background: transparent; border-radius: 6px; font-size: 0.8125rem; font-weight: 500; color: #64748b; cursor: pointer; transition: all 0.15s; }
+.cur-tab--act { background: #fff; color: #6366f1; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+
+/* ── Table ── */
+.cur-table-wrap { overflow-x: auto; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); background: #fff; }
+.cur-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.cur-table th { padding: 12px 16px; text-align: left; font-weight: 600; color: #475569; background: #f8fafc; border-bottom: 2px solid #e2e8f0; white-space: nowrap; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.cur-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.cur-table tr:hover td { background: #f8fafc; }
+.cur-th-r { text-align: right; }
+.cur-name-cell { max-width: 250px; }
+.cur-name { display: block; font-weight: 600; color: #1e293b; }
+.cur-desc { display: block; font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+.cur-code { font-weight: 700; color: #6366f1; font-family: monospace; font-size: 0.9375rem; }
+.cur-symbol { font-size: 1.125rem; font-weight: 700; color: #1e293b; }
+.cur-rate { font-family: monospace; color: #475569; }
+.cur-loading, .cur-empty { text-align: center; padding: 32px; color: #94a3b8; }
+.cur-bdg { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+.cur-bdg__dot { width: 6px; height: 6px; border-radius: 50%; }
+.cur-bdg--act { background: #dcfce7; color: #166534; }
+.cur-bdg--act .cur-bdg__dot { background: #16a34a; }
+.cur-bdg--inact { background: #fee2e2; color: #991b1b; }
+.cur-bdg--inact .cur-bdg__dot { background: #ef4444; }
+.cur-default-star { color: #f59e0b; font-size: 1.125rem; }
+.cur-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.cur-action-btn { width: 32px; height: 32px; border: 1px solid #e2e8f0; background: #fff; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.cur-action-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.cur-action-btn--del:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+
+/* ── Modal Form ── */
+.cur-modal-form { display: flex; flex-direction: column; gap: 16px; }
+.cur-fld { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.cur-fld label, .cur-fld > span:first-child { font-size: 0.8125rem; font-weight: 600; color: #374151; }
+.cur-fld input, .cur-fld select, .cur-fld textarea { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.875rem; color: #1e293b; background: #fff; transition: border-color 0.15s; }
+.cur-fld input:focus, .cur-fld select:focus, .cur-fld textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+.cur-fld input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+.cur-fld-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cur-fld-hint { font-size: 0.6875rem; color: #94a3b8; }
+.cur-req { color: #ef4444; }
+.cur-fld--chk { flex-direction: row; align-items: center; gap: 8px; }
+.cur-fld--chk input[type="checkbox"] { width: 16px; height: 16px; accent-color: #6366f1; }
+.cur-fld--chk span { font-size: 0.8125rem; color: #475569; }
+
+/* ── Modal Actions ── */
+.cur-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.cur-btn { padding: 8px 20px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.15s; border: none; }
+.cur-btn--sec { background: #f1f5f9; color: #475569; }
+.cur-btn--sec:hover { background: #e2e8f0; }
+.cur-btn--pri { background: #6366f1; color: #fff; }
+.cur-btn--pri:hover { background: #4f46e5; }
+.cur-btn--pri:disabled { background: #c7d2fe; cursor: not-allowed; }
+.cur-btn--del { background: #ef4444; color: #fff; }
+.cur-btn--del:hover { background: #dc2626; }
+.cur-del-msg { color: #475569; font-size: 0.875rem; line-height: 1.5; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .cur-root { padding: 16px; }
+  .cur-header { flex-direction: column; }
+  .cur-overview { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  .cur-stats { grid-template-columns: repeat(2, 1fr); }
+  .cur-fld-row { grid-template-columns: 1fr; }
+  .cur-exchange-ref__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .cur-overview { grid-template-columns: 1fr 1fr; }
+  .cur-stats { grid-template-columns: 1fr; }
+  .cur-exchange-ref__grid { grid-template-columns: 1fr; }
+}

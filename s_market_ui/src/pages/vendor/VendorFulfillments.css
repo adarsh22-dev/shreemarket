@@ -1,0 +1,26 @@
+.vendor-fulfillments { padding: 24px; }
+.vf-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+.vf-header h1 { display: flex; align-items: center; gap: 10px; font-size: 24px; color: #111; margin: 0; }
+.vf-header-actions { display: flex; gap: 12px; }
+.vf-refresh-btn, .vf-create-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; }
+.vf-refresh-btn { background: #f5f5f5; color: #333; }
+.vf-create-btn { background: #FF5722; color: white; }
+.vf-loading, .vf-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; color: #888; }
+.vf-empty h3 { color: #333; margin: 16px 0 8px; }
+.vf-table-container { background: white; border-radius: 12px; border: 1px solid #eee; overflow: hidden; }
+.vf-table { width: 100%; border-collapse: collapse; }
+.vf-table th { background: #fafafa; padding: 14px 16px; text-align: left; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; border-bottom: 1px solid #eee; }
+.vf-table td { padding: 14px 16px; font-size: 14px; color: #333; border-bottom: 1px solid #f5f5f5; }
+.vf-status { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.vf-status.shipped { background: #e3f2fd; color: #1565c0; }
+.vf-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.vf-modal { background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+.vf-modal h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 24px; font-size: 20px; }
+.vf-form-group { margin-bottom: 16px; }
+.vf-form-group label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 6px; }
+.vf-form-group input, .vf-form-group select, .vf-form-group textarea { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+.vf-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vf-modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+.vf-cancel-btn, .vf-submit-btn { padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; }
+.vf-cancel-btn { background: #f5f5f5; color: #333; }
+.vf-submit-btn { background: #FF5722; color: white; }

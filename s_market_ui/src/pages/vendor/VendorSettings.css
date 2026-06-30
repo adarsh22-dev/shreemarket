@@ -1,7 +1,6 @@
 .vs-wrapper {
     background: #f8fafc;
     min-height: 100vh;
-    padding: 20px;
 }
 
 .vs-completeness {
@@ -9,7 +8,7 @@
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .vs-comp-text {
@@ -135,14 +134,19 @@
     font-weight: 500;
 }
 
-.vs-req { color: #ef4444; }
+.vs-req {
+    color: #ef4444;
+}
 
-.vs-input-wrap { flex: 1; width: 100%; }
+.vs-input-wrap {
+    flex: 1;
+    width: 100%;
+}
 
-.vs-input-wrap input[type="text"], 
-.vs-input-wrap input[type="email"], 
+.vs-input-wrap input[type="text"],
+.vs-input-wrap input[type="email"],
 .vs-input-wrap input[type="number"],
-.vs-input-wrap select, 
+.vs-input-wrap select,
 .vs-input-wrap textarea {
     width: 100%;
     padding: 10px 15px;
@@ -163,7 +167,12 @@
     background: #f8fafc;
 }
 
-.vs-preview { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.vs-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}
 
 .vs-footer-actions {
     display: flex;
@@ -197,6 +206,37 @@
     padding: 15px;
 }
 
-.vs-day-header { font-weight: 600; margin-bottom: 10px; color: #1e293b; }
-.vs-slots-flex { display: flex; gap: 20px; }
-.vs-slot-input label { display: block; font-size: 12px; color: #64748b; margin-bottom: 5px; }
+.vs-day-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #1e293b;
+}
+
+.vs-slots-flex {
+    display: flex;
+    gap: 20px;
+}
+
+.vs-slot-input label {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 5px;
+}
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 768px) {
+    .vs-sidebar { flex-wrap: wrap; padding: 15px; }
+    .vs-form-row { flex-direction: column; }
+    .vs-label { width: auto; }
+    .vs-input-wrap { width: 100%; }
+    .vs-section { padding: 15px; }
+    .vs-footer-actions { flex-direction: column; }
+    .vs-footer-actions button { width: 100%; }
+    .vs-slots-flex { flex-direction: column; gap: 10px; }
+}
+@media (max-width: 480px) {
+    .vs-section { padding: 12px; }
+    .vs-sidebar { padding: 10px; }
+    .vs-hours-row-card { padding: 10px; }
+}

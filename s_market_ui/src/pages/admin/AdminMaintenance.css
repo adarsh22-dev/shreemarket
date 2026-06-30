@@ -1,0 +1,44 @@
+.mm { display: flex; flex-direction: column; gap: 18px; color: #0f172a; padding: 20px; max-width: 640px; }
+@media (max-width: 640px) { .mm { padding: 14px; gap: 14px; max-width: 100%; } }
+
+.mm-hdr { display: flex; flex-direction: column; gap: 4px; }
+.mm-hdr__t { margin: 0; font-size: 1.3rem; font-weight: 800; color: #0f172a; letter-spacing: -.4px; display: flex; align-items: center; gap: 8px; }
+.mm-hdr__s { margin: 0; font-size: .8rem; color: #94a3b8; }
+
+.mm-card { background: #fff; border-radius: 14px; border: 1px solid #e8ecf0; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.mm-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.07); }
+.mm-card--online { border-color: #bbf7d0; }
+.mm-card--offline { border-color: #fecaca; background: #fff5f5; }
+
+.mm-status { display: flex; align-items: center; gap: 16px; }
+.mm-status__icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mm-status__icon--online { background: #dcfce7; }
+.mm-status__icon--offline { background: #fee2e2; }
+
+.mm-status__ttl { margin: 0 0 2px; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
+.mm-status__sub { margin: 0; font-size: .8rem; color: #64748b; line-height: 1.4; }
+
+.mm-warn { display: flex; gap: 10px; padding: 12px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; }
+.mm-warn__txt { margin: 0; font-size: .8rem; color: #991b1b; line-height: 1.5; }
+
+.mm-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: .85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .14s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+}
+.mm-btn:disabled { opacity: .5; cursor: not-allowed; }
+.mm-btn--enable { background: #dc2626; color: #fff; }
+.mm-btn--enable:hover:not(:disabled) { background: #b91c1c; }
+.mm-btn--disable { background: #16a34a; color: #fff; }
+.mm-btn--disable:hover:not(:disabled) { background: #15803d; }
+
+.mm-loading { text-align: center; padding: 60px 0; color: #94a3b8; font-size: .9rem; }

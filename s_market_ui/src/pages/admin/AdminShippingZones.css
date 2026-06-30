@@ -1,0 +1,424 @@
+/* ── Container ── */
+.sz-root {
+  padding: 24px 28px;
+  max-width: 1280px;
+  margin: 0 auto;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ── Header ── */
+.sz-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 640px) {
+  .sz-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+}
+
+.sz-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sz-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.4px;
+}
+
+.sz-title-icon {
+  color: #f97316;
+  flex-shrink: 0;
+}
+
+.sz-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ── Add Button ── */
+.sz-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: #f97316;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sz-add-btn:hover {
+  background: #ea580c;
+}
+
+.sz-add-btn svg {
+  flex-shrink: 0;
+}
+
+/* ── Loading ── */
+.sz-loading {
+  padding: 24px;
+  font-size: 14px;
+  color: #64748b;
+  text-align: center;
+}
+
+/* ── Empty State ── */
+.sz-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  text-align: center;
+  min-height: 300px;
+}
+
+.sz-empty-icon {
+  opacity: 0.3;
+  color: #94a3b8;
+}
+
+.sz-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #64748b;
+  margin: 0;
+}
+
+.sz-empty-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+  max-width: 360px;
+}
+
+/* ── Table Wrapper ── */
+.sz-table-wrap {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sz-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+
+.sz-table thead {
+  background: #f8fafc;
+}
+
+.sz-table th {
+  padding: 12px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 2px solid #e8ecf0;
+}
+
+.sz-table td {
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #1e293b;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.sz-table tbody tr {
+  transition: background 0.15s;
+}
+
+.sz-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.sz-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sz-th-right {
+  text-align: right;
+}
+
+.sz-name-cell {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+/* ── Delivery Type Badge ── */
+.sz-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+/* ── Status Badge ── */
+.sz-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sz-status--active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.sz-status--inactive {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.sz-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ── Action Buttons ── */
+.sz-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.sz-action-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sz-action-btn:hover {
+  border-color: #cbd5e1;
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.sz-action-btn--delete {
+  border-color: #fee2e2;
+  color: #dc2626;
+}
+
+.sz-action-btn--delete:hover {
+  border-color: #fecaca;
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+/* ── Modal Overlay ── */
+.sz-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.sz-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.sz-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 20px;
+}
+
+/* ── Form ── */
+.sz-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sz-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sz-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.sz-field input,
+.sz-field select,
+.sz-field textarea {
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1e293b;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.sz-field input:focus,
+.sz-field select:focus,
+.sz-field textarea:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+}
+
+.sz-field input::placeholder {
+  color: #94a3b8;
+}
+
+/* ── Form Row Grid ── */
+.sz-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sz-form-row-3 {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .sz-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Checkbox Field ── */
+.sz-field--checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.sz-field--checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #f97316;
+  cursor: pointer;
+}
+
+.sz-field--checkbox label {
+  font-size: 13px;
+  color: #475569;
+  cursor: pointer;
+}
+
+/* ── Modal Actions ── */
+.sz-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.sz-modal-actions button {
+  flex: 1;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.sz-btn-cancel {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.sz-btn-cancel:hover {
+  background: #e2e8f0;
+}
+
+.sz-btn-save {
+  background: #f97316;
+  color: #fff;
+  border: none;
+}
+
+.sz-btn-save:hover {
+  background: #ea580c;
+}
+
+/* ── Responsive Table Card (mobile) ── */
+@media (max-width: 767px) {
+  .sz-root {
+    padding: 16px;
+  }
+
+  .sz-title {
+    font-size: 18px;
+  }
+
+  .sz-modal {
+    padding: 18px;
+    border-radius: 12px;
+  }
+}

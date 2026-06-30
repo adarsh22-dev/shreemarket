@@ -1,5 +1,5 @@
 .analytics-container {
-    padding: 24px;
+
     background-color: #f8f9fa;
     /* Light grey background similar to rest of dashboard */
     min-height: 100vh;
@@ -358,20 +358,10 @@
 .donut-chart {
     width: 180px;
     height: 180px;
-    border-radius: 50%;
-    /* Approximation based on 40% red, 30% yellow, 30% grey */
-    background: conic-gradient(#e0e0e0 0deg 108deg,
-            /* 30% Furniture */
-            #f5b041 108deg 216deg,
-            /* 30% Ceramics */
-            #dc4c38 216deg 360deg
-            /* 40% Textiles */
-        );
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    /* Adding a subtle gap effect */
 }
 
 .donut-inner {
@@ -427,6 +417,33 @@
 
 .bg-grey-light {
     background-color: #e0e0e0;
+}
+
+.bg-blue {
+    background-color: #3b82f6;
+}
+
+.bg-green {
+    background-color: #10b981;
+}
+
+.bg-purple {
+    background-color: #8b5cf6;
+}
+
+.donut-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.empty-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    text-align: center;
 }
 
 .legend-info {

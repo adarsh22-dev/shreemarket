@@ -1,0 +1,17 @@
+.vendor-qrcode { padding: 24px; }
+.vqr-header { margin-bottom: 24px; }
+.vqr-header h1 { display: flex; align-items: center; gap: 10px; font-size: 24px; color: #111; margin: 0 0 4px; }
+.vqr-subtitle { color: #888; font-size: 14px; margin: 0 0 16px; }
+.vqr-refresh-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #f5f5f5; color: #333; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+.vqr-search-bar { display: flex; align-items: center; gap: 12px; background: white; padding: 12px 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 20px; }
+.vqr-search-bar input { border: none; flex: 1; outline: none; font-size: 14px; }
+.vqr-loading, .vqr-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; color: #888; }
+.vqr-empty h3 { color: #333; margin: 16px 0 8px; }
+.vqr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.vqr-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #eee; display: flex; align-items: center; gap: 16px; }
+.vqr-card-icon { width: 48px; height: 48px; background: #fff3e0; color: #FF5722; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.vqr-card-info { flex: 1; min-width: 0; }
+.vqr-card-info h3 { font-size: 14px; color: #111; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vqr-card-info p { font-size: 12px; color: #888; margin: 0; }
+.vqr-download-btn { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: #FF5722; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.vqr-download-btn:hover { background: #e64a19; }

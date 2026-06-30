@@ -723,3 +723,7 @@
         padding: 0;
     }
 }
+/* Vendor Register Step 3 payment form labels */
+.register-page label {
+    font-size: 10px !important;
+}

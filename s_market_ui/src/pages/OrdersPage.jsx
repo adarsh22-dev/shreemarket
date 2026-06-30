@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Search, ChevronDown, Leaf, HeartHandshake, Package } from 'lucide-react';
+import { Search, ChevronDown, Leaf, HeartHandshake, Package, Printer } from 'lucide-react';
 import './OrdersPage.css';
 import { fetchUserOrders, createMockOrder, getAllProducts, submitProductReview, getUserReviews, BACKEND_URL, submitReturnAPI } from '../api/api';
 import { Star, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { jsPDF } from 'jspdf';
 
 const OrdersPage = () => {
     const [activeTab, setActiveTab] = useState('All Orders');
@@ -14,6 +15,10 @@ const OrdersPage = () => {
     const [userId, setUserId] = useState(null);
     const [productsCache, setProductsCache] = useState({});
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Order Details Modal State
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
     // Review Modal State
     const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -231,8 +236,6 @@ const OrdersPage = () => {
                 formData.append("images", p.file);
             });
 
-            console.log("Submitting review with FormData");
-
             await submitProductReview(formData);
             toast.success(existingReview ? "Review updated!" : "Review submitted! Thank you.");
 
@@ -262,6 +265,203 @@ const OrdersPage = () => {
         setReturnReason('');
         setReturnImages([]);
         setReturnImagePreviews([]);
+    };
+
+    const handleViewDetails = (order) => {
+        setSelectedOrder(order);
+        setIsDetailsOpen(true);
+    };
+
+    const generateInvoice = (order) => {
+        const subtotal = order.totalAmount - (order.taxAmount || 0);
+        const taxRate = order.taxRate || 0;
+        const cgstRate = order.cgstRate || (taxRate / 2);
+        const sgstRate = order.sgstRate || (taxRate / 2);
+        const cgstAmount = order.cgst || (subtotal * (cgstRate / 100));
+        const sgstAmount = order.sgst || (subtotal * (sgstRate / 100));
+        const taxAmount = order.taxAmount || (cgstAmount + sgstAmount);
+
+        const doc = new jsPDF();
+        let y = 20;
+
+        // Header
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SreeMarket', 105, y, { align: 'center' });
+        y += 8;
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Multi-Vendor E-Commerce Platform', 105, y, { align: 'center' });
+        y += 5;
+        doc.setFontSize(7);
+        doc.text('www.sreemarket.com | support@sreemarket.com | +91-XXXXXXXXXX', 105, y, { align: 'center' });
+        y += 5;
+        doc.setDrawColor(0, 0, 0);
+        doc.line(20, y, 190, y);
+        y += 8;
+
+        // Invoice Title
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('TAX INVOICE', 105, y, { align: 'center' });
+        y += 10;
+
+        // Invoice Info
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Invoice No: ${order.orderNumber}`, 20, y);
+        doc.text(`Date: ${formatDate(order.datePlaced)}`, 120, y);
+        y += 6;
+        doc.text(`Order Status: ${order.status}`, 20, y);
+        y += 10;
+
+        // Bill To & Billing Address - side by side
+        const startY = y;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Bill To / Ship To:', 20, y);
+        doc.text('Billing Address:', 120, y);
+        y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        
+        // Name
+        doc.text(`${order.customerName || 'N/A'}`, 20, y);
+        doc.text(`${order.billingName || order.customerName || 'N/A'}`, 120, y);
+        y += 5;
+        
+        // Address lines
+        const shipAddr = (order.deliveryLocation || 'N/A').split(',').map(s => s.trim()).filter(s => s);
+        const billAddr = (order.billingAddress || order.deliveryLocation || 'N/A').split(',').map(s => s.trim()).filter(s => s);
+        
+        const maxLines = Math.max(shipAddr.length, billAddr.length);
+        
+        if (maxLines > 0) {
+            // First line (city)
+            doc.text(shipAddr[0] || '', 20, y);
+            doc.text(billAddr[0] || '', 120, y);
+            y += 5;
+            
+            // Second line (state + rest)
+            if (maxLines > 1) {
+                doc.text(shipAddr.slice(1).join(', ') || '', 20, y);
+                doc.text(billAddr.slice(1).join(', ') || '', 120, y);
+                y += 5;
+            }
+        }
+        
+        // Country
+        doc.text('India', 20, y);
+        doc.text('India', 120, y);
+        y += 10;
+
+        // Table Header
+        y += 5;
+        doc.setDrawColor(0, 0, 0);
+        doc.line(20, y, 190, y);
+        y += 6;
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Description', 22, y);
+        doc.text('Qty', 130, y, { align: 'center' });
+        doc.text('Rate', 150, y, { align: 'right' });
+        doc.text('Amount', 185, y, { align: 'right' });
+        y += 6;
+        doc.line(20, y, 190, y);
+        y += 6;
+
+        // Items
+        doc.setFont('helvetica', 'normal');
+        Object.entries(order.productQuantities || {}).forEach(([productId, quantity]) => {
+            const product = productsCache[productId];
+            const itemPrice = product?.discountPrice || product?.regularPrice || 0;
+            const itemTotal = itemPrice * quantity;
+            const productName = product ? product.name : `Product #${productId}`;
+            
+            // Check if we need a new page
+            if (y > 260) {
+                doc.addPage();
+                y = 20;
+            }
+            
+            doc.text(productName, 22, y);
+            doc.text(String(quantity), 130, y, { align: 'center' });
+            doc.text(`Rs. ${itemPrice.toFixed(2)}`, 150, y, { align: 'right' });
+            doc.text(`Rs. ${itemTotal.toFixed(2)}`, 185, y, { align: 'right' });
+            y += 7;
+        });
+
+        y += 3;
+        doc.line(20, y, 190, y);
+        y += 8;
+
+        // Summary
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Subtotal:', 130, y);
+        doc.text(`₹${subtotal.toFixed(2)}`, 185, y, { align: 'right' });
+        y += 6;
+        doc.text('Shipping:', 130, y);
+        doc.text('FREE', 185, y, { align: 'right' });
+        y += 6;
+        doc.text(`GST (${taxRate}%):`, 130, y);
+        doc.text(`₹${taxAmount.toFixed(2)}`, 185, y, { align: 'right' });
+        y += 6;
+        doc.setFontSize(8);
+        doc.text(`   CGST (${cgstRate}%):`, 130, y);
+        doc.text(`₹${cgstAmount.toFixed(2)}`, 185, y, { align: 'right' });
+        y += 5;
+        doc.text(`   SGST (${sgstRate}%):`, 130, y);
+        doc.text(`₹${sgstAmount.toFixed(2)}`, 185, y, { align: 'right' });
+        y += 7;
+        doc.setDrawColor(0, 0, 0);
+        doc.line(130, y, 190, y);
+        y += 7;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Total Paid:', 130, y);
+        doc.text(`₹${(order.totalAmount || 0).toFixed(2)}`, 185, y, { align: 'right' });
+        y += 15;
+
+        // Terms & Conditions
+        doc.setDrawColor(0, 0, 0);
+        doc.line(20, y, 190, y);
+        y += 8;
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Terms & Conditions:', 20, y);
+        y += 6;
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'normal');
+        const terms = [
+            '1. This is a computer-generated invoice and does not require a signature.',
+            '2. Goods once sold will not be taken back or exchanged.',
+            '3. All disputes subject to Mumbai jurisdiction only.',
+            '4. Payment to be made within 30 days of invoice date.',
+            '5. Interest @ 18% p.a. will be charged on overdue payments.',
+            '6. GSTIN: 27AAAAA0000A1Z5 | PAN: AAAAA0000A',
+            '7. This invoice is valid for input tax credit.',
+        ];
+        terms.forEach(term => {
+            if (y > 275) {
+                doc.addPage();
+                y = 20;
+            }
+            doc.text(term, 20, y);
+            y += 4.5;
+        });
+
+        y += 5;
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Thank you for your order!', 105, y, { align: 'center' });
+        y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text('SreeMarket - Multi-Vendor E-Commerce', 105, y, { align: 'center' });
+
+        doc.save(`Invoice_${order.orderNumber.replace('#', '')}.pdf`);
+        toast.success('Invoice downloaded as PDF!');
     };
 
     const handleReturnImageChange = (e) => {
@@ -391,7 +591,7 @@ const OrdersPage = () => {
                         filteredOrders.map((order) => {
                             // Define actions dynamically based on status
                             const actions = [];
-                            actions.push({ label: 'View Details', type: 'secondary' });
+                            actions.push({ label: 'View Details', type: 'secondary', onClick: () => handleViewDetails(order) });
                             const statusUpper = order.status?.toUpperCase();
                             if (statusUpper === 'DELIVERED') {
                                 actions.push({ label: 'Order Again', type: 'primary' });
@@ -433,7 +633,7 @@ const OrdersPage = () => {
 
                                     <div className="order-card-body">
                                         <div className="order-products-preview">
-                                            {(order.images || []).map((img, index) => (
+                                            {(order.images || []).filter(Boolean).map((img, index) => (
                                                 <div key={index} className="product-thumbnail">
                                                     <img src={img} alt="Product Thumbnail" />
                                                 </div>
@@ -702,6 +902,160 @@ const OrdersPage = () => {
                                     {submittingReturn ? "Submitting..." : "Submit Return Request"}
                                 </button>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Order Details Modal */}
+            {isDetailsOpen && selectedOrder && (
+                <div className="review-modal-overlay">
+                    <div className="review-modal-content" style={{ maxWidth: '700px', width: '90%' }}>
+                        <div className="review-modal-header">
+                            <h3>Order Details</h3>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <button 
+                                    onClick={() => generateInvoice(selectedOrder)}
+                                    className="btn-order-action primary"
+                                    style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                                >
+                                    <Printer size={14} style={{ marginRight: '0.35rem' }} />
+                                    Download Invoice
+                                </button>
+                                <button onClick={() => setIsDetailsOpen(false)} className="close-modal-btn">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="review-modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                            <div className="order-detail-section">
+                                <div className="detail-row">
+                                    <span className="detail-label">Order Number</span>
+                                    <span className="detail-value">{selectedOrder.orderNumber}</span>
+                                </div>
+                                <div className="detail-row">
+                                    <span className="detail-label">Date Placed</span>
+                                    <span className="detail-value">{formatDate(selectedOrder.datePlaced)}</span>
+                                </div>
+                                <div className="detail-row">
+                                    <span className="detail-label">Status</span>
+                                    <span className={`detail-value status-pill ${selectedOrder.status?.toLowerCase()}`}>{selectedOrder.status}</span>
+                                </div>
+                                <div className="detail-row">
+                                    <span className="detail-label">Total Amount</span>
+                                    <span className="detail-value brand-color">₹{(selectedOrder.totalAmount || 0).toFixed(2)}</span>
+                                </div>
+                            </div>
+
+                            <div className="order-detail-section" style={{ marginTop: '1.5rem' }}>
+                                <h4 style={{ marginBottom: '1rem', color: '#1e293b' }}>Shipping Address</h4>
+                                <table className="address-table">
+                                    <tbody>
+                                        <tr><td className="addr-label">Name</td><td>{selectedOrder.customerName || 'N/A'}</td></tr>
+                                        <tr><td className="addr-label">Address</td><td>{selectedOrder.deliveryLocation || 'N/A'}</td></tr>
+                                        <tr><td className="addr-label">Country</td><td>India</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="order-detail-section" style={{ marginTop: '1.5rem' }}>
+                                <h4 style={{ marginBottom: '1rem', color: '#1e293b' }}>Billing Address</h4>
+                                <table className="address-table">
+                                    <tbody>
+                                        <tr><td className="addr-label">Name</td><td>{selectedOrder.billingName || selectedOrder.customerName || 'N/A'}</td></tr>
+                                        <tr><td className="addr-label">Address</td><td>{selectedOrder.billingAddress || selectedOrder.deliveryLocation || 'N/A'}</td></tr>
+                                        <tr><td className="addr-label">Country</td><td>India</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div className="order-detail-section" style={{ marginTop: '1.5rem' }}>
+                                <h4 style={{ marginBottom: '1rem', color: '#1e293b' }}>Order Items</h4>
+                                {selectedOrder.productQuantities && Object.keys(selectedOrder.productQuantities).length > 0 && (
+                                    <table className="items-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th style={{ textAlign: 'center', width: '80px' }}>Qty</th>
+                                                <th style={{ textAlign: 'right', width: '120px' }}>Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.entries(selectedOrder.productQuantities).map(([productId, quantity]) => {
+                                                const product = productsCache[productId];
+                                                const itemPrice = product?.discountPrice || product?.regularPrice || 0;
+                                                const itemTotal = itemPrice * quantity;
+                                                const displayName = product ? product.name : `Product #${productId}`;
+                                                return (
+                                                    <tr key={productId}>
+                                                        <td>
+                                                            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                                                                {product?.image && (
+                                                                    <img src={product.image} alt={displayName} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }}
+                                                                    onError={(e) => { e.target.style.display = 'none'; }} />
+                                                                )}
+                                                                <div>
+                                                                    <div style={{ fontWeight: '600', color: '#1e293b' }}>{displayName}</div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td style={{ textAlign: 'center' }}>{quantity}</td>
+                                                        <td style={{ textAlign: 'right', fontWeight: '600', color: '#1e293b' }}>₹{itemTotal.toFixed(2)}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+
+                            <div className="order-detail-section" style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+                                <table className="summary-table">
+                                    <tbody>
+                                        <tr>
+                                            <td className="detail-label">Subtotal</td>
+                                            <td className="detail-value">₹{(selectedOrder.totalAmount - (selectedOrder.taxAmount || 0)).toFixed(2)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="detail-label">Shipping</td>
+                                            <td className="detail-value">FREE</td>
+                                        </tr>
+                                        {selectedOrder.taxAmount > 0 && (
+                                            <>
+                                                <tr>
+                                                    <td className="detail-label">GST ({selectedOrder.taxRate || 0}%)</td>
+                                                    <td className="detail-value">₹{(selectedOrder.taxAmount || 0).toFixed(2)}</td>
+                                                </tr>
+                                                {selectedOrder.cgst && (
+                                                    <tr className="tax-sub-row">
+                                                        <td className="detail-label">CGST ({(selectedOrder.cgstRate || (selectedOrder.taxRate / 2) || ((selectedOrder.cgst / ((selectedOrder.totalAmount - (selectedOrder.taxAmount || 0))) * 100)).toFixed(0))}%)</td>
+                                                        <td className="detail-value">₹{(selectedOrder.cgst || 0).toFixed(2)}</td>
+                                                    </tr>
+                                                )}
+                                                {selectedOrder.sgst && (
+                                                    <tr className="tax-sub-row">
+                                                        <td className="detail-label">SGST ({(selectedOrder.sgstRate || (selectedOrder.taxRate / 2) || ((selectedOrder.sgst / ((selectedOrder.totalAmount - (selectedOrder.taxAmount || 0))) * 100)).toFixed(0))}%)</td>
+                                                        <td className="detail-value">₹{(selectedOrder.sgst || 0).toFixed(2)}</td>
+                                                    </tr>
+                                                )}
+                                            </>
+                                        )}
+                                        <tr className="total-row">
+                                            <td className="detail-label">Total Paid</td>
+                                            <td className="detail-value brand-color">₹{(selectedOrder.totalAmount || 0).toFixed(2)}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {selectedOrder.estimatedDelivery && (
+                                <div className="order-detail-section" style={{ marginTop: '1.5rem' }}>
+                                    <div className="detail-row">
+                                        <span className="detail-label">Estimated Delivery</span>
+                                        <span className="detail-value">{selectedOrder.estimatedDelivery}</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

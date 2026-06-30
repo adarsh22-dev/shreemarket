@@ -172,12 +172,21 @@
 }
 
 .listing-product-card {
+    display: flex;
+    flex-direction: column;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: none;
 }
 
 .listing-product-card:hover {
-    transform: translateY(-5px);
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .lp-image-wrapper {
@@ -197,7 +206,7 @@
 .lp-image-wrapper img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     /* or contain depending on image style */
     transition: transform 0.5s ease;
 }
@@ -410,59 +419,134 @@
         flex-wrap: wrap;
     }
 }
-/* --- Wishlist and Cart Button Styles --- */
+/* --- Wishlist, Share, Compare Button Styles --- */
 .lp-image-wrapper {
     position: relative;
 }
 
-.lp-heart-btn {
+.lp-action-btns {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 5;
+    opacity: 0;
+    transform: translateX(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.listing-product-card:hover .lp-action-btns {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.listing-product-card:hover .lp-action-btn {
+    color: white;
+}
+
+.listing-product-card:hover .lp-action-btn svg {
+    stroke: white !important;
+    fill: white !important;
+}
+
+.lp-action-btn {
+    color: white;
+    background: rgb(0 0 0 / 90%) !important;
     border: none;
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.2s;
-    z-index: 2;
 }
 
-.lp-heart-btn:hover {
-    background: rgba(0, 0, 0, 0.4);
+.lp-action-btn:hover {
+    background: #FF5722 !important;
+    color: white;
     transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.lp-share-wrapper {
+    position: relative;
+}
+
+.lp-share-dropdown {
+    position: absolute;
+    top: 38px;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    padding: 10px;
+    z-index: 20;
+    animation: lpFadeIn 0.2s ease;
+    white-space: nowrap;
+}
+
+.lp-share-dropdown-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #8A7F75;
+    margin: 0 0 6px 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.lp-share-icons-row {
+    display: flex;
+    gap: 4px;
+}
+
+.lp-share-icons-row .share-icon-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+    border-radius: 8px;
+}
+
+@keyframes lpFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .lp-add-to-cart-btn {
-    margin-top: 16px;
-    width: 100%;
-    padding: 10px;
-    background: #111;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
+    width: 100%;
+    padding: 10px 16px;
+    margin-top: 10px;
+    background: #FF5722;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 
 .lp-add-to-cart-btn:hover {
-    background: #333;
+    background: #e64a19;
+    transform: translateY(-1px);
 }
 
 .listing-product-card {
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .listing-product-card:hover {
-    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+@media (hover: none) {
+    .listing-product-card .lp-action-btns { opacity: 1; transform: translateX(0); }
 }

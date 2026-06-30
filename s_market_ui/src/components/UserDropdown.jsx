@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, LogOut, Settings, ShoppingBag, X, Package } from 'lucide-react';
 import './UserDropdown.css';
 import { useCart } from '../context/CartContext';
+import { logoutUser } from '../api/api';
+import toast from 'react-hot-toast';
 
 const UserDropdown = ({ isOpen, onClose }) => {
     const dropdownRef = useRef(null);
@@ -41,7 +43,12 @@ const UserDropdown = ({ isOpen, onClose }) => {
 
     const user = localStorage.getItem('user');
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await logoutUser();
+        } catch (e) {
+            // Proceed with logout even if API call fails
+        }
         localStorage.removeItem('user');
         onClose();
         window.location.replace('/login');

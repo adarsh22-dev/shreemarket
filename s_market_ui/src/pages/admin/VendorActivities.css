@@ -1,0 +1,282 @@
+.va-container {
+    padding: 1.5rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.va-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.va-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.75rem;
+    color: #1a1a1a;
+    margin: 0 0 0.25rem;
+}
+
+.va-subtitle {
+    color: #6B7280;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.va-refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    color: #374151;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.va-refresh-btn:hover {
+    background: #F9FAFB;
+    border-color: #D1D5DB;
+}
+
+.va-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.va-kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid #F3F4F6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.va-kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.va-kpi-label {
+    font-size: 0.8rem;
+    color: #6B7280;
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.va-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #F3F4F6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.va-card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.va-search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.va-search-icon {
+    position: absolute;
+    left: 12px;
+    color: #9CA3AF;
+    pointer-events: none;
+}
+
+.va-search-input {
+    width: 100%;
+    padding: 0.625rem 1rem 0.625rem 2.5rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #F9FAFB;
+}
+
+.va-search-input:focus {
+    border-color: #C9A87C;
+    background: white;
+}
+
+.va-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    gap: 1rem;
+    color: #6B7280;
+}
+
+.va-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #F3F4F6;
+    border-top-color: #C9A87C;
+    border-radius: 50%;
+    animation: va-spin 0.8s linear infinite;
+}
+
+@keyframes va-spin {
+    to { transform: rotate(360deg); }
+}
+
+.va-empty {
+    padding: 4rem;
+    text-align: center;
+    color: #6B7280;
+}
+
+.va-timeline {
+    padding: 1.5rem;
+}
+
+.va-timeline-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    position: relative;
+}
+
+.va-timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 48px;
+    bottom: -1px;
+    width: 1px;
+    background: #E5E7EB;
+}
+
+.va-timeline-dot {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.va-timeline-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.va-timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.375rem;
+}
+
+.va-vendor-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.va-timeline-time {
+    font-size: 0.8rem;
+    color: #9CA3AF;
+    white-space: nowrap;
+}
+
+.va-timeline-body {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.va-action-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.va-details {
+    font-size: 0.85rem;
+    color: #4B5563;
+    line-height: 1.5;
+}
+
+.va-timeline-footer {
+    margin-top: 0.375rem;
+}
+
+.va-ip {
+    font-size: 0.75rem;
+    color: #9CA3AF;
+    font-family: monospace;
+}
+
+.va-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #F3F4F6;
+}
+
+.va-page-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.va-page-btn:hover:not(:disabled) {
+    background: #F9FAFB;
+    border-color: #D1D5DB;
+}
+
+.va-page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.va-page-info {
+    font-size: 0.85rem;
+    color: #6B7280;
+}
+
+@media (max-width: 768px) {
+    .va-container {
+        padding: 1rem;
+    }
+    .va-kpi-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

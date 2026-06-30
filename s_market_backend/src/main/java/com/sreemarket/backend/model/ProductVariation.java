@@ -27,6 +27,7 @@ public class ProductVariation {
     private Double price;
     private Integer stock;
     private Boolean useMainPricing;
+    private String imageFileName;
 
     public void setProduct(Product product) {
         this.product = product;
@@ -54,5 +55,13 @@ public class ProductVariation {
 
     public Boolean getUseMainPricing() {
         return useMainPricing;
+    }
+
+    public String getImageFileName() {
+        return imageFileName;
+    }
+
+    public void setImageFileName(String imageFileName) {
+        this.imageFileName = imageFileName;
     }
 }

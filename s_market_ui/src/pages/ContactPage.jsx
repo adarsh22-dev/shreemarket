@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { submitContact } from "../api/api";
+import toast from "react-hot-toast";
 import "./ContactPage.css";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -14,31 +16,9 @@ const phones = [
   { country: "China", number: "1.878.459.222" },
 ];
 
-const services = [
-  {
-    name: "Tax Planning",
-    desc: "Strategic planning to minimize tax liabilities and ensure compliance across all business activities.",
-  },
-  {
-    name: "Financial Planning",
-    desc: "Comprehensive planning tailored to your personal and business financial goals.",
-  },
-  {
-    name: "Asset Management",
-    desc: "Professional oversight of your investments and asset portfolio for long-term growth.",
-  },
-  {
-    name: "Investment Advisor",
-    desc: "Expert guidance on investment opportunities aligned with your risk profile and objectives.",
-  },
-  {
-    name: "Retire Planning",
-    desc: "Structured strategies to secure your financial independence for the years ahead.",
-  },
-  {
-    name: "Cash-Flow Management",
-    desc: "Monitoring and optimizing cash flow to maintain financial stability and growth.",
-  },
+const helpOptions = [
+  "Product Inquiry", "Order Issue", "Return & Refund", "Shipping & Delivery",
+  "Vendor Support", "Account Help", "Technical Support", "Other",
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -49,7 +29,7 @@ export default function ContactPage() {
     lastName: "",
     email: "",
     phone: "",
-    service: "",
+    reason: "",
     message: "",
   });
 
@@ -61,9 +41,19 @@ export default function ContactPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
+    if (!form.firstName || !form.lastName || !form.email || !form.message) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    try {
+      await submitContact(form);
+      toast.success("Message sent successfully! We'll get back to you soon.");
+      setForm({ firstName: "", lastName: "", email: "", phone: "", reason: "", message: "" });
+    } catch (err) {
+      toast.error("Failed to send message. Please try again later.");
+    }
   };
 
   return (
@@ -101,16 +91,15 @@ export default function ContactPage() {
               </ul>
             </div>
 
-            {/* Services */}
+            {/* Help Categories */}
             <div className="contact-services-card">
-              <h3>Our Services</h3>
+              <h3>How can we help?</h3>
               <ul className="contact-service-list">
-                {services.map((s) => (
-                  <li key={s.name}>
+                {helpOptions.map((h) => (
+                  <li key={h}>
                     <div className="service-dot" />
                     <div className="service-info">
-                      <div className="service-name">{s.name}</div>
-                      <div className="service-desc">{s.desc}</div>
+                      <div className="service-name">{h}</div>
                     </div>
                   </li>
                 ))}
@@ -177,18 +166,15 @@ export default function ContactPage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="service">Service You Need</label>
-                <select
-                  id="service"
-                  name="service"
-                  value={form.service}
+                <label htmlFor="reason">Help you need / Reason</label>
+                <textarea
+                  id="reason"
+                  name="reason"
+                  rows={2}
+                  placeholder="e.g. I need help with a return, product inquiry, order issue..."
+                  value={form.reason}
                   onChange={handleChange}
-                >
-                  <option value="" disabled>Select a service</option>
-                  {services.map((s) => (
-                    <option key={s.name} value={s.name}>{s.name}</option>
-                  ))}
-                </select>
+                />
               </div>
 
               <div className="form-group">

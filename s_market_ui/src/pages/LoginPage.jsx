@@ -4,7 +4,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Checkbox from '../components/ui/Checkbox';
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
 import { loginUser, googleLogin, logoutUser } from '../api/api';
@@ -12,24 +12,29 @@ import './LoginPage.css';
 
 const LoginPage = () => {
     const [isVendorLogin, setIsVendorLogin] = useState(false);
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState(() => localStorage.getItem('rememberedEmail') || '');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem('rememberedEmail'));
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // Check if user is already logged in
-        const user = localStorage.getItem('user');
-        if (user) {
-            window.location.replace('/admin/dashboard');
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                if (user.roleId === 1) {
+                    navigate('/admin/dashboard', { replace: true });
+                } else if (user.roleId === 3) {
+                    navigate('/vendor/dashboard', { replace: true });
+                } else {
+                    navigate('/', { replace: true });
+                }
+            } catch {
+                localStorage.removeItem('user');
+            }
         }
-
-        const rememberedEmail = localStorage.getItem('rememberedEmail');
-        if (rememberedEmail) {
-            setEmail(rememberedEmail);
-            setRememberMe(true);
-        }
-    }, []);
+    }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -37,8 +42,6 @@ const LoginPage = () => {
         try {
             const data = await loginUser(email, password, isVendorLogin);
             toast.dismiss(loadingToast);
-
-            console.log("Login successful:", data);
 
             if (isVendorLogin && data.roleId !== 3) {
                 await logoutUser();
@@ -49,6 +52,7 @@ const LoginPage = () => {
 
             // Save user to localStorage
             localStorage.setItem('user', JSON.stringify(data));
+            window.dispatchEvent(new Event('storage'));
 
             if (rememberMe) {
                 localStorage.setItem('rememberedEmail', email);
@@ -64,11 +68,11 @@ const LoginPage = () => {
 
             // Redirect based on role id
             if (data.roleId === 1) {
-                window.location.replace('/admin/dashboard');
+                navigate('/admin/dashboard', { replace: true });
             } else if (data.roleId === 3) {
-                window.location.replace('/vendor/dashboard');
+                navigate('/vendor/dashboard', { replace: true });
             } else {
-                window.location.replace('/');
+                navigate('/', { replace: true });
             }
         } catch (error) {
             toast.dismiss(loadingToast);
@@ -79,14 +83,13 @@ const LoginPage = () => {
 
     return (
         <div className="login-page">
-            <Link to="/" className="home-button">
-                <Home size={20} />
-                <span>Home</span>
-            </Link>
-
             {/* Left Panel Removed */}
             <div className="login-content">
                 <div className="login-container">
+                    <Link to="/" className="home-button">
+                        <Home size={20} />
+                        <span>Home</span>
+                    </Link>
                     <div className="login-header">
                         <h2>Welcome back</h2>
                         <p>Please enter your details to sign in.</p>
@@ -163,15 +166,13 @@ const LoginPage = () => {
                         </div>
                     )}                    {!isVendorLogin && (
                         <div className="social-login" style={{ display: 'flex', justifyContent: 'center' }}>
+                            {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
                             <GoogleLogin
                                 onSuccess={async (credentialResponse) => {
-                                    console.log(credentialResponse);
                                     const loadingToast = toast.loading('Verifying Google Sign-In...');
                                     try {
                                         const data = await googleLogin(credentialResponse.credential, isVendorLogin);
                                         toast.dismiss(loadingToast);
-
-                                        console.log("Google Login successful:", data);
 
                                         if (isVendorLogin && data.roleId !== 3) {
                                             await logoutUser();
@@ -182,20 +183,17 @@ const LoginPage = () => {
 
                                         toast.success(`Welcome back, ${data.fullName}!`);
 
-                                        // Save user to localStorage
                                         localStorage.setItem('user', JSON.stringify(data));
-
-                                        // Clear fields
+                                        window.dispatchEvent(new Event('storage'));
                                         setEmail('');
                                         setPassword('');
 
-                                        // Redirect based on role
                                         if (data.roleId === 1) {
-                                            window.location.replace('/admin/dashboard');
+                                            navigate('/admin/dashboard', { replace: true });
                                         } else if (data.roleId === 3) {
-                                            window.location.replace('/vendor/dashboard');
+                                            navigate('/vendor/dashboard', { replace: true });
                                         } else {
-                                            window.location.replace('/');
+                                            navigate('/', { replace: true });
                                         }
                                     } catch (error) {
                                         toast.dismiss(loadingToast);
@@ -204,11 +202,15 @@ const LoginPage = () => {
                                     }
                                 }}
                                 onError={() => {
-                                    console.log('Login Failed');
                                     toast.error("Google Sign-In failed");
                                 }}
-                                width="100%"
+                                width={300}
                             />
+                            ) : (
+                            <div style={{padding:'12px 20px',background:'#f1f5f9',borderRadius:'8px',textAlign:'center',color:'#94a3b8',fontSize:'0.85rem',width:'100%'}}>
+                                Google Sign-In not configured (set VITE_GOOGLE_CLIENT_ID)
+                            </div>
+                            )}
                         </div>
                     )}
 

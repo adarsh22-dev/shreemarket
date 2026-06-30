@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     CheckCircle2,
     Settings,
@@ -15,14 +16,26 @@ import {
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorNotifications.css';
 import { fetchVendorNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../../api/api';
+import { toast } from 'react-hot-toast';
+
+// Configurable notification tabs - maps UI label to backend notification type
+const NOTIFICATION_TABS = [
+    { label: 'All', type: 'All' },
+    { label: 'Orders', type: 'ORDER' },
+    { label: 'Stock', type: 'STOCK' },
+    { label: 'Payments', type: 'PAYMENT' },
+    { label: 'Deliveries', type: 'DELIVERY' },
+    { label: 'Platform', type: 'PLATFORM' }
+];
 
 const VendorNotifications = () => {
+    const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('All');
     const [vendorId, setVendorId] = useState(null);
 
-    const tabs = ['All', 'Orders', 'Stock', 'Payments', 'Deliveries', 'Platform'];
+    const tabs = NOTIFICATION_TABS.map(t => t.label);
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -35,18 +48,18 @@ const VendorNotifications = () => {
     }, []);
 
     const loadNotifications = async () => {
-        if (!vendorId) return;
+        if (!vendorId) {
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         try {
-            const typeFilter = activeTab === 'Orders' ? 'ORDER'
-                : activeTab === 'Stock' ? 'STOCK'
-                    : activeTab === 'Payments' ? 'PAYMENT'
-                        : activeTab === 'Deliveries' ? 'DELIVERY'
-                            : activeTab === 'Platform' ? 'PLATFORM'
-                                : 'All';
+            const selectedTab = NOTIFICATION_TABS.find(t => t.label === activeTab);
+            const typeFilter = selectedTab ? selectedTab.type : 'All';
             const data = await fetchVendorNotifications(vendorId, typeFilter);
             setNotifications(Array.isArray(data) ? data : []);
         } catch (error) {
+            toast.error('Failed to load notifications');
             console.error("Failed to fetch notifications:", error);
         } finally {
             setLoading(false);
@@ -54,7 +67,7 @@ const VendorNotifications = () => {
     };
 
     useEffect(() => {
-        loadNotifications();
+        if (vendorId) loadNotifications();
     }, [vendorId, activeTab]);
 
     const handleMarkAsRead = async (id) => {
@@ -62,6 +75,7 @@ const VendorNotifications = () => {
             await markNotificationAsRead(id);
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
         } catch (error) {
+            toast.error('Failed to mark as read');
             console.error("Failed to mark as read:", error);
         }
     };
@@ -71,8 +85,40 @@ const VendorNotifications = () => {
         try {
             await markAllNotificationsAsRead(vendorId);
             setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+            toast.success('All notifications marked as read');
         } catch (error) {
+            toast.error('Failed to mark all as read');
             console.error("Failed to mark all as read:", error);
+        }
+    };
+
+    const getNotificationRoute = (item) => {
+        const type = item.type?.toUpperCase();
+        const refId = item.referenceId;
+        switch (type) {
+            case 'ORDER':
+                return '/vendor/orders';
+            case 'LOW_STOCK':
+            case 'OUT_OF_STOCK':
+                return refId ? `/vendor/products/edit/${refId}` : '/vendor/products';
+            case 'PAYMENT':
+                return '/vendor/payouts';
+            case 'DELIVERY':
+                return '/vendor/shipping';
+            case 'PLATFORM':
+                return '/vendor/dashboard';
+            default:
+                return null;
+        }
+    };
+
+    const handleNotificationClick = async (item) => {
+        if (item.unread) {
+            await handleMarkAsRead(item.id);
+        }
+        const route = getNotificationRoute(item);
+        if (route) {
+            navigate(route);
         }
     };
 
@@ -187,8 +233,8 @@ const VendorNotifications = () => {
                                             <div
                                                 key={item.id}
                                                 className={`notification-card ${item.unread ? 'is-unread' : ''}`}
-                                                onClick={() => item.unread && handleMarkAsRead(item.id)}
-                                                style={{ cursor: item.unread ? 'pointer' : 'default' }}
+                                                onClick={() => handleNotificationClick(item)}
+                                                style={{ cursor: 'pointer' }}
                                             >
                                                 <div className="nc-left">
                                                     <div className={`nc-icon-box ${bg}`}>

@@ -10,7 +10,8 @@ import {
     updateUserAddress, deleteUserAddress, setAddressAsDefault,
     updateUserPassword, updateVendorPassword,
     deleteUser, deleteVendor,
-    getUserDevices, logoutDevice
+    getUserDevices, logoutDevice,
+    getVendorById
 } from '../api/api';
 import './SettingsPage.css';
 
@@ -28,6 +29,10 @@ const SettingsPage = () => {
     // Devices State
     const [devices, setDevices] = useState([]);
     const [loadingDevices, setLoadingDevices] = useState(false);
+
+    // Vendor Details State
+    const [vendorDetails, setVendorDetails] = useState(null);
+    const [loadingVendor, setLoadingVendor] = useState(false);
 
     // Address State
     const [addresses, setAddresses] = useState([]);
@@ -90,16 +95,45 @@ const SettingsPage = () => {
                     try {
                         setLoadingDevices(true);
                         const devResponse = await getUserDevices(storedUser.userId, storedUser.roleId);
+                        let rawDevices = [];
                         if (devResponse && Array.isArray(devResponse)) {
-                            // API returns the array directly based on Controller mapping
-                            setDevices(devResponse);
+                            rawDevices = devResponse;
                         } else if (devResponse && devResponse.data) {
-                            setDevices(devResponse.data);
+                            rawDevices = devResponse.data;
                         }
+
+                        // Deduplicate: keep only the latest session per unique device (OS + browser combo)
+                        const deviceMap = new Map();
+                        for (const d of rawDevices) {
+                            const key = `${d.os || ''}_${d.browser || ''}_${d.deviceType || ''}`;
+                            const existing = deviceMap.get(key);
+                            if (!existing || new Date(d.lastActive) > new Date(existing.lastActive)) {
+                                deviceMap.set(key, d);
+                            }
+                        }
+
+                        // Sort newest first
+                        const uniqueDevices = Array.from(deviceMap.values())
+                            .sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
+
+                        setDevices(uniqueDevices);
                     } catch (devErr) {
                         console.error("Failed to fetch devices:", devErr);
                     } finally {
                         setLoadingDevices(false);
+                    }
+
+                    // Fetch vendor details if user is a vendor
+                    if (storedUser.roleId === 3) {
+                        try {
+                            setLoadingVendor(true);
+                            const vendorData = await getVendorById(storedUser.userId);
+                            setVendorDetails(vendorData);
+                        } catch (vendErr) {
+                            console.error("Failed to fetch vendor details:", vendErr);
+                        } finally {
+                            setLoadingVendor(false);
+                        }
                     }
                 }
             } catch (error) {
@@ -464,6 +498,77 @@ const SettingsPage = () => {
                     </div>
                 </div>
 
+                {/* Vendor Registration Details - Only visible for vendors */}
+                {user.roleId === 3 && (
+                    <div className="settings-section">
+                        <div className="section-header">
+                            <h2>Vendor Registration Details</h2>
+                            <p>Your vendor account information and registration status.</p>
+                        </div>
+                        <div className="settings-card">
+                            {loadingVendor ? (
+                                <p>Loading vendor details...</p>
+                            ) : vendorDetails ? (
+                                <div className="vendor-details-grid">
+                                    <div className="vendor-detail-item">
+                                        <span className="detail-label">Account Status</span>
+                                        <span className={`detail-value status-badge ${(vendorDetails.status || '').toLowerCase()}`}>
+                                            {vendorDetails.status || 'Pending'}
+                                        </span>
+                                    </div>
+                                    <div className="vendor-detail-item">
+                                        <span className="detail-label">Full Name</span>
+                                        <span className="detail-value">{vendorDetails.fullName || 'N/A'}</span>
+                                    </div>
+                                    <div className="vendor-detail-item">
+                                        <span className="detail-label">Email</span>
+                                        <span className="detail-value">{vendorDetails.email || 'N/A'}</span>
+                                    </div>
+                                    <div className="vendor-detail-item">
+                                        <span className="detail-label">Phone</span>
+                                        <span className="detail-value">{vendorDetails.phone || 'N/A'}</span>
+                                    </div>
+                                    <div className="vendor-detail-item">
+                                        <span className="detail-label">Payment Method</span>
+                                        <span className="detail-value">{vendorDetails.paymentMethod || 'Not set'}</span>
+                                    </div>
+                                    <div className="vendor-detail-item">
+                                        <span className="detail-label">Payment Email</span>
+                                        <span className="detail-value">{vendorDetails.paymentEmail || 'Not set'}</span>
+                                    </div>
+                                    <div className="vendor-detail-item">
+                                        <span className="detail-label">Terms Accepted</span>
+                                        <span className="detail-value">{vendorDetails.agreeTerms ? 'Yes' : 'No'}</span>
+                                    </div>
+                                    <div className="vendor-detail-item">
+                                        <span className="detail-label">Policies Accepted</span>
+                                        <span className="detail-value">{vendorDetails.agreePolicies ? 'Yes' : 'No'}</span>
+                                    </div>
+                                    <div className="vendor-detail-item">
+                                        <span className="detail-label">Newsletter</span>
+                                        <span className="detail-value">{vendorDetails.newsletter ? 'Subscribed' : 'Not subscribed'}</span>
+                                    </div>
+                                    {vendorDetails.stores && vendorDetails.stores.length > 0 && (
+                                        <div className="vendor-detail-item full-width">
+                                            <span className="detail-label">Store(s)</span>
+                                            <div className="stores-list">
+                                                {vendorDetails.stores.map((store, idx) => (
+                                                    <div key={store.id || idx} className="store-item">
+                                                        <strong>{store.storeName || `Store ${idx + 1}`}</strong>
+                                                        {store.storeDescription && <p>{store.storeDescription}</p>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <p style={{ color: '#777' }}>Could not load vendor details.</p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 <div className="settings-section">
                     <div className="section-header with-action">
                         <div>
@@ -778,7 +883,7 @@ const SettingsPage = () => {
                                     <label>Country</label>
                                     <select name="country" value={addressForm.country} onChange={handleAddressInputChange} required>
                                         <option value="">Select country</option>
-                                        <option selected value="IN">India</option>
+                                        <option value="IN">India</option>
                                     </select>
                                 </div>
                             </div>

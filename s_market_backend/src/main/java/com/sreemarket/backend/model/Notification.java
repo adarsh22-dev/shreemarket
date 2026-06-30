@@ -23,6 +23,7 @@ public class Notification {
     private String message;
 
     private String type; // ORDER, PAYMENT, DELIVERY, PLATFORM
+    private Long referenceId; // ID of related entity (orderId, productId, etc.)
     private boolean unread = true;
     private Long createdAt;
 
@@ -64,6 +65,14 @@ public class Notification {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getReferenceId() {
+        return referenceId;
+    }
+
+    public void setReferenceId(Long referenceId) {
+        this.referenceId = referenceId;
     }
 
     public boolean isUnread() {

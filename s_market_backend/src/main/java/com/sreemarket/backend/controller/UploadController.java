@@ -27,4 +27,16 @@ public class UploadController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/category-image")
+    public ResponseEntity<?> uploadCategoryImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileUrl = fileStorageService.storeFile(file, "categories");
+            return ResponseEntity.ok(Map.of(
+                    "message", "Category image uploaded successfully",
+                    "url", fileUrl));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

@@ -1,0 +1,282 @@
+.vrm-container {
+    padding: 24px 32px;
+    max-width: 1100px;
+}
+
+.vrm-header {
+    margin-bottom: 24px;
+}
+
+.vrm-header h1 {
+    margin: 0 0 6px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.vrm-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.vrm-loading, .vrm-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+}
+
+.vrm-empty h3 { margin: 16px 0 8px; color: #1a1a2e; }
+.vrm-empty p { margin: 0; color: #9ca3af; font-size: 0.9rem; }
+
+/* KPI Row */
+.vrm-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.vrm-kpi {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+.vrm-kpi-icon {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; flex-shrink: 0;
+}
+
+.vrm-kpi-info { display: flex; flex-direction: column; }
+
+.vrm-kpi-value {
+    font-size: 1.4rem; font-weight: 700; color: #1a1a2e; line-height: 1.2;
+}
+
+.vrm-kpi-label {
+    font-size: 0.78rem; color: #9ca3af; margin-top: 2px;
+}
+
+/* Controls */
+.vrm-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.vrm-tabs {
+    display: flex;
+    gap: 4px;
+    background: #f3f4f6;
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.vrm-tab {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: #6b7280;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vrm-tab.active {
+    background: #fff;
+    color: #FF5722;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.vrm-tab-count {
+    font-size: 0.7rem;
+    background: #FF5722;
+    color: #fff;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.vrm-tab.active .vrm-tab-count { background: #FF5722; }
+
+.vrm-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: #9ca3af;
+    min-width: 250px;
+}
+
+.vrm-search input {
+    border: none;
+    outline: none;
+    font-size: 0.85rem;
+    flex: 1;
+    background: transparent;
+    color: #1a1a2e;
+}
+
+.vrm-search input::placeholder { color: #9ca3af; }
+
+/* Badge */
+.vrm-badge {
+    font-size: 0.72rem; font-weight: 600;
+    padding: 4px 10px; border-radius: 6px;
+    white-space: nowrap;
+}
+
+/* Table */
+.vrm-table-wrap { overflow-x: auto; background:#fff; border-radius:12px; border:1px solid #e5e7eb; }
+.vrm-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.vrm-table th { text-align:left; padding:12px 14px; font-weight:700; color:#6b7280; font-size:.72rem; text-transform:uppercase; letter-spacing:.4px; border-bottom:2px solid #f3f4f6; white-space:nowrap; }
+.vrm-table td { padding:12px 14px; border-bottom:1px solid #f3f4f6; color:#374151; }
+.vrm-table tbody tr:hover { background:#f9fafb; }
+.vrm-th-r { text-align:right; }
+
+.vrm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: none;
+    border-radius: 7px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.vrm-btn--outline { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+.vrm-btn--outline:hover { background: #f9fafb; }
+
+.vrm-btn--success { background: #059669; color: #fff; }
+.vrm-btn--success:hover { background: #047857; }
+
+.vrm-btn--danger { background: #dc2626; color: #fff; }
+.vrm-btn--danger:hover { background: #b91c1c; }
+
+.vrm-btn--warn { background: #d97706; color: #fff; }
+.vrm-btn--warn:hover { background: #b45309; }
+
+/* Detail Modal */
+.vrm-detail-content { padding: 0; }
+
+.vrm-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.vrm-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.vrm-detail-label {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+.vrm-detail-amount {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #059669;
+}
+
+.vrm-detail-section {
+    margin-bottom: 20px;
+}
+
+.vrm-detail-section h4 {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.vrm-detail-reason {
+    background: #fef2f2;
+    padding: 12px 14px;
+    border-radius: 8px;
+    color: #991b1b;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.vrm-detail-images {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.vrm-return-img {
+    width: 100px; height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.vrm-product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vrm-product-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.vrm-product-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    display: block;
+}
+
+.vrm-product-sku {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.vrm-product-qty {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.vrm-no-data { color: #9ca3af; font-size: 0.85rem; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .vrm-container { padding: 16px; }
+    .vrm-kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .vrm-controls { flex-direction: column; align-items: stretch; }
+    .vrm-search { min-width: auto; }
+    .vrm-detail-grid { grid-template-columns: 1fr; }
+}

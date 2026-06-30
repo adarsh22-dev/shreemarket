@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
-import { ShoppingCart, Trash2, Heart, HeartHandshake } from 'lucide-react';
+import { ShoppingCart, Trash2, Heart, HeartHandshake, Share2, Link as LinkIcon, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
 import './WishlistPage.css';
 import { Link } from 'react-router-dom';
 
 const WishlistPage = () => {
-    const { wishlistItems, removeFromWishlist } = useWishlist();
+    const { wishlistItems, wishlistLoading, removeFromWishlist } = useWishlist();
     const { addToCart } = useCart();
     const [activeTab, setActiveTab] = React.useState('all');
+    const [shareCopied, setShareCopied] = useState(false);
 
     const filteredItems = React.useMemo(() => {
         if (activeTab === 'in-stock') {
@@ -24,6 +26,26 @@ const WishlistPage = () => {
         removeFromWishlist(product.id);
     };
 
+    const wishlistShareUrl = window.location.origin + '/wishlist';
+    const handleShareWishlist = async () => {
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: 'My SreeMarket Wishlist',
+                    text: `I have ${wishlistItems.length} items saved on SreeMarket!`,
+                    url: wishlistShareUrl
+                });
+            } else {
+                await navigator.clipboard.writeText(wishlistShareUrl);
+                setShareCopied(true);
+                toast.success('Wishlist link copied!');
+                setTimeout(() => setShareCopied(false), 2000);
+            }
+        } catch (err) {
+            // User cancelled share dialog or error
+        }
+    };
+
     return (
         <div className="wishlist-page">
             <Navbar />
@@ -33,7 +55,12 @@ const WishlistPage = () => {
                     <p>Your curated selection of artisan-made treasures.</p>
                 </div>
 
-                {wishlistItems.length > 0 ? (
+                {wishlistLoading ? (
+                    <div className="wishlist-loading" style={{textAlign:'center',padding:'60px 0',color:'var(--text-3)'}}>
+                        <div className="wishlist-spinner" style={{width:32,height:32,border:'3px solid var(--border)',borderTopColor:'var(--accent)',borderRadius:'50%',animation:'spin 0.8s linear infinite',margin:'0 auto 12px'}} />
+                        <p>Loading your wishlist...</p>
+                    </div>
+                ) : wishlistItems.length > 0 ? (
                     <>
                         <div className="wishlist-banner">
                             <div className="wishlist-banner-icon">
@@ -44,24 +71,39 @@ const WishlistPage = () => {
                             </p>
                         </div>
 
-                        <div className="wishlist-tabs">
+                        <div className="wishlist-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div className="wishlist-tabs">
+                                <button
+                                    className={`wishlist-tab ${activeTab === 'all' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('all')}
+                                >
+                                    All Items <span className="tab-badge">{wishlistItems.length}</span>
+                                </button>
+                                <button
+                                    className={`wishlist-tab ${activeTab === 'in-stock' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('in-stock')}
+                                >
+                                    In Stock
+                                </button>
+                                <button
+                                    className={`wishlist-tab ${activeTab === 'recently-added' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('recently-added')}
+                                >
+                                    Recently Added
+                                </button>
+                            </div>
                             <button
-                                className={`wishlist-tab ${activeTab === 'all' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('all')}
+                                onClick={handleShareWishlist}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                    padding: '0.6rem 1.2rem', background: shareCopied ? '#22c55e' : '#FF5722',
+                                    color: '#fff', border: 'none', borderRadius: '8px',
+                                    fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
                             >
-                                All Items <span className="tab-badge">{wishlistItems.length}</span>
-                            </button>
-                            <button
-                                className={`wishlist-tab ${activeTab === 'in-stock' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('in-stock')}
-                            >
-                                In Stock
-                            </button>
-                            <button
-                                className={`wishlist-tab ${activeTab === 'recently-added' ? 'active' : ''}`}
-                                onClick={() => setActiveTab('recently-added')}
-                            >
-                                Recently Added
+                                {shareCopied ? <Check size={16} /> : <Share2 size={16} />}
+                                {shareCopied ? 'Copied!' : 'Share Wishlist'}
                             </button>
                         </div>
 

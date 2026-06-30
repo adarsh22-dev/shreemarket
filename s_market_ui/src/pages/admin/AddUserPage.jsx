@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Upload, ChevronDown, User, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { registerUser, registerVendor } from '../../api/api';
-import AdminNavbar from '../../components/AdminNavbar';
+import { registerUser } from '../../api/api';
 import './AddUserPage.css';
 
 const AddUserPage = () => {
@@ -64,19 +63,13 @@ const AddUserPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Submit button clicked");
-        console.log("Current Form Data:", formData);
 
         const isValid = validate();
-        console.log("Validation Result:", isValid);
-        console.log("Current Errors:", errors); // Note: this might show old errors as state update is async, so we depend on isValid result
 
         if (isValid) {
-            console.log("Form is valid, attempting to register...");
             const loadingToast = toast.loading('Creating user...');
             try {
-                // Map role names to IDs: 1: Admin, 2: Customer (Default), 3: Vendor, 4: Moderator
-                let roleId = 2; // Default to 'Customer'
+                let roleId = 2;
                 if (formData.role === 'Admin') roleId = 1;
                 else if (formData.role === 'Vendor') roleId = 3;
                 else if (formData.role === 'Moderator') roleId = 4;
@@ -90,16 +83,8 @@ const AddUserPage = () => {
                     status: formData.status ? 'Active' : 'Inactive'
                 };
 
-                let data;
-                if (formData.role === 'Vendor') {
-                    // vendor API path handles role assignment explicitly
-                    data = await registerVendor(payload);
-                } else {
-                    data = await registerUser(payload);
-                }
-
+                const data = await registerUser(payload);
                 toast.dismiss(loadingToast);
-                console.log("User created:", data);
 
                 toast.success("User created successfully!");
                 navigate('/admin/dashboard');
@@ -108,9 +93,9 @@ const AddUserPage = () => {
                 console.error("Creation failed:", error);
 
                 const errorMessage = error.message || "Failed to create user";
-                if (errorMessage.includes("Email already in use") || errorMessage.includes("Email already in use by another vendor")) {
+                if (errorMessage.includes("Email already in use")) {
                     setErrors(prev => ({ ...prev, email: errorMessage }));
-                } else if (errorMessage.includes("Phone number already in use") || errorMessage.includes("Phone number already in use by another vendor")) {
+                } else if (errorMessage.includes("Phone number already in use")) {
                     setErrors(prev => ({ ...prev, phone: errorMessage }));
                 } else {
                     toast.error(errorMessage);
@@ -121,13 +106,8 @@ const AddUserPage = () => {
 
     return (
         <div className="add-user-page">
-            <AdminNavbar title="Add New User" />
-
             <main className="add-user-content">
                 <div className="page-header">
-                    <button className="btn-back" onClick={() => navigate('/admin/dashboard')} aria-label="Go back">
-                        <ArrowLeft size={20} color="#1e293b" />
-                    </button>
                     <h2>Add New User</h2>
                 </div>
 
@@ -211,7 +191,6 @@ const AddUserPage = () => {
                                         name="role"
                                         value={formData.role}
                                         onChange={handleInputChange}
-                                        className={!formData.role ? 'placeholder-selected' : ''}
                                     >
                                         <option value="" disabled>Choose a role...</option>
                                         <option value="Admin">Admin</option>

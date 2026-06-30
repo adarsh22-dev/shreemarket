@@ -1,0 +1,26 @@
+.vendor-abandoned-orders { padding: 24px; }
+.vao-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+.vao-header-left h1 { display: flex; align-items: center; gap: 10px; font-size: 24px; color: #111; margin: 0 0 4px 0; }
+.vao-subtitle { color: #888; font-size: 14px; margin: 0; }
+.vao-header-actions { display: flex; gap: 12px; }
+.vao-refresh-btn, .vao-bulk-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; }
+.vao-refresh-btn { background: #f5f5f5; color: #333; }
+.vao-bulk-btn { background: #FF5722; color: white; }
+.vao-stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.vao-stat-card { background: white; border-radius: 12px; padding: 20px; border: 1px solid #eee; display: flex; align-items: center; gap: 16px; color: #FF5722; }
+.vao-stat-card div { display: flex; flex-direction: column; }
+.vao-stat-num { font-size: 28px; font-weight: 800; color: #111; }
+.vao-stat-label { font-size: 12px; color: #888; }
+.vao-search-bar { display: flex; align-items: center; gap: 12px; background: white; padding: 12px 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 20px; }
+.vao-search-bar input { border: none; flex: 1; outline: none; font-size: 14px; }
+.vao-loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 60px; color: #888; }
+.vao-empty { text-align: center; padding: 60px; color: #888; }
+.vao-empty h3 { color: #333; margin: 16px 0 8px; }
+.vao-table-container { background: white; border-radius: 12px; border: 1px solid #eee; overflow: hidden; }
+.vao-table { width: 100%; border-collapse: collapse; }
+.vao-table th { background: #fafafa; padding: 14px 16px; text-align: left; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #eee; }
+.vao-table td { padding: 14px 16px; font-size: 14px; color: #333; border-bottom: 1px solid #f5f5f5; }
+.vao-order-num { font-weight: 600; color: #FF5722; }
+.vao-days-badge { background: #fff3e0; color: #e65100; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.vao-followup-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #FF5722; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.vao-followup-btn:disabled { opacity: 0.6; cursor: not-allowed; }

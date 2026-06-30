@@ -3,6 +3,7 @@ package com.sreemarket.backend.service;
 import com.sreemarket.backend.model.User;
 import com.sreemarket.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,6 +14,12 @@ public class UserService {
 
     @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Value("${google.client.id}")
+    private String googleClientId;
 
     public User registerUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -90,7 +97,7 @@ public class UserService {
             com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier verifier = new com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier.Builder(
                     new com.google.api.client.http.javanet.NetHttpTransport(),
                     new com.google.api.client.json.gson.GsonFactory())
-                    .setAudience(java.util.Collections.singletonList("YOUR_GOOGLE_CLIENT_ID"))
+                    .setAudience(java.util.Collections.singletonList(googleClientId))
                     .build();
 
             com.google.api.client.googleapis.auth.oauth2.GoogleIdToken idToken = verifier.verify(idTokenString);
@@ -120,22 +127,15 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String token = "TEST_TOKEN_12345";
+        String token = java.util.UUID.randomUUID().toString();
         user.setResetToken(token);
         // Set expiry to 1 hour from now (in milliseconds)
         user.setResetTokenExpiry(System.currentTimeMillis() + 3600000);
         userRepository.save(user);
 
-        // Simulate sending email
-        System.out.println("--------------------------------------------------");
-        System.out.println("PASSWORD RESET LINK: http://localhost:5173/reset-password?token=" + token);
-        System.out.println("--------------------------------------------------");
-
-        try (java.io.FileWriter writer = new java.io.FileWriter("reset_token.txt")) {
-            writer.write(token);
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
+        // Send actual password reset email via MailerSend
+        String name = user.getFullName() != null ? user.getFullName() : user.getEmail();
+        emailService.sendPasswordResetEmail(user.getEmail(), name, token);
     }
 
     public void resetPassword(String token, String newPassword) {

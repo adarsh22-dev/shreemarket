@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-// Assuming Product model exists and Review has a 'product' field (or productId that can be joined)
 // If Review.java has `private Long productId;` and not a `Product product;` entity relationship,
 // then `root.join("product")` will fail.
 // For this to work, Review entity must have a ManyToOne relationship to Product:
@@ -32,7 +31,12 @@ public class ReviewService {
     @Autowired
     private ReviewRepository reviewRepository;
 
-    private final String REVIEW_UPLOAD_DIR = "uploads/reviews/";
+    @org.springframework.beans.factory.annotation.Value("${file.upload-dir:uploads}")
+    private String uploadDir;
+
+    private String getReviewUploadDir() {
+        return java.nio.file.Paths.get(uploadDir, "reviews").toAbsolutePath().normalize().toString();
+    }
 
     public List<Review> getReviewsForProduct(Long productId) {
         return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId);
@@ -131,17 +135,44 @@ public class ReviewService {
 
     public Review submitReview(Review review, List<MultipartFile> images) throws IOException {
         if (images != null && !images.isEmpty()) {
-            File uploadDirectory = new File(REVIEW_UPLOAD_DIR);
+            File uploadDirectory = new File(getReviewUploadDir());
             if (!uploadDirectory.exists()) {
                 uploadDirectory.mkdirs();
             }
-
             for (MultipartFile file : images) {
                 if (!file.isEmpty()) {
                     String fileName = java.util.UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-                    java.nio.file.Path filePath = java.nio.file.Paths.get(REVIEW_UPLOAD_DIR, fileName);
+                    java.nio.file.Path filePath = java.nio.file.Paths.get(getReviewUploadDir(), fileName);
                     java.nio.file.Files.copy(file.getInputStream(), filePath);
                     review.getImages().add(fileName);
+                }
+            }
+        }
+        return reviewRepository.save(review);
+    }
+
+    public Review submitReview(Review review, List<MultipartFile> images, List<MultipartFile> videos) throws IOException {
+        if (images != null && !images.isEmpty()) {
+            File uploadDirectory = new File(getReviewUploadDir());
+            if (!uploadDirectory.exists()) uploadDirectory.mkdirs();
+            for (MultipartFile file : images) {
+                if (!file.isEmpty()) {
+                    String fileName = java.util.UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                    java.nio.file.Path filePath = java.nio.file.Paths.get(getReviewUploadDir(), fileName);
+                    java.nio.file.Files.copy(file.getInputStream(), filePath);
+                    review.getImages().add(fileName);
+                }
+            }
+        }
+        if (videos != null && !videos.isEmpty()) {
+            File uploadDirectory = new File(getReviewUploadDir());
+            if (!uploadDirectory.exists()) uploadDirectory.mkdirs();
+            for (MultipartFile file : videos) {
+                if (!file.isEmpty()) {
+                    String fileName = java.util.UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                    java.nio.file.Path filePath = java.nio.file.Paths.get(getReviewUploadDir(), fileName);
+                    java.nio.file.Files.copy(file.getInputStream(), filePath);
+                    review.getVideos().add(fileName);
                 }
             }
         }

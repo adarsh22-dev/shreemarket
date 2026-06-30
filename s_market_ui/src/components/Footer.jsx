@@ -1,14 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
-import { Instagram, Camera, Rss } from 'lucide-react'; // Some placeholder icons for social
+import { Instagram, Camera, Rss } from 'lucide-react';
+import { subscribeNewsletter } from '../api/api';
+import toast from 'react-hot-toast';
 import logo from '../assets/smarketlogo.svg';
 
 const Footer = () => {
+    const [email, setEmail] = useState('');
+    const [subscribing, setSubscribing] = useState(false);
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            toast.error('Please enter a valid email address');
+            return;
+        }
+        setSubscribing(true);
+        try {
+            await subscribeNewsletter(email);
+            toast.success('Subscribed successfully!');
+            setEmail('');
+        } catch (err) {
+            toast.error(err?.message || 'Subscription failed. Please try again.');
+        } finally {
+            setSubscribing(false);
+        }
+    };
+
     return (
         <footer className="footer-container">
             <div className="footer-top">
-                {/* Brand & Mission */}
                 <div className="footer-brand">
                     <img
                         src={logo}
@@ -20,13 +42,12 @@ const Footer = () => {
                         Supporting independent artisans and preserving traditional crafts for a more conscious world.
                     </p>
                     <div className="social-icons">
-                        <a href="#" className="social-icon"><Camera size={14} /></a>
-                        <a href="#" className="social-icon"><Instagram size={14} /></a>
-                        <a href="#" className="social-icon"><Rss size={14} /></a>
+                        <a href="#" className="social-icon" onClick={e => e.preventDefault()}><Camera size={14} /></a>
+                        <a href="#" className="social-icon" onClick={e => e.preventDefault()}><Instagram size={14} /></a>
+                        <a href="#" className="social-icon" onClick={e => e.preventDefault()}><Rss size={14} /></a>
                     </div>
                 </div>
 
-                {/* Links Sections */}
                 <div className="footer-links-container">
                     <div className="footer-column">
                         <h4>Support</h4>
@@ -35,41 +56,35 @@ const Footer = () => {
                             <li><Link to="/support/returns">Returns & Exchanges</Link></li>
                             <li><Link to="/support/contact">Contact Us</Link></li>
                             <li><Link to="/support/faq">Store FAQ</Link></li>
-                            {/* <li><Link to="/shop/gift-cards">Gift Cards</Link></li> */}
                         </ul>
                     </div>
-                    {/* <div className="footer-column">
-                        <h4>About</h4>
-                        <ul>
-                            <li><Link to="/our-story">Our Story</Link></li>
-                            <li><Link to="/about/artisans">Meet the Makers</Link></li>
-                            <li><Link to="/about/standards">Artisan Standards</Link></li>
-                            <li><Link to="/about/sustainability">Sustainability</Link></li>
-                            <li><Link to="/about/press">Press & Media</Link></li>
-                        </ul>
-                    </div> */}
                 </div>
 
-                {/* Newsletter Section */}
                 <div className="footer-newsletter">
                     <h4>Stay Inspired</h4>
                     <p className="newsletter-text">
                         Join our mailing list for exclusive artisan stories and new featured collections.
                     </p>
-                    <div className="newsletter-input-group">
-                        <input type="email" placeholder="Email address" />
-                        <button type="button">GO</button>
-                    </div>
+                    <form className="newsletter-input-group" onSubmit={handleSubscribe}>
+                        <input
+                            type="email"
+                            placeholder="Email address"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            required
+                        />
+                        <button type="submit" disabled={subscribing}>
+                            {subscribing ? '...' : 'GO'}
+                        </button>
+                    </form>
                 </div>
             </div>
 
-            {/* Bottom Bar */}
             <div className="footer-bottom">
                 <div>&copy; 2026 Sreemarket. All rights reserved.</div>
                 <div className="footer-bottom-links">
                     <Link to="/support/privacy">Privacy Policy</Link>
                     <Link to="/support/terms">Terms of Service</Link>
-                    {/* <Link to="/accessibility">Accessibility</Link> */}
                 </div>
             </div>
         </footer>

@@ -57,7 +57,8 @@ const VendorRegister = () => {
         if (validate()) {
             const loadingToast = toast.loading('Registering vendor account...');
             try {
-                const data = await registerVendor(formData);
+                const { confirmPassword, fullName, ...restForm } = formData;
+                const data = await registerVendor({ ...restForm, name: fullName });
                 toast.dismiss(loadingToast);
                 toast.success("Vendor registration successful!");
 
@@ -137,7 +138,7 @@ const VendorRegister = () => {
                                         <Input
                                             id="fullName"
                                             label="Full Name"
-                                            placeholder="John Doe"
+                                            placeholder="Enter your full name"
                                             icon={User}
                                             value={formData.fullName}
                                             onChange={handleChange}
@@ -149,7 +150,7 @@ const VendorRegister = () => {
                                             id="phone"
                                             label="Phone Number"
                                             type="tel"
-                                            placeholder="1234567890"
+                                            placeholder="Enter your phone number"
                                             icon={Phone}
                                             value={formData.phone}
                                             onChange={handleChange}
@@ -164,7 +165,7 @@ const VendorRegister = () => {
                                         id="email"
                                         label="Email Address"
                                         type="email"
-                                        placeholder="admin@traqinn.com"
+                                        placeholder="you@example.com"
                                         icon={Mail}
                                         value={formData.email}
                                         onChange={handleChange}

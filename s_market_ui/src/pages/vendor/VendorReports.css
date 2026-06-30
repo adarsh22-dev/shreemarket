@@ -1,0 +1,13 @@
+.vendor-reports { padding: 24px; }
+.vr-header { margin-bottom: 32px; }
+.vr-header h1 { display: flex; align-items: center; gap: 10px; font-size: 24px; color: #111; margin: 0 0 4px; }
+.vr-subtitle { color: #888; font-size: 14px; margin: 0; }
+.vr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.vr-card { background: white; border-radius: 16px; padding: 32px; border: 1px solid #eee; transition: transform 0.2s, box-shadow 0.2s; }
+.vr-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+.vr-card-icon { width: 48px; height: 48px; background: #fff3e0; color: #FF5722; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.vr-card h3 { font-size: 18px; color: #111; margin: 0 0 8px; }
+.vr-card p { font-size: 13px; color: #888; margin: 0 0 20px; line-height: 1.5; }
+.vr-download-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.vr-download-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: #f5f5f5; color: #333; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.vr-download-btn:hover { background: #FF5722; color: white; }

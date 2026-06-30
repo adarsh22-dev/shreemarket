@@ -1,0 +1,28 @@
+.sh { display: flex; flex-direction: column; gap: 18px; color: #0f172a; padding: 20px; }
+@media (max-width: 640px) { .sh { padding: 14px; gap: 14px; } }
+
+.sh-hdr { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.sh-hdr__t { margin: 0 0 4px; font-size: 1.3rem; font-weight: 800; color: #0f172a; letter-spacing: -.4px; display: flex; align-items: center; gap: 8px; }
+.sh-hdr__s { margin: 0; font-size: .8rem; color: #94a3b8; }
+
+.sh-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) { .sh-grid { grid-template-columns: 1fr; } }
+
+.sh-card { background: #fff; border-radius: 14px; border: 1px solid #e8ecf0; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+.sh-card__ttl { margin: 0; font-size: .9rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+
+.sh-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8fafc; }
+.sh-row:last-child { border-bottom: none; }
+.sh-row__lbl { font-size: .8rem; color: #64748b; }
+.sh-row__val { font-size: .82rem; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+
+.sh-bdg { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: .7rem; font-weight: 700; }
+.sh-bdg--up { background: #dcfce7; color: #166534; }
+.sh-bdg--dn { background: #fee2e2; color: #991b1b; }
+.sh-bdg--warn { background: #fef3c7; color: #92400e; }
+
+.sh-progress { height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; flex: 1; }
+.sh-progress__fill { height: 100%; border-radius: 3px; transition: width .5s ease; }
+
+.sh-refresh { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; border: 1px solid #e8ecf0; background: #fff; font-size: .78rem; font-weight: 600; color: #475569; cursor: pointer; font-family: inherit; transition: all .13s; }
+.sh-refresh:hover { border-color: #cbd5e1; background: #f8fafc; }

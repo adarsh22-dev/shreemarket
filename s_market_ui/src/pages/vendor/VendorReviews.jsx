@@ -24,7 +24,7 @@ const VendorReviews = () => {
     const [stats, setStats] = useState({
         averageRating: 0,
         totalReviews: 0,
-        responseRate: 0,
+        pendingReviews: 0,
         distribution: [
             { stars: 5, pct: 0 },
             { stars: 4, pct: 0 },
@@ -298,8 +298,8 @@ const VendorReviews = () => {
                     </div>
                 </div>
 
-                {/* Review List */}
-                <div className="vr-review-list">
+                {/* Review Table */}
+                <div className="vr-table-wrap">
                     {loading ? (
                         <div className="vr-loading-state">
                             <Loader2 size={40} className="animate-spin" />
@@ -310,84 +310,63 @@ const VendorReviews = () => {
                             <p>No reviews found matching your criteria.</p>
                         </div>
                     ) : (
-                        reviews.map((review) => (
-                            <div key={review.id} className={`review-card ${review.rating <= 2 && !review.vendorReply ? 'issue-highlight' : ''}`}>
-                                <div className="review-header-flex">
-                                    <div className="reviewer-info-group">
-                                        <div className="reviewer-avatar" style={{ backgroundColor: '#FDF0F1', color: '#F45A56' }}>
-                                            {getInitials(review.reviewerName)}
-                                        </div>
-                                        <div>
-                                            <div className="reviewer-name-line">
-                                                <h4>{review.reviewerName}</h4>
-                                                {review.verifiedBuyer && <span className="badge-verified">VERIFIED PURCHASE</span>}
+                        <table className="vr-table">
+                            <thead>
+                                <tr>
+                                    <th>Reviewer</th>
+                                    <th>Rating</th>
+                                    <th>Product</th>
+                                    <th>Review</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th className="vr-th-r">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {reviews.map((review) => (
+                                    <tr key={review.id} className={review.rating <= 2 && !review.vendorReply ? 'vr-row-issue' : ''}>
+                                        <td>
+                                            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                                <div className="vr-avatar-sm">{getInitials(review.reviewerName)}</div>
+                                                <div>
+                                                    <div style={{ fontWeight:600, fontSize:'.82rem', color:'#1a1a2e' }}>{review.reviewerName}</div>
+                                                    {review.verifiedBuyer && <span className="vr-verified">Verified</span>}
+                                                </div>
                                             </div>
-                                            {renderStars(review.rating)}
-                                        </div>
-                                    </div>
-                                    <div className="review-meta-group">
-                                        <span className="review-date">REVIEWED ON {new Date(review.createdAt).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</span>
-                                        {review.product && (
-                                            <div className="review-product-info-simple">
-                                                <span className="review-product-name-only">{review.product.name}</span>
+                                        </td>
+                                        <td>{renderStars(review.rating)}</td>
+                                        <td style={{ fontSize:'.78rem', color:'#6b7280', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{review.product?.name || '-'}</td>
+                                        <td style={{ maxWidth:250, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', color:'#6b7280', fontSize:'.78rem' }}>{review.text}</td>
+                                        <td style={{ whiteSpace:'nowrap', fontSize:'.78rem', color:'#9ca3af' }}>{new Date(review.createdAt).toLocaleDateString('en-US', { day:'2-digit', month:'short', year:'numeric' })}</td>
+                                        <td>
+                                            {review.vendorReply ? (
+                                                <span className="vr-badge vr-badge--replied"><CheckCircle size={12} /> Replied</span>
+                                            ) : (
+                                                <span className="vr-badge vr-badge--pending"><AlertCircle size={12} /> Pending</span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <div style={{ display:'flex', gap:4, justifyContent:'flex-end' }}>
+                                                {!review.vendorReply && replyingTo !== review.id && (
+                                                    <button className="vr-action-btn" onClick={() => setReplyingTo(review.id)}>
+                                                        <CornerDownRight size={13} /> Reply
+                                                    </button>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <p className="review-text">{review.text}</p>
-
-                                {review.images && review.images.length > 0 && (
-                                    <div className="review-images-flex">
-                                        {review.images.map((img, i) => (
-                                            <img key={i} src={`${BACKEND_URL}/uploads/reviews/${img}`} alt="review" className="review-customer-img" />
-                                        ))}
-                                    </div>
-                                )}
-
-                                {review.vendorReply && (
-                                    <div className="vendor-reply-block">
-                                        <div className="vrb-header">
-                                            <span className="vrb-title"><CornerDownRight size={14} /> YOUR RESPONSE</span>
-                                            <span className="vrb-date">{new Date(review.replyDate).toLocaleDateString()}</span>
-                                        </div>
-                                        <p className="vrb-text">{review.vendorReply}</p>
-                                    </div>
-                                )}
-
-                                {replyingTo === review.id && (
-                                    <div className="reply-editor-box">
-                                        <textarea
-                                            placeholder="Write your response..."
-                                            value={replyText}
-                                            onChange={(e) => setReplyText(e.target.value)}
-                                            rows={3}
-                                        />
-                                        <div className="reply-actions">
-                                            <button className="cancel-btn" onClick={() => setReplyingTo(null)}>Cancel</button>
-                                            <button className="submit-btn" onClick={() => handleReply(review.id)}>Submit Response</button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="review-footer-flex">
-                                    <div className="review-status-indicator">
-                                        {review.vendorReply ? (
-                                            <span className="status-badge replied"><CheckCircle size={14} /> Replied</span>
-                                        ) : (
-                                            <span className="status-badge pending"><AlertCircle size={14} /> Pending Reply</span>
-                                        )}
-                                    </div>
-                                    {!review.vendorReply && replyingTo !== review.id && (
-                                        <div className="review-actions-group">
-                                            <button className="action-btn-primary btn-orange" onClick={() => setReplyingTo(review.id)}>
-                                                <CornerDownRight size={16} /> Reply
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                    {replyingTo && (
+                        <div className="vr-reply-inline">
+                            <textarea className="vr-reply-ta" placeholder="Write your response..." value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={2} />
+                            <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:8 }}>
+                                <button className="vr-cancel-btn" onClick={() => { setReplyingTo(null); setReplyText(''); }}>Cancel</button>
+                                <button className="vr-submit-btn" onClick={() => handleReply(replyingTo)}>Submit Response</button>
                             </div>
-                        ))
+                        </div>
                     )}
                 </div>
 

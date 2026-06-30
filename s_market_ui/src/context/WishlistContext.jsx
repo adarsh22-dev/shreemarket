@@ -1,8 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import {
     fetchUserWishlist,
     addToUserWishlist,
-    removeUserWishlist
+    removeUserWishlist,
+    PLACEHOLDER_IMG
 } from '../api/api';
 
 const WishlistContext = createContext();
@@ -11,6 +13,7 @@ export const useWishlist = () => useContext(WishlistContext);
 
 export const WishlistProvider = ({ children }) => {
     const [wishlistItems, setWishlistItems] = useState([]);
+    const [wishlistLoading, setWishlistLoading] = useState(false);
     const [userId, setUserId] = useState(null);
 
     // Watch for login changes
@@ -20,7 +23,8 @@ export const WishlistProvider = ({ children }) => {
             if (userStr) {
                 try {
                     const userObj = JSON.parse(userStr);
-                    setUserId(userObj.userId || userObj.id || null);
+                    const newId = userObj.userId || userObj.id || null;
+                    setUserId(prev => prev !== newId ? newId : prev);
                 } catch (e) { setUserId(null); }
             } else {
                 setUserId(null);
@@ -28,29 +32,38 @@ export const WishlistProvider = ({ children }) => {
         };
         checkUser();
         window.addEventListener('storage', checkUser);
-        return () => window.removeEventListener('storage', checkUser);
+        window.addEventListener('focus', checkUser);
+        return () => {
+            window.removeEventListener('storage', checkUser);
+            window.removeEventListener('focus', checkUser);
+        };
     }, []);
 
     const loadWishlist = async (uid) => {
-        try {
-            const items = await fetchUserWishlist(uid);
-            // Backend returns list of Wishlist entity, we want the products
-            const products = items.map(item => {
-                const p = item.product;
-                const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8082/api";
-                const backendUrl = apiBaseUrl.replace(/\/api$/, '');
-                let image = "https://via.placeholder.com/400x400";
-                if (p.media && p.media.length > 0) {
-                    const primaryMedia = p.media.find(m => m.isPrimary) || p.media[0];
-                    image = `${backendUrl}/uploads/products/${primaryMedia.fileName}`;
-                }
-                return { ...p, image };
-            });
-            setWishlistItems(products);
-        } catch (e) {
-            console.error("Failed to load wishlist", e);
-        }
-    };
+         setWishlistLoading(true);
+         try {
+             const items = await fetchUserWishlist(uid);
+             // Backend returns list of Wishlist entity, we want the products
+             const products = items.map(item => {
+                 const p = item.product;
+                 const apiBaseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ? import.meta.env.VITE_API_BASE_URL : "http://localhost:8082/api";
+                 const backendUrl = apiBaseUrl.replace(/\/api$/, '');
+                 let image = PLACEHOLDER_IMG;
+                 const gallery = (p.media || []).filter(m => m.mediaType !== 'manufacturer');
+                 if (gallery.length > 0) {
+                     const primaryMedia = gallery.find(m => m.isPrimary) || gallery[0];
+                     image = `${backendUrl}/uploads/products/${primaryMedia.fileName}`;
+                 }
+                 return { ...p, image };
+             });
+             setWishlistItems(products);
+         } catch (error) {
+             console.error("Failed to load wishlist:", error);
+             toast.error("Failed to load wishlist");
+         } finally {
+             setWishlistLoading(false);
+         }
+     };
 
     useEffect(() => {
         if (userId) {
@@ -63,7 +76,10 @@ export const WishlistProvider = ({ children }) => {
     // Simplified: No guest saving
 
     const addToWishlist = async (product) => {
-        if (!userId) return;
+        if (!userId) {
+            toast.error('Please log in to add items to your wishlist');
+            return;
+        }
         try {
             await addToUserWishlist(userId, product.id);
             loadWishlist(userId);
@@ -85,6 +101,7 @@ export const WishlistProvider = ({ children }) => {
     return (
         <WishlistContext.Provider value={{
             wishlistItems,
+            wishlistLoading,
             addToWishlist,
             removeFromWishlist,
             isInWishlist,

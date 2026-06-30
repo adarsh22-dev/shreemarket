@@ -7,28 +7,114 @@ import {
     ChevronLeft,
     ChevronRight,
     LayoutGrid,
-    Check,
     ShoppingBag,
-    Heart,
-    Home,
-    Sparkles,
-    Shirt,
-    Puzzle,
-    Flower2,
-    Music,
     Search,
+    SlidersHorizontal,
+    X,
+    Heart,
+    Share2,
+    GitCompare,
+    Link as LinkIcon,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useCart } from '../context/CartContext';
+import { useCompare } from '../context/CompareContext';
+import { useWishlist } from '../context/WishlistContext';
 import './ShopPage.css';
-import { getAllProducts, BACKEND_URL } from '../api/api';
+import { getAllProducts, BACKEND_URL, getPrimaryGalleryImage, getGalleryImageUrl, PLACEHOLDER_IMG } from '../api/api';
 
 const PRODUCTS_PER_PAGE = 9;
 
 const ShopPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { addToCart } = useCart();
+    const { isInCompare, addToCompare, removeFromCompare } = useCompare();
+    const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
     const queryParams = new URLSearchParams(location.search);
     const initialCategory = queryParams.get('category') || 'All';
+
+    const handleAddToCart = (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const displayPrice = product.discountPrice || product.regularPrice || 0;
+        addToCart({
+            id: product.id,
+            name: product.name,
+            price: displayPrice,
+            image: getPrimaryGalleryImage(product) || PLACEHOLDER_IMG,
+            quantity: 1
+        });
+        toast.success(`${product.name} added to cart!`);
+    };
+
+    const handleHeartClick = (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isInWishlist(product.id)) {
+            removeFromWishlist(product.id);
+        } else {
+            const productImageUrl = getPrimaryGalleryImage(product) || PLACEHOLDER_IMG;
+            addToWishlist({
+                ...product,
+                image: productImageUrl,
+                price: product.discountPrice || product.regularPrice || 0
+            });
+        }
+    };
+
+    const [shareProductId, setShareProductId] = useState(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (shareProductId && !e.target.closest('.sp-share-wrapper')) {
+                setShareProductId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [shareProductId]);
+
+    const handleShareClick = (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setShareProductId(shareProductId === product.id ? null : product.id);
+    };
+
+    const shareToWhatsApp = (product) => {
+        const url = `${window.location.origin}/product/${product.id}`;
+        const text = `Check out ${product.name} on SreeMarket!`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+        setShareProductId(null);
+    };
+
+    const shareToFacebook = (product) => {
+        const url = `${window.location.origin}/product/${product.id}`;
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        setShareProductId(null);
+    };
+
+    const shareToTwitter = (product) => {
+        const url = `${window.location.origin}/product/${product.id}`;
+        const text = `Check out ${product.name} on SreeMarket!`;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        setShareProductId(null);
+    };
+
+    const shareToLinkedIn = (product) => {
+        const url = `${window.location.origin}/product/${product.id}`;
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+        setShareProductId(null);
+    };
+
+    const copyShareLink = (product) => {
+        const url = `${window.location.origin}/product/${product.id}`;
+        navigator.clipboard.writeText(url).then(() => {
+            toast.success('Link copied to clipboard!');
+        }).catch(() => {});
+        setShareProductId(null);
+    };
 
     const [selectedCategory, setSelectedCategory] = useState(initialCategory);
     const [viewMode, setViewMode] = useState('grid');
@@ -40,6 +126,8 @@ const ShopPage = () => {
 
     const [allProducts, setAllProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [dynamicCategories, setDynamicCategories] = useState([]);
+    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
     // Sync category from URL
     useEffect(() => {
@@ -59,6 +147,18 @@ const ShopPage = () => {
             try {
                 const data = await getAllProducts();
                 setAllProducts(data);
+
+                // Build categories from products
+                const catCount = {};
+                (data || []).forEach(p => {
+                    if (p.category) {
+                        catCount[p.category] = (catCount[p.category] || 0) + 1;
+                    }
+                });
+                const cats = Object.entries(catCount)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([name, count]) => ({ name, count }));
+                setDynamicCategories(cats);
             } catch (error) {
                 console.error("Failed to load products:", error);
             } finally {
@@ -78,17 +178,17 @@ const ShopPage = () => {
         }
     };
 
-    const categories = [
-        { name: 'All Categories', value: 'All', icon: LayoutGrid },
-        { name: 'Grocery & Gourmet Food', value: 'grocery', icon: ShoppingBag },
-        { name: 'Health & Household', value: 'health', icon: Heart },
-        { name: 'Home & Kitchen', value: 'home', icon: Home },
-        { name: 'Beauty & Personal Care', value: 'beauty', icon: Sparkles },
-        { name: 'Clothing, Shoes & Jewellery', value: 'clothing', icon: Shirt },
-        { name: 'Toys & Games', value: 'toys', icon: Puzzle },
-        { name: 'Patio, Lawn & Garden', value: 'patio', icon: Flower2 },
-        { name: 'Musical Instruments', value: 'musical', icon: Music },
-    ];
+    const categories = useMemo(() => {
+        return [
+            { name: 'All Categories', value: 'All', icon: LayoutGrid, count: allProducts.length },
+            ...dynamicCategories.map(cat => ({
+                name: cat.name,
+                value: cat.name,
+                icon: ShoppingBag,
+                count: cat.count,
+            })),
+        ];
+    }, [dynamicCategories, allProducts.length]);
 
     // ── Derived: filter → sort → paginate ──
     const processedProducts = useMemo(() => {
@@ -96,7 +196,10 @@ const ShopPage = () => {
 
         // 1. Category filter
         if (selectedCategory !== 'All') {
-            result = result.filter(p => p.category === selectedCategory);
+            result = result.filter(p =>
+                p.category === selectedCategory ||
+                p.category?.toLowerCase() === selectedCategory.toLowerCase()
+            );
         }
 
         // 2. Search filter
@@ -198,8 +301,26 @@ const ShopPage = () => {
                 </header>
 
                 <div className="shop-layout-grid">
+                    {/* Mobile Filter Toggle */}
+                    <button
+                        className="shop-mobile-filter-toggle"
+                        onClick={() => setMobileFiltersOpen(true)}
+                    >
+                        <SlidersHorizontal size={18} /> Filters
+                    </button>
+
                     {/* Sidebar / Filters */}
-                    <aside className="shop-sidebar">
+                    <aside className={`shop-sidebar ${mobileFiltersOpen ? 'mobile-open' : ''}`}>
+                        {/* Mobile close button */}
+                        {mobileFiltersOpen && (
+                            <button
+                                className="shop-mobile-filter-toggle"
+                                onClick={() => setMobileFiltersOpen(false)}
+                                style={{ marginBottom: '1rem' }}
+                            >
+                                <X size={18} /> Close Filters
+                            </button>
+                        )}
                         {/* Search */}
                         <div className="filter-section">
                             <h3 className="filter-title">SEARCH</h3>
@@ -223,6 +344,7 @@ const ShopPage = () => {
                                     <li key={cat.value} className={`category-item ${selectedCategory === cat.value ? 'active' : ''}`} onClick={() => handleCategoryClick(cat.value)} style={{ cursor: 'pointer' }}>
                                         <cat.icon size={18} />
                                         <span className="category-text">{cat.name}</span>
+                                        <span className="category-count">({cat.count})</span>
                                     </li>
                                 ))}
                             </ul>
@@ -289,20 +411,51 @@ const ShopPage = () => {
                                 <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem 0', color: '#666' }}>Loading products...</p>
                             ) : paginatedProducts.length > 0 ? (
                                 paginatedProducts.map(product => {
-                                    const productImageUrl = product.media && product.media.length > 0
-                                        ? `${BACKEND_URL}/uploads/products/${product.media[0].fileName}`
-                                        : 'https://placehold.co/800x800?text=No+Image';
+                                    const productImageUrl = getPrimaryGalleryImage(product) || PLACEHOLDER_IMG;
+                                    const secondImageUrl = getGalleryImageUrl(product, 1);
 
                                     const displayPrice = product.discountPrice ? product.discountPrice : (product.regularPrice || 0);
 
                                     return (
-                                        <Link to={`/product/${product.id}`} key={product.id} className="shop-product-card" style={{ textDecoration: 'none', color: 'inherit' }}>
-                                            <div className="sp-image-container">
-                                                <img src={productImageUrl} alt={product.name} className="sp-image" style={{ objectFit: 'contain', backgroundColor: 'white' }} />
-                                                <div className="inner-rating-badge">{(product.averageRating || 0).toFixed(1)} <span style={{ color: '#FFB800' }}>★</span> ({product.reviewCount || 0})</div>
-                                            </div>
+                                        <div key={product.id} className="shop-product-card">
+                                            <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                <div className="sp-image-container">
+                                                    <img src={productImageUrl} alt={product.name} className="sp-image sp-image-primary" style={{ objectFit: 'contain', backgroundColor: 'white' }} />
+                                                    {secondImageUrl && (
+                                                        <img src={secondImageUrl} alt={product.name} className="sp-image sp-image-secondary" style={{ objectFit: 'contain', backgroundColor: 'white' }} />
+                                                    )}
+                                                    <div className="inner-rating-badge">{(product.averageRating || 0).toFixed(1)} <span style={{ color: '#FFB800' }}>★</span> ({product.reviewCount || 0})</div>
+                                                    <div className="sp-actions">
+                                                        <button className="sp-action-btn" title="Add to Wishlist" onClick={(e) => handleHeartClick(e, product)}>
+                                                            <Heart size={16} color={isInWishlist(product.id) ? "#D4857F" : "#555"} fill={isInWishlist(product.id) ? "#D4857F" : "none"} />
+                                                        </button>
+                                                        <div className="sp-share-wrapper">
+                                                            <button className="sp-action-btn" title="Share" onClick={(e) => handleShareClick(e, product)}>
+                                                                <Share2 size={16} />
+                                                            </button>
+                                                            {shareProductId === product.id && (
+                                                                <div className="sp-share-dropdown">
+                                                                    <p className="sp-share-dropdown-title">Share via</p>
+                                                                    <div className="sp-share-icons-row">
+                                                                        <button onClick={() => shareToWhatsApp(product)} className="share-icon-btn whatsapp" title="WhatsApp">W</button>
+                                                                        <button onClick={() => shareToFacebook(product)} className="share-icon-btn facebook" title="Facebook">f</button>
+                                                                        <button onClick={() => shareToTwitter(product)} className="share-icon-btn twitter" title="Twitter">X</button>
+                                                                        <button onClick={() => shareToLinkedIn(product)} className="share-icon-btn linkedin" title="LinkedIn">in</button>
+                                                                        <button onClick={() => copyShareLink(product)} className="share-icon-btn copy" title="Copy Link"><LinkIcon size={16} /></button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <button className="sp-action-btn" title={isInCompare(product.id) ? "Remove from Compare" : "Compare"} onClick={(e) => { e.preventDefault(); e.stopPropagation(); isInCompare(product.id) ? removeFromCompare(product.id) : addToCompare(product); }}>
+                                                            <GitCompare size={16} color={isInCompare(product.id) ? "#FF5722" : "#fff"} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </Link>
                                             <div className="sp-info">
-                                                <h4 className="sp-name">{product.name}</h4>
+                                                <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                    <h4 className="sp-name">{product.name}</h4>
+                                                </Link>
                                                 <p className="sp-author">by {product.vendor?.storeName || 'SreeMarket Vendor'}</p>
                                                 <div className="sp-price-row">
                                                     {product.discountPrice ? (
@@ -314,8 +467,11 @@ const ShopPage = () => {
                                                         <p className="sp-price">₹{parseFloat(displayPrice).toFixed(2)}</p>
                                                     )}
                                                 </div>
+                                                <button className="sp-add-to-cart-btn" onClick={(e) => handleAddToCart(e, product)}>
+                                                    <ShoppingBag size={14} /> Add to Cart
+                                                </button>
                                             </div>
-                                        </Link>
+                                        </div>
                                     );
                                 })
                             ) : (

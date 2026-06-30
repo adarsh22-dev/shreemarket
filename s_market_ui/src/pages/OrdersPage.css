@@ -739,3 +739,115 @@
     cursor: not-allowed;
     opacity: 0.7;
 }
+
+/* Order Details Modal Tables */
+.address-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+.address-table td {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.address-table td:first-child {
+    width: 120px;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.address-table td:last-child {
+    text-align: right;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+.items-table th {
+    text-align: left;
+    padding: 0.75rem 0;
+    border-bottom: 2px solid #e2e8f0;
+    font-weight: 600;
+    color: #64748b;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.items-table td {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.items-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+}
+
+.summary-table td {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.summary-table td:first-child {
+    width: 60%;
+    color: #475569;
+    font-weight: 500;
+}
+
+.summary-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.summary-table tbody tr:last-child td {
+    border-bottom: none;
+    border-top: 2px solid #e2e8f0;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.detail-label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.tax-sub-row td {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.tax-sub-row td:first-child {
+    padding-left: 0;
+}
+
+.total-row td {
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-top: 2px solid #e2e8f0;
+}

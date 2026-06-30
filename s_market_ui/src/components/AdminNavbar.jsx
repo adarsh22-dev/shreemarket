@@ -5,18 +5,26 @@ import { logoutUser } from '../api/api';
 import './AdminNavbar.css';
 
 const AdminNavbar = ({ title, breadcrumbs }) => {
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    let userName = 'Admin User';
+    let userRole = 'Super Admin';
+    try {
+        if (userStr) {
+            const u = JSON.parse(userStr);
+            if (u.fullName) userName = u.fullName;
+            const roleMap = { 1: 'Admin', 2: 'Customer', 3: 'Vendor' };
+            userRole = roleMap[u.roleId] || 'Admin';
+        }
+    } catch (_) { /* invalid JSON, ignore */ }
+
     const handleLogout = async () => {
         try {
             await logoutUser();
-            localStorage.removeItem('user');
-            // Keep rememberedEmail if present
-            window.location.replace('/');
         } catch (error) {
             console.error("Logout failed:", error);
-            // Force logout on error
-            localStorage.removeItem('user');
-            window.location.replace('/');
         }
+        localStorage.removeItem('user');
+        window.location.replace('/');
     };
 
     return (
@@ -27,7 +35,7 @@ const AdminNavbar = ({ title, breadcrumbs }) => {
                         <div style={{
                             width: '24px',
                             height: '24px',
-                            backgroundColor: '#FF5722', // Orange color from logo
+                            backgroundColor: '#FF5722',
                             transform: 'rotate(45deg)',
                             display: 'flex',
                             alignItems: 'center',
@@ -37,7 +45,6 @@ const AdminNavbar = ({ title, breadcrumbs }) => {
                             <div style={{ width: '8px', height: '8px', backgroundColor: 'white', borderRadius: '50%' }}></div>
                         </div>
                         <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#333' }}>SreeMarket</span>
-
                     </Link>
                 </div>
 
@@ -60,14 +67,13 @@ const AdminNavbar = ({ title, breadcrumbs }) => {
             </div>
 
             <div className="admin-navbar-actions">
-
                 <div className="admin-profile">
                     <div className="profile-icon">
                         <User size={20} />
                     </div>
                     <div className="profile-info">
-                        <span className="profile-name">Admin User</span>
-                        <span className="profile-role">Super Admin</span>
+                        <span className="profile-name">{userName}</span>
+                        <span className="profile-role">{userRole}</span>
                     </div>
                     <button className="logout-btn" onClick={handleLogout} title="Logout">
                         <LogOut size={18} />

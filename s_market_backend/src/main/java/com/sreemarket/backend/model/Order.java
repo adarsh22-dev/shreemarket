@@ -26,6 +26,14 @@ public class Order {
 
     private Double totalAmount;
 
+    private Double taxAmount;
+    private Double cgst;
+    private Double sgst;
+    private Double igst;
+    private Double cess;
+    private Double taxRate;
+    private Double tcsAmount;
+
     private String status;
 
     @ElementCollection
@@ -58,6 +66,32 @@ public class Order {
     private String customerName;
     private String deliveryLocation;
     private String estimatedDelivery;
+
+    private String paymentId;
+
+    private String paymentMethod;
+
+    @Column(name = "tracking_number")
+    private String trackingNumber;
+
+    @Column(name = "delivery_partner")
+    private String deliveryPartner;
+
+    @Column(name = "delivery_status")
+    private String deliveryStatus;
+
+    @Column(name = "delivery_updates", columnDefinition = "TEXT")
+    private String deliveryUpdates; // JSON array of {status, timestamp, location}
+
+    /** Epoch ms when order was marked DELIVERED (set automatically) */
+    private Long deliveredAt;
+
+    /** Lock period in days before vendor can withdraw earnings (default 90) */
+    private Integer withdrawalLockDays;
+
+    /** Wholesaler ID if this order was placed by a registered wholesaler */
+    @Column(name = "wholesaler_id")
+    private Long wholesalerId;
 
     public Long getId() {
         return id;
@@ -98,6 +132,27 @@ public class Order {
     public void setTotalAmount(Double totalAmount) {
         this.totalAmount = totalAmount;
     }
+
+    public Double getTaxAmount() { return taxAmount; }
+    public void setTaxAmount(Double taxAmount) { this.taxAmount = taxAmount; }
+
+    public Double getCgst() { return cgst; }
+    public void setCgst(Double cgst) { this.cgst = cgst; }
+
+    public Double getSgst() { return sgst; }
+    public void setSgst(Double sgst) { this.sgst = sgst; }
+
+    public Double getIgst() { return igst; }
+    public void setIgst(Double igst) { this.igst = igst; }
+
+    public Double getCess() { return cess; }
+    public void setCess(Double cess) { this.cess = cess; }
+
+    public Double getTaxRate() { return taxRate; }
+    public void setTaxRate(Double taxRate) { this.taxRate = taxRate; }
+
+    public Double getTcsAmount() { return tcsAmount; }
+    public void setTcsAmount(Double tcsAmount) { this.tcsAmount = tcsAmount; }
 
     public String getStatus() {
         return status;
@@ -186,4 +241,41 @@ public class Order {
     public void setEstimatedDelivery(String estimatedDelivery) {
         this.estimatedDelivery = estimatedDelivery;
     }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getTrackingNumber() { return trackingNumber; }
+    public void setTrackingNumber(String trackingNumber) { this.trackingNumber = trackingNumber; }
+
+    public String getDeliveryPartner() { return deliveryPartner; }
+    public void setDeliveryPartner(String deliveryPartner) { this.deliveryPartner = deliveryPartner; }
+
+    public String getDeliveryStatus() { return deliveryStatus; }
+    public void setDeliveryStatus(String deliveryStatus) { this.deliveryStatus = deliveryStatus; }
+
+    public String getDeliveryUpdates() { return deliveryUpdates; }
+    public void setDeliveryUpdates(String deliveryUpdates) { this.deliveryUpdates = deliveryUpdates; }
+
+    public Long getDeliveredAt() { return deliveredAt; }
+    public void setDeliveredAt(Long deliveredAt) { this.deliveredAt = deliveredAt; }
+
+    public Integer getWithdrawalLockDays() { return withdrawalLockDays; }
+    public void setWithdrawalLockDays(Integer withdrawalLockDays) { this.withdrawalLockDays = withdrawalLockDays; }
+
+    public Long getWholesalerId() { return wholesalerId; }
+    public void setWholesalerId(Long wholesalerId) { this.wholesalerId = wholesalerId; }
 }

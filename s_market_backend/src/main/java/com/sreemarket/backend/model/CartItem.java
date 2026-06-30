@@ -38,6 +38,18 @@ public class CartItem {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Product product; // Transient to easily attach product info for the frontend
 
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double wholesalePrice;
+
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Double savings;
+
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String appliedTier;
+
     @PrePersist
     protected void onCreate() {
         addedAt = System.currentTimeMillis();

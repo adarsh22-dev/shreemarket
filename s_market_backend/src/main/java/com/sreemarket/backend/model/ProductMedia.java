@@ -25,6 +25,16 @@ public class ProductMedia {
     private String fileName;
     private String fileType; // "image" or "video"
     private Boolean isPrimary;
+    private String mediaType; // "gallery" or "banner"
+    private String customThumbnail; // custom thumbnail for instagram story circle
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
 
     public void setProduct(Product product) {
         this.product = product;

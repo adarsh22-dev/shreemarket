@@ -223,12 +223,12 @@
 .form-group input,
 .form-group select,
 .form-group textarea {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 6px;
   padding: 12px 14px;
   font-size: 0.9rem;
-  color: #f0ebe3;
+  color: #fff;
   font-family: 'Georgia', serif;
   outline: none;
   transition: border-color 0.2s, background 0.2s;
@@ -238,25 +238,25 @@
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: #7a7168;
+  color: #a09888;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: #b08850;
-  background: rgba(255, 255, 255, 0.09);
+  border-color: #ff5722;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .form-group select {
   appearance: none;
   cursor: pointer;
-  color: #f0ebe3;
+  color: #fff;
 }
 
 .form-group select option {
   background: #2c2c2c;
-  color: #f0ebe3;
+  color: #fff;
 }
 
 .contact-submit-btn {

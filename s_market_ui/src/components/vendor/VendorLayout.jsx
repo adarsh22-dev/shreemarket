@@ -14,7 +14,19 @@ import {
     Bell,
     Users,
     BookOpen,
-    Star
+    Star,
+    RotateCcw,
+    FileText,
+    ClipboardList,
+    MapPin,
+    Clock,
+    Calendar,
+    Crown,
+    Download,
+    MessageSquare,
+    QrCode,
+    Send,
+    Store
 } from 'lucide-react';
 import smarketLogo from '../../assets/smarketlogo.svg';
 import { logoutUser, fetchVendorNotifications } from '../../api/api';
@@ -102,7 +114,7 @@ const VendorLayout = ({ children }) => {
                         <ShoppingCart size={20} />
                         Orders
                     </Link>
-                    <Link to="/vendor/shipping" className={`nav-item ${currentPath.includes('/vendor/shipping') ? 'active' : ''}`}>
+                    <Link to="/vendor/shipping" className={`nav-item ${currentPath.startsWith('/vendor/shipping') ? 'active' : ''}`}>
                         <Truck size={20} />
                         Shipping
                     </Link>
@@ -115,9 +127,69 @@ const VendorLayout = ({ children }) => {
                         <Users size={20} />
                         Staff Manager
                     </Link>
+                    <Link to="/vendor/coupons" className={`nav-item ${currentPath === '/vendor/coupons' ? 'active' : ''}`}>
+                        <Tag size={20} />
+                        Promotions
+                    </Link>
+                    <Link to="/vendor/returns" className={`nav-item ${currentPath === '/vendor/returns' ? 'active' : ''}`}>
+                        <RotateCcw size={20} />
+                        Returns & Refunds
+                    </Link>
+                    <Link to="/vendor/invoices" className={`nav-item ${currentPath === '/vendor/invoices' ? 'active' : ''}`}>
+                        <FileText size={20} />
+                        Invoices
+                    </Link>
+                    <Link to="/vendor/product-analytics" className={`nav-item ${currentPath === '/vendor/product-analytics' ? 'active' : ''}`}>
+                        <BarChart2 size={20} />
+                        Product Analytics
+                    </Link>
+                    <Link to="/vendor/wholesale" className={`nav-item ${currentPath === '/vendor/wholesale' ? 'active' : ''}`}>
+                        <Package size={20} />
+                        Wholesale
+                    </Link>
+                    <Link to="/vendor/inventory-history" className={`nav-item ${currentPath === '/vendor/inventory-history' ? 'active' : ''}`}>
+                        <ClipboardList size={20} />
+                        Inventory History
+                    </Link>
+                    <Link to="/vendor/customer-demographics" className={`nav-item ${currentPath === '/vendor/customer-demographics' ? 'active' : ''}`}>
+                        <MapPin size={20} />
+                        Demographics
+                    </Link>
+                    <Link to="/vendor/abandoned-orders" className={`nav-item ${currentPath === '/vendor/abandoned-orders' ? 'active' : ''}`}>
+                        <Send size={20} />
+                        Abandoned Recovery
+                    </Link>
+                    <Link to="/vendor/fulfillments" className={`nav-item ${currentPath === '/vendor/fulfillments' ? 'active' : ''}`}>
+                        <Package size={20} />
+                        Partial Fulfillment
+                    </Link>
+                    <Link to="/vendor/reports" className={`nav-item ${currentPath === '/vendor/reports' ? 'active' : ''}`}>
+                        <Download size={20} />
+                        Reports
+                    </Link>
+                    <Link to="/vendor/subscription" className={`nav-item ${currentPath === '/vendor/subscription' ? 'active' : ''}`}>
+                        <Crown size={20} />
+                        Subscription
+                    </Link>
+                    <Link to="/vendor/product-schedules" className={`nav-item ${currentPath === '/vendor/product-schedules' ? 'active' : ''}`}>
+                        <Calendar size={20} />
+                        Product Scheduling
+                    </Link>
+                    <Link to="/vendor/review-templates" className={`nav-item ${currentPath === '/vendor/review-templates' ? 'active' : ''}`}>
+                        <MessageSquare size={20} />
+                        Reply Templates
+                    </Link>
+                    <Link to="/vendor/qr-codes" className={`nav-item ${currentPath === '/vendor/qr-codes' ? 'active' : ''}`}>
+                        <QrCode size={20} />
+                        QR Codes
+                    </Link>
                     <Link to="/vendor/guide" className={`nav-item ${currentPath === '/vendor/guide' ? 'active' : ''}`}>
                         <BookOpen size={20} />
                         Vendor Guide
+                    </Link>
+                    <Link to="/vendor/stores" className={`nav-item ${currentPath === '/vendor/stores' ? 'active' : ''}`}>
+                        <Store size={20} />
+                        Store Management
                     </Link>
                     <Link to="/vendor/settings" className={`nav-item ${currentPath === '/vendor/settings' ? 'active' : ''}`}>
                         <Settings size={20} />

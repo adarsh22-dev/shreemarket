@@ -1,8 +1,13 @@
 package com.sreemarket.backend.repository;
 
 import com.sreemarket.backend.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -14,9 +19,30 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Boolean existsByPhone(String phone);
 
-    @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE u.roleId = :roleId AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')))")
-    org.springframework.data.domain.Page<User> searchUsersByRole(
-            @org.springframework.web.bind.annotation.RequestParam("roleId") Long roleId,
-            @org.springframework.web.bind.annotation.RequestParam("search") String search,
-            org.springframework.data.domain.Pageable pageable);
+    @Query("SELECT u FROM User u WHERE u.roleId = :roleId AND (:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<User> searchUsersByRole(
+            @Param("roleId") Long roleId,
+            @Param("search") String search,
+            Pageable pageable);
+
+    // Admin queries for customers (roleId = 2)
+    long countByRoleId(Long roleId);
+
+    List<User> findByRoleId(Long roleId);
+
+    Page<User> findByRoleId(Long roleId, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.roleId = :roleId AND u.status = :status")
+    Page<User> findByRoleIdAndStatus(@Param("roleId") Long roleId, @Param("status") String status, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.roleId = 2 AND (" +
+            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<User> searchCustomers(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.roleId = 2 AND u.status = :status AND (" +
+            "LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<User> searchCustomersByStatus(@Param("search") String search,
+            @Param("status") String status, Pageable pageable);
 }

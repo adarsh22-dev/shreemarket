@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import {
     Search, MessageCircle, Mail, Phone,
     ChevronDown, ChevronRight, ExternalLink,
@@ -9,65 +10,25 @@ import {
     HelpCircle, Megaphone, Activity,
 } from 'lucide-react';
 import VendorLayout from '../../components/vendor/VendorLayout';
+import { getPublicHelpArticles, getVendorTickets, getPublicFaqs } from '../../api/api';
 import './VendorStoreLocatorHelp.css';
 
-/* ─── Data ───────────────────────────────────────── */
-const KPIS = [
-    { label: 'Help Articles',         value: '120+', trend: '+8 this month',      trendType: 'positive', icon: BookOpen,   color: 'blue'   },
-    { label: 'Avg. Resolution Time',  value: '3 min',trend: '-0.8 min vs last mo',trendType: 'positive', icon: Activity,   color: 'green'  },
-    { label: 'Open Tickets',          value: '2',    trend: '1 awaiting reply',    trendType: 'neutral',  icon: HelpCircle, color: 'orange' },
+const CATEGORY_META = {
+    orders:    { icon: ShoppingBag, bg: '#f0f7ff', color: '#3b82f6', title: 'Orders & Fulfillment',   desc: 'Processing, shipping & returns' },
+    payments:  { icon: CreditCard,  bg: '#f0fdf4', color: '#059669', title: 'Payments & Payouts',     desc: 'Billing, invoices & settlements' },
+    promotions:{ icon: Tag,         bg: '#fff5f3', color: '#E03E1A', title: 'Promotions & Discounts', desc: 'Coupons, sales & campaigns' },
+    account:   { icon: Settings,    bg: '#f5f5f5', color: '#555555', title: 'Account & Settings',     desc: 'Profile, security & preferences' },
+    products:  { icon: Package,     bg: '#f8f5ff', color: '#8b5cf6', title: 'Products & Inventory',   desc: 'Listings, stock & bulk uploads' },
+    analytics: { icon: BarChart2,   bg: '#fff8e1', color: '#b8860b', title: 'Analytics & Reports',    desc: 'Revenue, traffic & insights' },
+};
+
+const TIPS = [
+    'Enable low-stock alerts under Settings → Notifications to avoid missed orders.',
+    'Use the "Duplicate" button on any promotion to reuse settings for flash sales.',
+    'Export your analytics as CSV monthly to keep an offline record for accounting.',
 ];
 
-const CATEGORIES = [
-    { icon: ShoppingBag, bg: '#f0f7ff', color: '#3b82f6', title: 'Orders & Fulfillment',    desc: 'Processing, shipping & returns',        count: 28 },
-    { icon: Tag,         bg: '#fff5f3', color: '#E03E1A', title: 'Promotions & Discounts',  desc: 'Coupons, sales & campaigns',            count: 18 },
-    { icon: CreditCard,  bg: '#f0fdf4', color: '#059669', title: 'Payments & Payouts',      desc: 'Billing, invoices & settlements',       count: 22 },
-    { icon: Package,     bg: '#f8f5ff', color: '#8b5cf6', title: 'Products & Inventory',    desc: 'Listings, stock & bulk uploads',        count: 19 },
-    { icon: BarChart2,   bg: '#fff8e1', color: '#b8860b', title: 'Analytics & Reports',     desc: 'Revenue, traffic & insights',           count: 14 },
-    { icon: Settings,    bg: '#f5f5f5', color: '#555555', title: 'Account & Settings',      desc: 'Profile, security & preferences',       count: 11 },
-];
-
-const FAQ_TABS = ['All', 'Orders', 'Payments', 'Promotions', 'Account'];
-
-const FAQS = [
-    {
-        tag: 'orders',
-        q: 'How do I process and fulfil a new order?',
-        a: `Once a customer places an order it appears under Orders → New Orders with an "Unfulfilled" status. Click the order to review items, then hit "Mark as Fulfilled" after packaging. You can print a packing slip directly from this screen. If you use a third-party shipping provider, paste the tracking number in the "Add Tracking" field — the customer receives an automatic notification.`,
-    },
-    {
-        tag: 'payments',
-        q: 'When will my payout be processed?',
-        a: `Payouts are processed on a 7-day rolling cycle. Funds from orders marked fulfilled before midnight Monday are disbursed the following Monday. You can view your upcoming payout amount and breakdown in Payments → Payout Schedule. If you'd prefer bi-weekly or monthly cycles, update your preference under Settings → Payment Schedule.`,
-    },
-    {
-        tag: 'promotions',
-        q: 'How do I create a coupon code for customers?',
-        a: `Go to Promotions → Create New Promotion, select "Coupon" as the type, and fill in the discount value (fixed or percentage), usage limits, and an optional minimum cart value. After saving, the coupon is live immediately unless you set a future start date. You can pause or delete active coupons at any time from the Promotions table.`,
-    },
-    {
-        tag: 'orders',
-        q: 'Can I process a partial refund on an order?',
-        a: `Yes. Open the order, scroll to the Refund section, and select individual line items or enter a custom refund amount. Partial refunds appear in the order timeline and the customer receives an email confirmation. The refunded amount is deducted from your next scheduled payout. Note that shipping costs can only be refunded if the full order is refunded.`,
-    },
-    {
-        tag: 'account',
-        q: 'How do I add a team member to my vendor account?',
-        a: `Navigate to Settings → Team Members → Invite Member. Enter their email and select a role: Admin (full access), Manager (no billing), or Staff (read-only). The invite expires after 48 hours. Once accepted, their account appears in your team list where you can adjust permissions or revoke access at any time.`,
-    },
-    {
-        tag: 'payments',
-        q: 'What fees are deducted from my payouts?',
-        a: `Each order carries a platform commission fee (visible in your vendor agreement) plus a payment processing fee of 2% + ₹2 per transaction. These are itemised on every payout statement under Payments → Payout History. There are no monthly subscription fees — you're only charged on successful sales.`,
-    },
-    {
-        tag: 'promotions',
-        q: 'Why is my discount not applying at checkout?',
-        a: `Check three things: (1) the promotion's status is Active, not Scheduled or Paused; (2) the cart meets any minimum order value you set; (3) the coupon hasn't hit its usage limit. If all three look correct, verify that the applicable products are included in the promo's scope. If the issue persists, contact support with the order ID.`,
-    },
-];
-
-const ARTICLES = [
+const ARTICLES_FALLBACK = [
     { icon: ShoppingBag, title: 'Complete guide to order management & fulfilment',    time: '5 min read', badge: 'popular' },
     { icon: CreditCard,  title: 'Understanding your payout breakdown and timeline',    time: '4 min read', badge: 'new'     },
     { icon: Tag,         title: 'How to set up Buy X Get Y promotions',                time: '3 min read', badge: null      },
@@ -78,28 +39,77 @@ const ARTICLES = [
     { icon: Megaphone,   title: 'Creating your first promotional campaign end-to-end', time: '7 min read', badge: 'new'     },
 ];
 
-const TICKETS = [
+const TICKETS_FALLBACK = [
     { id: '#TKT-6614', title: 'Payout for Oct cycle not received',      status: 'open',    time: '3h ago' },
     { id: '#TKT-6598', title: 'Bulk CSV upload returning format error',  status: 'pending', time: '1d ago' },
     { id: '#TKT-6541', title: 'Coupon not applying to bundled products', status: 'closed',  time: '4d ago' },
 ];
 
-const TIPS = [
-    'Enable low-stock alerts under Settings → Notifications to avoid missed orders.',
-    'Use the "Duplicate" button on any promotion to reuse settings for flash sales.',
-    'Export your analytics as CSV monthly to keep an offline record for accounting.',
-];
-
 /* ─── Component ─────────────────────────────────── */
 const VendorHelpCenter = () => {
-    const [query,     setQuery]     = useState('');
-    const [openFaq,   setOpenFaq]   = useState(0);
-    const [activeTab, setActiveTab] = useState('All');
-    const [voted,     setVoted]     = useState(null);
+    const [query,      setQuery]      = useState('');
+    const [openFaq,    setOpenFaq]    = useState(null);
+    const [activeTab,  setActiveTab]  = useState('All');
+    const [voted,      setVoted]      = useState(null);
+    const [articles,   setArticles]   = useState(ARTICLES_FALLBACK);
+    const [tickets,    setTickets]    = useState(TICKETS_FALLBACK);
+    const [faqs,       setFaqs]       = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [kpis,       setKpis]       = useState([]);
+    const [faqTabs,    setFaqTabs]    = useState(['All']);
 
-    const visibleFaqs = FAQS.filter(f =>
-        activeTab === 'All' || f.tag === activeTab.toLowerCase()
-    );
+    useEffect(() => {
+        const loadData = async () => {
+            let articleResult, ticketResult, faqResult;
+            try {
+                [faqResult, articleResult, ticketResult] = await Promise.allSettled([
+                    getPublicFaqs(),
+                    getPublicHelpArticles(),
+                    getVendorTickets(),
+                ]);
+            } catch (e) { /* ignore */ }
+
+            if (faqResult?.status === 'fulfilled' && Array.isArray(faqResult.value) && faqResult.value.length) {
+                const data = faqResult.value;
+                setFaqs(data);
+
+                const tagCount = {};
+                data.forEach(f => { const t = (f.category || 'general').toLowerCase(); tagCount[t] = (tagCount[t] || 0) + 1; });
+                const cats = Object.entries(tagCount).map(([tag, count]) => {
+                    const meta = CATEGORY_META[tag] || { icon: BookOpen, bg: '#f0f7ff', color: '#3b82f6', title: tag.charAt(0).toUpperCase() + tag.slice(1), desc: '' };
+                    return { ...meta, count, tag };
+                });
+                setCategories(cats);
+                setFaqTabs(['All', ...Object.keys(tagCount).map(t => t.charAt(0).toUpperCase() + t.slice(1))]);
+
+                const totalArticles = articleResult?.status === 'fulfilled' && Array.isArray(articleResult.value) ? articleResult.value.length : 0;
+                const openTickets = ticketResult?.status === 'fulfilled' && Array.isArray(ticketResult.value) ? ticketResult.value.filter(t => t.status === 'open' || t.status === 'pending').length : 0;
+
+                setKpis([
+                    { label: 'Help Articles',         value: `${totalArticles || articles.length}+`, trend: `${totalArticles || articles.length} available`, trendType: 'positive', icon: BookOpen, color: 'blue' },
+                    { label: 'Frequently Asked Questions', value: `${data.length}`, trend: `${data.filter(f => f.views > 0).length} with views`, trendType: 'positive', icon: Activity, color: 'green' },
+                    { label: 'Open Tickets',          value: `${openTickets}`, trend: openTickets ? 'Requires attention' : 'All clear', trendType: openTickets ? 'neutral' : 'positive', icon: HelpCircle, color: 'orange' },
+                ]);
+            }
+
+            if (articleResult?.status === 'fulfilled' && Array.isArray(articleResult.value) && articleResult.value.length) {
+                setArticles(articleResult.value);
+            }
+            if (ticketResult?.status === 'fulfilled' && Array.isArray(ticketResult.value) && ticketResult.value.length) {
+                setTickets(ticketResult.value);
+            }
+        };
+
+        loadData();
+    }, []);
+
+    const visibleFaqs = faqs.filter(f => {
+        const tag = (f.category || 'general').toLowerCase();
+        return activeTab === 'All' || tag === activeTab.toLowerCase();
+    });
+
+    const popularTags = [...new Set(faqs.map(f => (f.category || 'general').toLowerCase()))].slice(0, 5);
+    const popularLabels = popularTags.map(t => (CATEGORY_META[t]?.title || t.charAt(0).toUpperCase() + t.slice(1)));
 
     return (
         <VendorLayout>
@@ -112,8 +122,8 @@ const VendorHelpCenter = () => {
                         <p>Guides, FAQs, and support for every part of your vendor account.</p>
                     </div>
                     <div className="hc-header-btns">
-                        <button className="hc-btn-ghost"><BookOpen size={16} /> All Articles</button>
-                        <button className="hc-btn-primary"><MessageCircle size={16} /> Contact Support</button>
+                        <button className="hc-btn-ghost" onClick={() => toast.success('Opening all articles…')}><BookOpen size={16} /> All Articles</button>
+                        <button className="hc-btn-primary" onClick={() => toast.success('Contact support ticket created')}><MessageCircle size={16} /> Contact Support</button>
                     </div>
                 </div>
 
@@ -123,7 +133,7 @@ const VendorHelpCenter = () => {
                     <div className="hc-hero-badge"><HelpCircle size={11} /> Vendor Help Center</div>
                     <h2>What do you need help with?</h2>
                     <p className="hc-hero-sub">
-                        Search 120+ articles covering orders, payments, promotions, and more.
+                        Search {articles.length} articles covering orders, payments, promotions, and more.
                     </p>
                     <div className="hc-search-wrap">
                         <Search className="hc-search-ico" size={17} />
@@ -133,11 +143,11 @@ const VendorHelpCenter = () => {
                             value={query}
                             onChange={e => setQuery(e.target.value)}
                         />
-                        <button className="hc-search-btn">Search</button>
+                        <button className="hc-search-btn" onClick={() => toast.success(query ? `Searching "${query}"…` : 'Enter a search query')}>Search</button>
                     </div>
                     <div className="hc-popular-wrap">
                         <span>Popular:</span>
-                        {['Payout timeline', 'Create coupon', 'Process refund', 'Bulk upload', 'Analytics export'].map(t => (
+                        {(popularLabels.length ? popularLabels : ['Orders', 'Payments', 'Promotions', 'Account', 'Products']).map(t => (
                             <button key={t} className="hc-pop-tag" onClick={() => setQuery(t)}>{t}</button>
                         ))}
                     </div>
@@ -155,7 +165,11 @@ const VendorHelpCenter = () => {
 
                 {/* KPIs */}
                 <div className="hc-kpi-row">
-                    {KPIS.map((k, i) => {
+                    {(kpis.length ? kpis : [
+                        { label: 'Help Articles', value: `${articles.length}+`, trend: `${articles.length} available`, trendType: 'positive', icon: BookOpen, color: 'blue' },
+                        { label: 'Frequently Asked Questions', value: `${faqs.length || '—'}`, trend: 'Dynamic', trendType: 'positive', icon: Activity, color: 'green' },
+                        { label: 'Open Tickets', value: `${tickets.length}`, trend: tickets.length ? 'Requires attention' : 'All clear', trendType: tickets.length ? 'neutral' : 'positive', icon: HelpCircle, color: 'orange' },
+                    ]).map((k, i) => {
                         const Icon = k.icon;
                         return (
                             <div className="hc-kpi-card" key={i}>
@@ -181,7 +195,9 @@ const VendorHelpCenter = () => {
                         {/* Categories */}
                         <div className="hc-sec-lbl">Browse by Category</div>
                         <div className="hc-cat-grid">
-                            {CATEGORIES.map((cat, i) => {
+                            {(categories.length ? categories : [
+                                { icon: BookOpen, bg: '#f0f7ff', color: '#3b82f6', title: 'All Topics', desc: 'Browse all help categories', count: faqs.length || articles.length },
+                            ]).map((cat, i) => {
                                 const Icon = cat.icon;
                                 return (
                                     <div className="hc-cat-card" key={i}>
@@ -204,7 +220,7 @@ const VendorHelpCenter = () => {
                             <div className="hc-panel-header">
                                 <h3>Common Questions</h3>
                                 <div className="hc-tabs">
-                                    {FAQ_TABS.map(tab => (
+                                    {faqTabs.map(tab => (
                                         <button
                                             key={tab}
                                             className={`hc-tab${activeTab === tab ? ' active' : ''}`}
@@ -215,16 +231,21 @@ const VendorHelpCenter = () => {
                                     ))}
                                 </div>
                             </div>
+                            {visibleFaqs.length === 0 && (
+                                <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>
+                                    {faqs.length === 0 ? 'Loading FAQs…' : 'No FAQs match this category.'}
+                                </div>
+                            )}
                             {visibleFaqs.map((faq, i) => (
-                                <div key={i} className={`hc-faq-item${openFaq === i ? ' open' : ''}`}>
+                                <div key={faq.id || i} className={`hc-faq-item${openFaq === i ? ' open' : ''}`}>
                                     <div className="hc-faq-q" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
                                         <div className="hc-faq-q-left">
                                             <div className="hc-faq-num">{i + 1}</div>
-                                            <div className="hc-faq-q-text">{faq.q}</div>
+                                            <div className="hc-faq-q-text">{faq.question}</div>
                                         </div>
                                         <ChevronDown size={16} className="hc-faq-chevron" />
                                     </div>
-                                    <div className="hc-faq-answer"><p>{faq.a}</p></div>
+                                    <div className="hc-faq-answer"><p>{faq.answer}</p></div>
                                 </div>
                             ))}
                         </div>
@@ -232,7 +253,7 @@ const VendorHelpCenter = () => {
                         {/* Articles */}
                         <div className="hc-sec-lbl" style={{ marginTop: '1.5rem' }}>Featured Articles</div>
                         <div className="hc-panel">
-                            {ARTICLES.map((a, i) => {
+                            {articles.map((a, i) => {
                                 const Icon = a.icon;
                                 return (
                                     <div className="hc-article-row" key={i}>
@@ -281,7 +302,7 @@ const VendorHelpCenter = () => {
                                 ].map((c, i) => {
                                     const Icon = c.icon;
                                     return (
-                                        <div className="hc-contact-item" key={i}>
+                                        <div className="hc-contact-item" key={i} onClick={() => toast.success(`Opening ${c.label}…`)} style={{cursor:'pointer'}}>
                                             <div className="hc-contact-ic" style={{ background: c.bg, color: c.color }}>
                                                 <Icon size={17} />
                                             </div>
@@ -300,7 +321,7 @@ const VendorHelpCenter = () => {
                         <div className="hc-card">
                             <div className="hc-card-title"><AlertCircle size={16} color="#E03E1A" /> My Support Tickets</div>
                             <div className="hc-ticket-list">
-                                {TICKETS.map((t, i) => (
+                                {tickets.map((t, i) => (
                                     <div className="hc-ticket" key={i}>
                                         <div className={`hc-ticket-dot td-${t.status}`} />
                                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -311,7 +332,7 @@ const VendorHelpCenter = () => {
                                     </div>
                                 ))}
                             </div>
-                            <button className="hc-view-all">
+                            <button className="hc-view-all" onClick={() => toast.success('Opening all tickets…')}>
                                 View all tickets <ChevronRight size={13} />
                             </button>
                         </div>
@@ -321,7 +342,7 @@ const VendorHelpCenter = () => {
                             <div className="hc-announce-label"><Bell size={10} /> What's New</div>
                             <h4>Promotions v2 is live!</h4>
                             <p>Stackable coupons, spend-based tiers, and a new campaign analytics dashboard are now available.</p>
-                            <button className="hc-announce-btn">
+                            <button className="hc-announce-btn" onClick={() => toast.success('Opening release notes…')}>
                                 Read release notes <ChevronRight size={13} />
                             </button>
                         </div>

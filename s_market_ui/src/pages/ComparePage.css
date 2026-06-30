@@ -1,0 +1,281 @@
+.compare-page-wrapper {
+    font-family: 'Inter', sans-serif;
+    background: #FDF8F4;
+    min-height: 100vh;
+}
+
+.compare-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+.compare-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.compare-header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: #2C2C2C;
+}
+
+.compare-nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.compare-slider-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid #E8DDD4;
+}
+
+.compare-nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: #F5EDE6;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.compare-nav-btn:hover:not(:disabled) {
+    background: #FF5722;
+    color: white;
+}
+
+.compare-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.compare-nav-info {
+    font-size: 0.82rem;
+    color: #8A7F75;
+    font-weight: 500;
+    min-width: 60px;
+    text-align: center;
+}
+
+.clear-compare-btn {
+    background: none;
+    border: 1px solid #E8DDD4;
+    padding: 8px 20px;
+    border-radius: 8px;
+    color: #FF5722;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clear-compare-btn:hover {
+    background: #FF5722;
+    color: white;
+    border-color: #FF5722;
+}
+
+.compare-empty {
+    text-align: center;
+    padding: 6rem 2rem;
+}
+
+.compare-empty h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.75rem;
+    color: #2C2C2C;
+    margin-bottom: 0.75rem;
+}
+
+.compare-empty p {
+    color: #8A7F75;
+    margin-bottom: 2rem;
+}
+
+.compare-shop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #FF5722;
+    color: white;
+    padding: 12px 28px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.compare-shop-btn:hover {
+    background: #E64A19;
+}
+
+.compare-table-wrapper {
+    overflow-x: auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border: 1px solid #E8DDD4;
+}
+
+.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.compare-table th,
+.compare-table td {
+    padding: 16px 20px;
+    text-align: center;
+    border-bottom: 1px solid #F5EDE6;
+    vertical-align: top;
+}
+
+.compare-label-col {
+    width: 140px;
+    background: #FFFBF8;
+    font-weight: 600;
+    color: #8A7F75;
+    text-align: left;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.compare-product-col {
+    min-width: 200px;
+    position: relative;
+}
+
+.remove-compare-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: #F5EDE6;
+    color: #8A7F75;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.remove-compare-btn:hover {
+    background: #FF5722;
+    color: white;
+}
+
+.compare-product-img {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 12px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #F5EDE6;
+}
+
+.compare-product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.compare-product-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2C2C2C;
+    text-decoration: none;
+}
+
+.compare-product-col a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.compare-label {
+    text-align: left;
+    font-weight: 600;
+    color: #8A7F75;
+    font-size: 0.85rem;
+    background: #FFFBF8;
+    width: 140px;
+}
+
+.compare-value {
+    font-size: 0.9rem;
+    color: #2C2C2C;
+}
+
+.compare-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #FF5722;
+}
+
+.compare-original-price {
+    display: block;
+    font-size: 0.82rem;
+    color: #B8AEA4;
+    text-decoration: line-through;
+}
+
+.compare-rating {
+    color: #FFB800;
+    font-size: 0.9rem;
+}
+
+.compare-rating .rating-num {
+    color: #8A7F75;
+    font-size: 0.82rem;
+    margin-left: 4px;
+}
+
+.compare-desc {
+    font-size: 0.85rem;
+    color: #6B635B;
+    line-height: 1.5;
+}
+
+.compare-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #FF5722;
+    color: white;
+    padding: 8px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.compare-view-btn:hover {
+    background: #E64A19;
+}
+
+@media (max-width: 768px) {
+    .compare-container { padding: 1rem; }
+    .compare-header h1 { font-size: 1.5rem; }
+    .compare-table th, .compare-table td { padding: 12px; }
+    .compare-product-img { width: 80px; height: 80px; }
+}

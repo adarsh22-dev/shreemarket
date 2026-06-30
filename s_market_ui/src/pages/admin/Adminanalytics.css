@@ -1,0 +1,318 @@
+/* ================================================
+   AdminAnalytics.css – mobile-first responsive
+   ================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Page wrapper ────────────────────────────── */
+.aa-page {display: flex;flex-direction: column;gap: 22px;font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;}
+
+/* ── Card ────────────────────────────────────── */
+.aa-card {background: #fff;border-radius: 16px;border: 1px solid #e8ecf0;padding: 24px 26px;min-width: 0;overflow: hidden;}
+
+/* ── Card header row ─────────────────────────── */
+.aa-card-head {display: flex;justify-content: space-between;align-items: flex-start;gap: 12px;flex-wrap: wrap;margin-bottom: 20px;}
+
+.aa-card-title {font-size: 1rem;font-weight: 700;color: #0f172a;margin: 0 0 3px;}
+
+.aa-card-sub {font-size: 0.8rem;color: #94a3b8;margin: 0;}
+
+.aa-card-head-right {display: flex;align-items: center;gap: 8px;flex-wrap: wrap;flex-shrink: 0;}
+
+/* ── Page header ─────────────────────────────── */
+.aa-header {display: flex;justify-content: space-between;align-items: flex-start;flex-wrap: wrap;gap: 14px;}
+
+.aa-title {font-size: 1.5rem;font-weight: 800;color: #0f172a;margin: 0 0 5px;letter-spacing: -0.3px;line-height: 1.2;}
+
+.aa-subtitle {font-size: 0.875rem;color: #94a3b8;margin: 0;}
+
+.aa-header-right {display: flex;gap: 8px;align-items: center;flex-wrap: wrap;flex-shrink: 0;}
+
+/* Period pills */
+.aa-pills {display: flex;background: #f1f5f9;border-radius: 10px;padding: 3px;gap: 2px;}
+
+.aa-pill {padding: 5px 14px;border-radius: 8px;cursor: pointer;font-family: inherit;font-size: 0.79rem;font-weight: 600;border: none;background: transparent;color: #64748b;transition: all 0.13s;white-space: nowrap;}
+
+.aa-pill.is-active {background: #fff;color: #0f172a;box-shadow: 0 1px 3px rgba(0,0,0,0.08);}
+
+/* Export button */
+.aa-export-btn {display: flex;align-items: center;gap: 7px;padding: 8px 16px;border-radius: 10px;border: 1px solid #e2e8f0;background: #fff;font-size: 0.8rem;font-weight: 600;color: #475569;cursor: pointer;font-family: inherit;white-space: nowrap;transition: all 0.13s;}
+
+.aa-export-btn:hover {border-color: #cbd5e1;background: #f8fafc;}
+
+/* Manage-link button */
+.aa-manage-btn {display: inline-flex;align-items: center;gap: 6px;padding: 7px 14px;border-radius: 9px;border: 1px solid #e2e8f0;font-size: 0.8rem;font-weight: 600;color: #475569;text-decoration: none;background: #fff;white-space: nowrap;flex-shrink: 0;transition: all 0.13s;}
+
+.aa-manage-btn:hover {border-color: #cbd5e1;background: #f8fafc;}
+
+/* View-all link */
+.aa-view-link {display: inline-flex;align-items: center;gap: 5px;font-size: 0.8rem;font-weight: 600;color: #6366f1;text-decoration: none;white-space: nowrap;flex-shrink: 0;}
+
+.aa-view-link:hover { opacity: 0.8; }
+
+/* ── KPI grids ───────────────────────────────── */
+.aa-kpi-grid {display: grid;grid-template-columns: repeat(4, 1fr);gap: 14px;}
+
+.aa-stat-card {background: #fff;border-radius: 16px;border: 1px solid #e8ecf0;padding: 22px 22px 20px;display: flex;flex-direction: column;gap: 0;min-width: 0;transition: box-shadow 0.15s, transform 0.15s;}
+
+.aa-stat-card:hover {box-shadow: 0 4px 16px rgba(0,0,0,0.07);transform: translateY(-1px);}
+
+.aa-stat-top {display: flex;justify-content: space-between;align-items: flex-start;margin-bottom: 14px;}
+
+.aa-stat-icon {width: 42px;height: 42px;border-radius: 10px;background: #f8fafc;border: 1px solid #f1f5f9;display: flex;align-items: center;justify-content: center;flex-shrink: 0;}
+
+.aa-stat-trend {display: flex;align-items: center;gap: 4px;font-size: 0.8rem;font-weight: 600;}
+
+.aa-stat-trend--up   { color: #16a34a; }
+.aa-stat-trend--down { color: #dc2626; }
+
+.aa-stat-label {font-size: 0.83rem;color: #94a3b8;font-weight: 500;margin-bottom: 6px;}
+
+.aa-stat-value {font-size: 1.65rem;font-weight: 800;color: #0f172a;letter-spacing: -0.5px;line-height: 1;}
+
+/* ── Chart + Donut 2-col ─────────────────────── */
+.aa-chart-row {display: grid;grid-template-columns: 1fr 420px;gap: 18px;align-items: start;}
+
+/* Chart toggle pills */
+.aa-chart-pills {display: flex;background: #f1f5f9;border-radius: 9px;padding: 3px;gap: 2px;flex-shrink: 0;}
+
+.aa-chart-pill {padding: 5px 14px;border-radius: 7px;cursor: pointer;font-family: inherit;font-size: 0.78rem;font-weight: 600;border: none;background: transparent;color: #64748b;transition: all 0.13s;white-space: nowrap;}
+
+.aa-chart-pill.is-active {background: #fff;color: #0f172a;box-shadow: 0 1px 3px rgba(0,0,0,0.08);}
+
+/* ── Donut ───────────────────────────────────── */
+.aa-donut-wrap {display: flex;align-items: center;gap: 32px;flex-wrap: wrap;}
+
+.aa-donut-legend {display: flex;flex-direction: column;gap: 14px;flex: 1;min-width: 140px;}
+
+.aa-donut-legend-item {display: flex;align-items: center;cursor: pointer;transition: opacity 0.18s;}
+
+.aa-donut-dot {width: 10px;height: 10px;border-radius: 50%;margin-right: 10px;flex-shrink: 0;}
+
+.aa-donut-label {font-size: 0.875rem;color: #374151;flex: 1;}
+
+.aa-donut-pct {font-size: 0.875rem;font-weight: 700;color: #111;}
+
+/* ── Order status bar ────────────────────────── */
+.aa-status-bar {display: flex;height: 12px;border-radius: 10px;overflow: hidden;margin-bottom: 24px;}
+
+.aa-status-grid {display: grid;grid-template-columns: repeat(5, 1fr);gap: 12px;}
+
+.aa-status-item {display: flex;flex-direction: column;gap: 8px;}
+
+.aa-status-item-head {display: flex;align-items: center;gap: 7px;}
+
+.aa-status-dot {width: 9px;height: 9px;border-radius: 50%;flex-shrink: 0;}
+
+.aa-status-name {font-size: 0.8rem;font-weight: 600;color: #374151;}
+
+.aa-status-count {font-size: 1.1rem;font-weight: 800;color: #0f172a;}
+
+.aa-status-pct {font-size: 0.75rem;color: #94a3b8;}
+
+/* ── Table ───────────────────────────────────── */
+.aa-table-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;scrollbar-width: thin;scrollbar-color: #e2e8f0 transparent;}
+
+.aa-table-wrap::-webkit-scrollbar { height: 4px; }
+.aa-table-wrap::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
+.aa-table {width: 100%;border-collapse: collapse;min-width: 520px;}
+
+.aa-table thead { background: #f8fafc; }
+
+.aa-table th {padding: 10px 16px;text-align: left;font-size: 0.67rem;font-weight: 700;text-transform: uppercase;letter-spacing: 0.6px;color: #94a3b8;border-bottom: 1px solid #f1f5f9;white-space: nowrap;}
+
+.aa-table td {padding: 13px 16px;font-size: 0.875rem;color: #1e293b;border-bottom: 1px solid #f8fafc;vertical-align: middle;}
+
+.aa-table tbody tr { transition: background 0.1s; }
+.aa-table tbody tr:hover { background: #f8fafc; }
+.aa-table tbody tr:last-child td { border-bottom: none; }
+
+.aa-rank-badge {width: 24px;height: 24px;border-radius: 7px;display: inline-flex;align-items: center;justify-content: center;font-size: 0.65rem;font-weight: 800;}
+
+.aa-vendor-cell {display: flex;align-items: center;gap: 10px;}
+
+.aa-vendor-avatar {width: 32px;height: 32px;border-radius: 9px;background: #f1f5f9;display: flex;align-items: center;justify-content: center;font-size: 0.78rem;font-weight: 700;color: #475569;flex-shrink: 0;}
+
+.aa-pill-badge {font-size: 0.76rem;font-weight: 700;padding: 3px 9px;border-radius: 20px;white-space: nowrap;}
+
+/* ── Pagination ──────────────────────────────── */
+.aa-pag {display: flex;justify-content: space-between;align-items: center;padding-top: 14px;border-top: 1px solid #f8fafc;margin-top: 6px;flex-wrap: wrap;gap: 8px;}
+
+.aa-pag-info { font-size: 0.76rem; color: #94a3b8; }
+
+.aa-pag-ctrl { display: flex; align-items: center; gap: 8px; }
+
+.aa-pag-btn {width: 28px;height: 28px;border-radius: 7px;border: 1px solid #e2e8f0;background: #fff;display: flex;align-items: center;justify-content: center;cursor: pointer;color: #475569;transition: all 0.13s;}
+
+.aa-pag-btn:hover:not(:disabled) {border-color: #6366f1;color: #6366f1;background: #eef2ff;}
+
+.aa-pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.aa-pag-label { font-size: 0.78rem; font-weight: 500; color: #64748b; }
+
+/* ── Payout feed ─────────────────────────────── */
+.aa-payout-item {display: flex;align-items: center;gap: 14px;padding: 13px 0;border-bottom: 1px solid #f8fafc;min-width: 0;}
+
+.aa-payout-item:last-child { border-bottom: none; }
+
+.aa-payout-avatar {width: 36px;height: 36px;border-radius: 10px;background: #f1f5f9;display: flex;align-items: center;justify-content: center;font-size: 0.8rem;font-weight: 700;color: #475569;flex-shrink: 0;}
+
+.aa-payout-info { flex: 1; min-width: 0; }
+
+.aa-payout-name {font-size: 0.875rem;font-weight: 600;color: #0f172a;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
+
+.aa-payout-meta {font-size: 0.73rem;color: #94a3b8;margin-top: 2px;}
+
+.aa-payout-right { text-align: right; flex-shrink: 0; }
+
+.aa-payout-amount {font-size: 0.9rem;font-weight: 700;color: #0f172a;margin-bottom: 4px;}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ═══════════════════════════════════════════════ */
+
+/* ── ≤ 1280px ────────────────────────────────── */
+@media (max-width: 1280px) {
+  .aa-chart-row { grid-template-columns: 1fr 360px; }
+}
+
+/* ── ≤ 1024px  tablet landscape ─────────────── */
+@media (max-width: 1024px) {
+  .aa-kpi-grid  { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  /* Stack chart + donut */
+  .aa-chart-row { grid-template-columns: 1fr; }
+  /* Donut: go horizontal with smaller svg */
+  .aa-donut-wrap { gap: 24px; }
+
+  /* Order status: 3+2 */
+  .aa-status-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+}
+
+/* ── ≤ 768px  tablet portrait / large mobile ── */
+@media (max-width: 768px) {
+  .aa-page { gap: 16px; }
+  .aa-card { padding: 16px 14px; }
+
+  /* Header */
+  .aa-header      { flex-direction: column; align-items: stretch; }
+  .aa-title       { font-size: 1.2rem; }
+  .aa-header-right { justify-content: flex-start; }
+  .aa-pills       { flex-wrap: wrap; }
+
+  /* KPI: 2×4 */
+  .aa-kpi-grid    { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .aa-stat-card   { padding: 16px 14px; }
+  .aa-stat-value  { font-size: 1.25rem; }
+  .aa-stat-icon   { width: 36px; height: 36px; border-radius: 9px; }
+
+  /* Chart row: stacked */
+  .aa-chart-row   { grid-template-columns: 1fr; gap: 14px; }
+
+  /* Donut: stack svg + legend */
+  .aa-donut-wrap  { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .aa-donut-legend {flex-direction: row;flex-wrap: wrap;gap: 10px 18px;min-width: unset;}
+  .aa-donut-legend-item { min-width: 110px; }
+
+  /* Card heads: stack */
+  .aa-card-head   { flex-direction: column; align-items: stretch; gap: 10px; }
+  .aa-card-head-right { justify-content: flex-start; }
+
+  /* Order status: 2+3 */
+  .aa-status-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .aa-status-bar  { height: 10px; }
+  .aa-status-count { font-size: 0.95rem; }
+
+  /* Pag */
+  .aa-pag { flex-direction: column; align-items: flex-start; }
+
+  /* Payout items: compact */
+  .aa-payout-item  { gap: 10px; padding: 11px 0; }
+  .aa-payout-name  { font-size: 0.82rem; }
+  .aa-payout-meta  { font-size: 0.69rem; }
+  .aa-payout-amount { font-size: 0.84rem; }
+  .aa-payout-avatar { width: 30px; height: 30px; font-size: 0.72rem; border-radius: 8px; }
+}
+
+/* ── ≤ 640px  mobile ─────────────────────────── */
+@media (max-width: 640px) {
+  .aa-page { gap: 12px; }
+  .aa-card { padding: 14px 13px; }
+
+  /* KPI: compact 2-col */
+  .aa-kpi-grid    { gap: 8px; }
+  .aa-stat-card   { padding: 13px 12px; }
+  .aa-stat-value  { font-size: 1.05rem; letter-spacing: -0.3px; }
+  .aa-stat-label  { font-size: 0.75rem; }
+  .aa-stat-icon   { width: 32px; height: 32px; border-radius: 8px; }
+  .aa-stat-trend  { font-size: 0.72rem; }
+
+  /* Title */
+  .aa-title       { font-size: 1.05rem; }
+  .aa-subtitle    { font-size: 0.8rem; }
+
+  /* Pills compact */
+  .aa-pill        { padding: 4px 10px; font-size: 0.72rem; }
+  .aa-export-btn  { padding: 7px 12px; font-size: 0.75rem; }
+
+  /* Card title */
+  .aa-card-title  { font-size: 0.87rem; }
+  .aa-card-sub    { font-size: 0.73rem; }
+
+  /* Order status: all in 1 col to avoid clipping */
+  .aa-status-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .aa-status-count { font-size: 0.9rem; }
+  .aa-status-pct   { font-size: 0.69rem; }
+
+  /* Donut: legend compact */
+  .aa-donut-legend-item { min-width: 90px; }
+  .aa-donut-label { font-size: 0.78rem; }
+  .aa-donut-pct   { font-size: 0.78rem; }
+
+  /* Table */
+  .aa-table th    { padding: 9px 12px; font-size: 0.61rem; }
+  .aa-table td    { padding: 11px 12px; font-size: 0.82rem; }
+  .aa-vendor-avatar { width: 28px; height: 28px; font-size: 0.72rem; border-radius: 7px; }
+
+  /* Manage btn: text hidden, icon-only on very small */
+  .aa-manage-btn  { padding: 7px 11px; font-size: 0.75rem; }
+
+  /* Pag */
+  .aa-pag-btn     { width: 26px; height: 26px; }
+  .aa-pag-info    { font-size: 0.71rem; }
+  .aa-pag-label   { font-size: 0.72rem; }
+}
+
+/* ── ≤ 480px  small mobile ───────────────────── */
+@media (max-width: 480px) {
+  .aa-kpi-grid    { grid-template-columns: repeat(2, 1fr); gap: 7px; }
+  .aa-stat-value  { font-size: 0.95rem; }
+  .aa-stat-label  { font-size: 0.68rem; }
+  .aa-stat-icon   { width: 28px; height: 28px; border-radius: 7px; }
+
+  /* Pills: scroll horizontally */
+  .aa-pills       { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .aa-pills::-webkit-scrollbar { display: none; }
+  .aa-pill        { flex-shrink: 0; }
+
+  .aa-header-right { flex-direction: column; align-items: stretch; }
+  .aa-export-btn   { justify-content: center; }
+
+  /* Order: single col */
+  .aa-status-grid { grid-template-columns: repeat(2, 1fr); gap: 7px; }
+
+  /* Donut: full-width legend column */
+  .aa-donut-legend { flex-direction: column; gap: 10px; }
+  .aa-donut-legend-item { min-width: unset; }
+
+  /* Payout */
+  .aa-payout-item  { gap: 8px; }
+  .aa-payout-name  { font-size: 0.79rem; }
+}
+
+/* ── Print ───────────────────────────────────── */
+@media print {
+  .aa-pills, .aa-export-btn, .aa-pag, .aa-manage-btn { display: none !important; }
+  .aa-card { box-shadow: none !important; border-color: #e2e2e2; }
+  .aa-page { gap: 12px; }
+}

@@ -1,0 +1,690 @@
+/* Modal Overlay */
+.product-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 2rem;
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Modal Content */
+.product-modal-content {
+    background-color: white;
+    width: 100%;
+    max-width: 1000px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.product-modal-close-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.product-modal-close-btn:hover {
+    color: #000;
+}
+
+.product-modal-body {
+    display: flex;
+    height: 600px;
+}
+
+/* Left Column: Images */
+.product-modal-images-column {
+    flex: 1.2;
+    background-color: #f9f9f9;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.main-image-wrapper {
+    width: 100%;
+    aspect-ratio: 1;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.main-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 1rem;
+}
+
+.thumbnail-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.thumbnail {
+    width: 60px;
+    height: 60px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    overflow: hidden;
+    cursor: pointer;
+    background: white;
+    transition: all 0.2s;
+}
+
+.thumbnail.active {
+    border-color: #FF5722;
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Right Column: Details */
+.product-modal-details-column {
+    flex: 1;
+    padding: 3rem 3rem 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.product-modal-breadcrumb {
+    font-size: 0.7rem;
+    color: #999;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.product-modal-breadcrumb .highlight {
+    color: #FF5722;
+}
+
+.product-modal-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.product-modal-price-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.product-modal-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #FF5722;
+}
+
+.price-container-modal {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+}
+
+.product-modal-price-new {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #000;
+}
+
+.product-modal-price-old {
+    font-size: 1.1rem;
+    color: #999;
+    text-decoration: line-through;
+    font-weight: 500;
+}
+
+.discount-badge-modal {
+    background-color: #E03E1A;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
+    align-self: center;
+}
+
+.product-modal-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stars {
+    display: flex;
+}
+
+.review-count {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.product-modal-description {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.brand-description-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #fdfdfd;
+    border-left: 3px solid #FFB800;
+    border-radius: 4px;
+}
+
+.brand-description-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.brand-description-text {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.product-specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    padding: 1.5rem 0;
+}
+
+.spec-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.spec-label {
+    font-size: 0.7rem;
+    color: #999;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.spec-value {
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.product-modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    margin-top: auto;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.quantity-selector button {
+    background: none;
+    border: none;
+    width: 40px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #555;
+    transition: background 0.2s;
+}
+
+.quantity-selector button:hover {
+    background-color: #f5f5f5;
+}
+
+.quantity-selector span {
+    width: 40px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.add-to-cart-btn {
+    flex: 1;
+    background-color: #FF5722;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    box-shadow: 0 4px 6px rgba(255, 87, 34, 0.2);
+}
+
+.add-to-cart-btn:hover {
+    background-color: #E64A19;
+}
+
+.view-full-details {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #FF5722;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+/* Instagram Feed within Modal */
+.modal-instafeed-section {
+    margin-top: 2rem;
+    border-top: 1px solid #eee;
+    padding-top: 1.5rem;
+}
+
+.modal-instafeed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.modal-instafeed-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.modal-instafeed-logo {
+    flex-shrink: 0;
+}
+
+.modal-instafeed-view-link {
+    font-size: 0.8rem;
+    color: #FF5722;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.modal-instafeed-view-link:hover {
+    text-decoration: underline;
+}
+
+/* Slider Layout */
+.modal-instafeed-slider {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.modal-instafeed-slider-track {
+    overflow: hidden;
+    flex: 1;
+    border-radius: 8px;
+}
+
+.modal-instafeed-slider-wrapper {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.modal-instafeed-slider-btn {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    z-index: 2;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.modal-instafeed-slider-btn:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+/* Grid Layout */
+.modal-instafeed-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+/* Instagram Card */
+.modal-instafeed-card {
+    flex: 0 0 calc(33.33% - 0.5rem);
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid #eee;
+    transition: transform 0.2s;
+}
+
+.modal-instafeed-grid .modal-instafeed-card {
+    flex: unset;
+}
+
+.modal-instafeed-card:hover {
+    transform: scale(1.03);
+}
+
+.modal-instafeed-card.is-playing {
+    transform: none;
+}
+
+.modal-instafeed-card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.modal-instafeed-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modal-instafeed-card-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+}
+
+.modal-instafeed-card-icon {
+    opacity: 0.4;
+}
+
+.modal-instafeed-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.modal-instafeed-card:hover .modal-instafeed-overlay {
+    opacity: 1;
+}
+
+.modal-instafeed-overlay-text {
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.modal-instafeed-reel-badge {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    background: rgba(0,0,0,0.6);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Inline Reel Player */
+.modal-instafeed-inline-player {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: #000;
+}
+
+.modal-instafeed-inline-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.modal-instafeed-inline-close {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 6;
+    line-height: 1;
+}
+
+/* Dots */
+.modal-instafeed-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+}
+
+.modal-instafeed-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s;
+}
+
+.modal-instafeed-dot.active {
+    background: #FF5722;
+}
+
+/* Lightbox */
+.modal-instafeed-lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.modal-instafeed-lightbox-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-instafeed-lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    transition: background 0.2s;
+}
+
+.modal-instafeed-lightbox-close:hover {
+    background: rgba(0,0,0,0.2);
+}
+
+.modal-instafeed-lightbox-body {
+    padding: 1rem;
+}
+
+.modal-instafeed-lightbox-embed {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.modal-instafeed-lightbox-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.modal-instafeed-lightbox-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem 1rem;
+}
+
+.modal-instafeed-lightbox-nav-btn {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-instafeed-lightbox-nav-btn:hover {
+    background: #eee;
+}
+
+.modal-instafeed-lightbox-counter {
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .modal-instafeed-lightbox-overlay { padding: 0; align-items: flex-end; }
+    .modal-instafeed-lightbox-content { border-radius: 16px 16px 0 0; max-height: 95vh; }
+    .modal-instafeed-lightbox-close { top: 8px; right: 8px; width: 30px; height: 30px; font-size: 1.2rem; }
+    .modal-instafeed-lightbox-body { padding: 0.5rem; }
+    .modal-instafeed-lightbox-iframe { height: 360px; }
+    .modal-instafeed-lightbox-nav { padding: 0.5rem 0.75rem; }
+    .modal-instafeed-lightbox-nav-btn { width: 32px; height: 32px; }
+}
+
+@media (max-width: 768px) {
+    .product-modal-body {
+        flex-direction: column;
+        height: auto;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .product-modal-images-column {
+        padding: 2rem;
+    }
+
+    .product-modal-details-column {
+        padding: 2rem;
+    }
+}

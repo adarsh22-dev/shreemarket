@@ -1,0 +1,216 @@
+/* VendorPortalPage.css */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.vp-page {
+  max-width: 960px;
+  margin: 60px auto;
+  padding: 0 24px 100px;
+  font-family: 'Georgia', serif;
+  color: #2c2c2c;
+}
+
+/* ── Hero ─────────────────────────────────── */
+.vp-hero {
+  background: #fff;
+  border: 1px solid #e8e3dc;
+  border-radius: 10px;
+  padding: 48px 44px 42px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.vp-hero-label {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #ff5722;
+  margin-bottom: 14px;
+  font-family: 'Arial', sans-serif;
+}
+
+.vp-hero h1 {
+  font-size: 2.3rem;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: #1a1a1a;
+  margin-bottom: 14px;
+}
+
+.vp-hero p {
+  font-size: 1rem;
+  color: #777;
+  line-height: 1.8;
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+/* ── Section layout ───────────────────────── */
+.vp-section {
+  background: #fff;
+  border: 1px solid #e8e3dc;
+  border-radius: 10px;
+  padding: 30px 32px;
+  margin-bottom: 24px;
+}
+
+.vp-section-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ece8e1;
+  margin-bottom: 22px;
+}
+
+.vp-section-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #2c2c2c;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vp-section-head h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-family: 'Arial', sans-serif;
+}
+
+/* ── Guide cards grid ─────────────────────── */
+.vp-guides-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.vp-guide-card {
+  border: 1px solid #e8e3dc;
+  border-radius: 8px;
+  padding: 18px 18px 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.vp-guide-card:hover {
+  border-color: #c8b89a;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+}
+
+.vp-guide-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  font-family: 'Arial', sans-serif;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.vp-guide-desc {
+  font-size: 0.83rem;
+  color: #888;
+  line-height: 1.6;
+  font-family: 'Arial', sans-serif;
+}
+
+/* ── CTA banner ───────────────────────────── */
+.vp-cta {
+  background: #2c2c2c;
+  border-radius: 10px;
+  padding: 36px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.vp-cta-text h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f0ebe3;
+  font-family: 'Arial', sans-serif;
+  margin-bottom: 6px;
+}
+
+.vp-cta-text p {
+  font-size: 0.92rem;
+  color: #b8b0a5;
+  line-height: 1.65;
+  max-width: 480px;
+}
+
+.vp-cta-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.vp-btn {
+  display: inline-block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 11px 24px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-family: 'Arial', sans-serif;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.vp-btn-primary {
+  background: #ff5722;
+  color: #fff;
+}
+
+.vp-btn-primary:hover { background: #96723d; }
+
+.vp-btn-ghost {
+  background: transparent;
+  color: #d0c8be;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.vp-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* ── Responsive ───────────────────────────── */
+@media (max-width: 700px) {
+  .vp-hero h1        { font-size: 1.8rem; }
+  .vp-hero           { padding: 32px 24px 28px; }
+  .vp-section        { padding: 24px 20px; }
+  .vp-guides-grid    { grid-template-columns: 1fr; }
+
+  .vp-cta {
+    flex-direction: column;
+    text-align: center;
+    padding: 28px 24px;
+  }
+
+  .vp-cta-actions { justify-content: center; }
+}

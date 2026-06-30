@@ -1,9 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Image as ImageIcon,
   Plus,
   ChevronRight,
   FileText,
+  Video,
 } from "lucide-react";
 import VendorLayout from "../../components/vendor/VendorLayout";
 import "./AddProduct.css";
@@ -12,7 +13,11 @@ import {
   addProduct,
   getProduct,
   updateProduct,
+  searchProducts,
+  getCategories,
+  getSubCategories,
   BACKEND_URL,
+  PLACEHOLDER_IMG,
 } from "../../api/api";
 import toast from "react-hot-toast";
 
@@ -29,16 +34,42 @@ const AddProduct = () => {
   const [brand, setBrand] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [description, setDescription] = useState("");
+  const [metaTitle, setMetaTitle] = useState("");
+  const [metaDescription, setMetaDescription] = useState("");
   const [sku, setSku] = useState("");
+  const [productStatus, setProductStatus] = useState("in");
 
   const [regularPrice, setRegularPrice] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
   const [priceError, setPriceError] = useState("");
   const [initialStock, setInitialStock] = useState("");
   const [supportsWholesale, setSupportsWholesale] = useState(false);
+  const [wholesaleOnly, setWholesaleOnly] = useState(false);
+  const [wholesalePrice, setWholesalePrice] = useState("");
+  const [minimumWholesaleQuantity, setMinimumWholesaleQuantity] = useState("10");
   const [wholesaleDiscountType, setWholesaleDiscountType] =
     useState("percentage");
+  // Bulk/Tiered Pricing State
+  const [pricingTiers, setPricingTiers] = useState([]);
+
+  const handleAddPricingTier = () => {
+    setPricingTiers(prev => [...prev, { minQuantity: "", maxQuantity: "", unitPrice: "", discountType: "percentage", discountValue: "" }]);
+  };
+
+  const handleRemovePricingTier = (index) => {
+    setPricingTiers(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handlePricingTierChange = (index, field, value) => {
+    setPricingTiers(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
   const [mediaFiles, setMediaFiles] = useState([]);
+  const [manufacturerLayout, setManufacturerLayout] = useState("collage");
   const [submitError, setSubmitError] = useState("");
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   const [attributes, setAttributes] = useState([{ name: "", value: "" }]);
@@ -46,11 +77,37 @@ const AddProduct = () => {
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
 
+  // Category dropdown state
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [subCategorySearch, setSubCategorySearch] = useState("");
+  const [showSubCategoryDropdown, setShowSubCategoryDropdown] = useState(false);
+  const categoryDropdownRef = useRef(null);
+  const subCategoryDropdownRef = useRef(null);
+
   // Linked Products State
   const [upsells, setUpsells] = useState([]);
   const [upsellInput, setUpsellInput] = useState("");
+  const [upsellSuggestions, setUpsellSuggestions] = useState([]);
+  const [showUpsellDropdown, setShowUpsellDropdown] = useState(false);
   const [crossSells, setCrossSells] = useState([]);
   const [crossSellInput, setCrossSellInput] = useState("");
+  const [crossSellSuggestions, setCrossSellSuggestions] = useState([]);
+  const [showCrossSellDropdown, setShowCrossSellDropdown] = useState(false);
+  const [boughtTogether, setBoughtTogether] = useState([]);
+  const [boughtTogetherInput, setBoughtTogetherInput] = useState("");
+  const [boughtTogetherSuggestions, setBoughtTogetherSuggestions] = useState([]);
+  const [showBoughtTogetherDropdown, setShowBoughtTogetherDropdown] = useState(false);
+  const upsellDebounceRef = useRef(null);
+  const crossSellDebounceRef = useRef(null);
+  const boughtTogetherDebounceRef = useRef(null);
+  const upsellDropdownRef = useRef(null);
+  const crossSellDropdownRef = useRef(null);
+  const boughtTogetherDropdownRef = useRef(null);
+  const instagramProductInputRefs = useRef({});
+  const instagramProductDebounceRef = useRef(null);
 
   // Shipping, Tax & Policies State
   const [weight, setWeight] = useState("");
@@ -63,6 +120,21 @@ const AddProduct = () => {
   const [policyDocuments, setPolicyDocuments] = useState([]);
   const policyFileInputRef = useRef(null);
 
+  const [manufacturerMedia, setManufacturerMedia] = useState([]);
+  const mfrFileInputRef = useRef(null);
+
+  const [videoUrls, setVideoUrls] = useState([]);
+  const [videoUrlInput, setVideoUrlInput] = useState("");
+  const [instagramUrls, setInstagramUrls] = useState([]);
+  const [instagramUrlInput, setInstagramUrlInput] = useState("");
+  const [instagramFeedLayout, setInstagramFeedLayout] = useState("slider");
+  const [instagramProductLinks, setInstagramProductLinks] = useState({});
+  const [instagramThumbnails, setInstagramThumbnails] = useState({});
+  const [instagramProductInput, setInstagramProductInput] = useState("");
+  const [instagramProductSuggestions, setInstagramProductSuggestions] = useState([]);
+  const [showInstagramProductDropdown, setShowInstagramProductDropdown] = useState(false);
+  const [activeInstagramProductIndex, setActiveInstagramProductIndex] = useState(null);
+
   const [errors, setErrors] = useState({});
 
   const fileInputRef = useRef(null);
@@ -74,6 +146,7 @@ const AddProduct = () => {
         url: URL.createObjectURL(file),
         type: file.type.startsWith("video/") ? "video" : "image",
         isNew: true,
+        mediaType: "gallery",
       }));
       setMediaFiles((prev) => [...prev, ...newFiles]);
       if (errors.media) setErrors(prev => ({ ...prev, media: "" }));
@@ -121,6 +194,7 @@ const AddProduct = () => {
         url: URL.createObjectURL(file),
         type: file.type.startsWith("video/") ? "video" : "image",
         isNew: true,
+        mediaType: "gallery",
       }));
       setMediaFiles((prev) => [...prev, ...newFiles]);
       if (errors.media) setErrors(prev => ({ ...prev, media: "" }));
@@ -203,11 +277,14 @@ const AddProduct = () => {
         type: file.type.startsWith("video/") ? "video" : "image",
         isNew: true,
       }));
-      const newVars = [...variations];
-      const currentImages = newVars[index].images || [];
-      newVars[index].images = [...currentImages, ...newFiles];
-      setVariations(newVars);
+      setVariations((prev) => {
+        const newVars = [...prev];
+        const currentImages = newVars[index].images || [];
+        newVars[index].images = [...currentImages, ...newFiles];
+        return newVars;
+      });
     }
+    e.target.value = "";
   };
 
   const setVariationPrimary = (varIndex, imgIndex) => {
@@ -292,7 +369,88 @@ const AddProduct = () => {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleInstagramProductInputChange = (index, value) => {
+    setInstagramProductInput(value);
+    setActiveInstagramProductIndex(index);
+    clearTimeout(instagramProductDebounceRef.current);
+    instagramProductDebounceRef.current = setTimeout(() => {
+      fetchProductSuggestions(value, setInstagramProductSuggestions, setShowInstagramProductDropdown);
+    }, 300);
+  };
+
+  const handleSelectInstagramProduct = (index, product) => {
+    const name = product.name || product.productName;
+    setInstagramProductLinks(prev => ({...prev, [index]: name}));
+    setInstagramProductInput("");
+    setInstagramProductSuggestions([]);
+    setShowInstagramProductDropdown(false);
+    setActiveInstagramProductIndex(null);
+  };
+
+  const handleRemoveInstagramProductLink = (index) => {
+    setInstagramProductLinks(prev => {
+      const next = {...prev};
+      delete next[index];
+      return next;
+    });
+  };
+
   // Linked Products Handlers
+  const fetchProductSuggestions = async (query, setSuggestions, setShowDropdown) => {
+    if (query.trim().length < 2) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
+    try {
+      const results = await searchProducts(query.trim());
+      const products = Array.isArray(results) ? results : results?.content || [];
+      setSuggestions(products);
+      setShowDropdown(products.length > 0);
+    } catch {
+      setSuggestions([]);
+      setShowDropdown(false);
+    }
+  };
+
+  const handleUpsellInputChange = (e) => {
+    const value = e.target.value;
+    setUpsellInput(value);
+    clearTimeout(upsellDebounceRef.current);
+    upsellDebounceRef.current = setTimeout(() => {
+      fetchProductSuggestions(value, setUpsellSuggestions, setShowUpsellDropdown);
+    }, 300);
+  };
+
+  const handleCrossSellInputChange = (e) => {
+    const value = e.target.value;
+    setCrossSellInput(value);
+    clearTimeout(crossSellDebounceRef.current);
+    crossSellDebounceRef.current = setTimeout(() => {
+      fetchProductSuggestions(value, setCrossSellSuggestions, setShowCrossSellDropdown);
+    }, 300);
+  };
+
+  const handleSelectUpsell = (product) => {
+    const name = product.name || product.productName;
+    if (name && !upsells.includes(name)) {
+      setUpsells([...upsells, name]);
+    }
+    setUpsellInput("");
+    setUpsellSuggestions([]);
+    setShowUpsellDropdown(false);
+  };
+
+  const handleSelectCrossSell = (product) => {
+    const name = product.name || product.productName;
+    if (name && !crossSells.includes(name)) {
+      setCrossSells([...crossSells, name]);
+    }
+    setCrossSellInput("");
+    setCrossSellSuggestions([]);
+    setShowCrossSellDropdown(false);
+  };
+
   const handleAddUpsell = (e) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
@@ -301,6 +459,7 @@ const AddProduct = () => {
         setUpsells([...upsells, trimmed]);
       }
       setUpsellInput("");
+      setShowUpsellDropdown(false);
     }
   };
 
@@ -316,12 +475,184 @@ const AddProduct = () => {
         setCrossSells([...crossSells, trimmed]);
       }
       setCrossSellInput("");
+      setShowCrossSellDropdown(false);
     }
   };
 
   const handleRemoveCrossSell = (itemToRemove) => {
     setCrossSells(crossSells.filter((item) => item !== itemToRemove));
   };
+
+  const handleBoughtTogetherInputChange = (e) => {
+    const value = e.target.value;
+    setBoughtTogetherInput(value);
+    clearTimeout(boughtTogetherDebounceRef.current);
+    boughtTogetherDebounceRef.current = setTimeout(() => {
+      fetchProductSuggestions(value, setBoughtTogetherSuggestions, setShowBoughtTogetherDropdown);
+    }, 300);
+  };
+
+  const handleSelectBoughtTogether = (product) => {
+    const name = product.name || product.productName;
+    if (name && !boughtTogether.includes(name)) {
+      setBoughtTogether([...boughtTogether, name]);
+    }
+    setBoughtTogetherInput("");
+    setBoughtTogetherSuggestions([]);
+    setShowBoughtTogetherDropdown(false);
+  };
+
+  const handleAddBoughtTogether = (e) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      const trimmed = boughtTogetherInput.trim();
+      if (trimmed && !boughtTogether.includes(trimmed)) {
+        setBoughtTogether([...boughtTogether, trimmed]);
+      }
+      setBoughtTogetherInput("");
+      setShowBoughtTogetherDropdown(false);
+    }
+  };
+
+  const handleRemoveBoughtTogether = (itemToRemove) => {
+    setBoughtTogether(boughtTogether.filter((item) => item !== itemToRemove));
+  };
+
+  const handleMfrFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files).map((file) => ({
+        file,
+        url: URL.createObjectURL(file),
+        type: "image",
+        isNew: true,
+      }));
+      setManufacturerMedia((prev) => [...prev, ...newFiles]);
+    }
+    e.target.value = '';
+  };
+
+  const handleAddInstagramUrl = () => {
+    const url = instagramUrlInput.trim();
+    if (!url) return;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      toast.error("Please enter a valid Instagram URL starting with http:// or https://");
+      return;
+    }
+    if (!url.includes("instagram.com")) {
+      toast.error("Please enter a valid Instagram post URL");
+      return;
+    }
+    setInstagramUrls((prev) => [...prev, url]);
+    setInstagramUrlInput("");
+  };
+
+  const handleRemoveInstagramUrl = (index) => {
+    setInstagramUrls((prev) => prev.filter((_, i) => i !== index));
+    setInstagramProductLinks((prev) => {
+      const next = { ...prev };
+      delete next[index];
+      const reIndexed = {};
+      Object.keys(next).forEach((key) => {
+        const k = parseInt(key);
+        if (k > index) reIndexed[k - 1] = next[k];
+        else reIndexed[k] = next[k];
+      });
+      return reIndexed;
+    });
+    setInstagramThumbnails((prev) => {
+      const next = { ...prev };
+      delete next[index];
+      const reIndexed = {};
+      Object.keys(next).forEach((key) => {
+        const k = parseInt(key);
+        if (k > index) reIndexed[k - 1] = next[k];
+        else reIndexed[k] = next[k];
+      });
+      return reIndexed;
+    });
+  };
+
+  const handleInstagramThumbnail = (index, file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setInstagramThumbnails((prev) => ({
+        ...prev,
+        [index]: { file, preview: e.target.result },
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeInstagramThumbnail = (index) => {
+    setInstagramThumbnails((prev) => {
+      const next = { ...prev };
+      delete next[index];
+      return next;
+    });
+  };
+
+  const handleAddVideoUrl = () => {
+    const url = videoUrlInput.trim();
+    if (!url) return;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      toast.error("Please enter a valid video URL starting with http:// or https://");
+      return;
+    }
+    setVideoUrls((prev) => [...prev, url]);
+    setVideoUrlInput("");
+  };
+
+  const handleRemoveVideoUrl = (index) => {
+    setVideoUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Close dropdowns on outside click
+  // Fetch categories and subcategories on mount
+  useEffect(() => {
+    const fetchCategoryData = async () => {
+      try {
+        const [cats, subCats] = await Promise.all([
+          getCategories(),
+          getSubCategories(),
+        ]);
+        setCategories(Array.isArray(cats) ? cats : []);
+        setSubCategories(Array.isArray(subCats) ? subCats : []);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+    };
+    fetchCategoryData();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (upsellDropdownRef.current && !upsellDropdownRef.current.contains(e.target)) {
+        setShowUpsellDropdown(false);
+      }
+      if (crossSellDropdownRef.current && !crossSellDropdownRef.current.contains(e.target)) {
+        setShowCrossSellDropdown(false);
+      }
+      if (boughtTogetherDropdownRef.current && !boughtTogetherDropdownRef.current.contains(e.target)) {
+        setShowBoughtTogetherDropdown(false);
+      }
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target)) {
+        setShowCategoryDropdown(false);
+      }
+      if (subCategoryDropdownRef.current && !subCategoryDropdownRef.current.contains(e.target)) {
+        setShowSubCategoryDropdown(false);
+      }
+      if (activeInstagramProductIndex !== null) {
+        const ref = instagramProductInputRefs.current[activeInstagramProductIndex];
+        if (ref && !ref.contains(e.target)) {
+          setShowInstagramProductDropdown(false);
+          setActiveInstagramProductIndex(null);
+        }
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleThumbnailDragStart = (e, index) => {
     setDraggedItemIndex(index);
@@ -374,17 +705,35 @@ const AddProduct = () => {
           setProductName(data.name || "");
           setProductType(data.type || "single");
           setCategory(data.category || "");
+          setCategorySearch(data.category || "");
           setSubCategory(data.subCategory || "");
+          setSubCategorySearch(data.subCategory || "");
           setBrand(data.brand || "");
           setShortDescription(data.shortDescription || "");
           setDescription(data.description || "");
+          setMetaTitle(data.metaTitle || "");
+          setMetaDescription(data.metaDescription || "");
           setSku(data.sku || "");
+          setProductStatus(data.status || "in");
 
           setRegularPrice(data.regularPrice?.toString() || "");
           setDiscountPrice(data.discountPrice?.toString() || "");
           setInitialStock(data.initialStock?.toString() || "");
           setSupportsWholesale(data.supportsWholesale || false);
+          setWholesaleOnly(data.wholesaleOnly || false);
+          setWholesalePrice(data.wholesalePrice || "");
+          setMinimumWholesaleQuantity(data.minimumWholesaleQuantity || "10");
           setWholesaleDiscountType(data.wholesaleDiscountType || "percentage");
+
+          if (data.pricingTiers && data.pricingTiers.length > 0) {
+            setPricingTiers(data.pricingTiers.map(t => ({
+              minQuantity: t.minQuantity?.toString() || "",
+              maxQuantity: t.maxQuantity?.toString() || "",
+              unitPrice: t.unitPrice?.toString() || "",
+              discountType: t.discountType || "percentage",
+              discountValue: t.discountValue?.toString() || "",
+            })));
+          }
 
           setWeight(data.weight?.toString() || "");
           setLength(data.length?.toString() || "");
@@ -393,20 +742,90 @@ const AddProduct = () => {
 
 
           if (data.attributes) setAttributes(data.attributes);
-          if (data.variations) setVariations(data.variations);
+          if (data.variations) {
+            setVariations(data.variations.map((v) => ({
+              ...v,
+              images: v.imageFileName
+                ? [{
+                    isNew: false,
+                    url: `${BACKEND_URL}/uploads/products/${v.imageFileName}`,
+                    type: "image",
+                  }]
+                : [],
+            })));
+          }
           if (data.tags) setTags(data.tags.map((t) => t.name));
 
+          if (data.linkedProducts) {
+            setUpsells(
+              data.linkedProducts
+                .filter((lp) => lp.linkedType === "UPSELL")
+                .map((lp) => lp.linkedProductName)
+            );
+            setCrossSells(
+              data.linkedProducts
+                .filter((lp) => lp.linkedType === "CROSS_SELL")
+                .map((lp) => lp.linkedProductName)
+            );
+            setBoughtTogether(
+              data.linkedProducts
+                .filter((lp) => lp.linkedType === "BOUGHT_TOGETHER")
+                .map((lp) => lp.linkedProductName)
+            );
+          }
+
           if (data.media) {
-            const existingMedia = data.media.map((m) => ({
+            const galleryMedia = data.media.filter(m => m.fileName && m.mediaType !== 'manufacturer' && m.fileType !== 'video-url' && m.fileType !== 'instagram-url').map((m) => ({
               isNew: false,
               id: m.id,
               url: `${BACKEND_URL}/uploads/products/${m.fileName}`,
               type: m.fileType,
               isPrimary: m.isPrimary,
+              mediaType: m.mediaType || "gallery",
             }));
-            // Sort to ensure primary image is at index 0
-            existingMedia.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
-            setMediaFiles(existingMedia);
+            galleryMedia.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
+            setMediaFiles(galleryMedia);
+
+            const mfrMedia = data.media.filter(m => m.fileName && m.mediaType === 'manufacturer').map((m) => ({
+              id: m.id,
+              url: `${BACKEND_URL}/uploads/products/${m.fileName}`,
+              type: "image",
+              isNew: false,
+            }));
+            setManufacturerMedia(mfrMedia);
+
+            const instagramMediaItems = data.media.filter(m => m.fileName && m.fileType === 'instagram-url');
+            const instaUrls = instagramMediaItems.map(m => m.fileName);
+            setInstagramUrls(instaUrls);
+            const loadedThumbnails = {};
+            instagramMediaItems.forEach((m, idx) => {
+              if (m.customThumbnail) {
+                loadedThumbnails[idx] = {
+                  file: null,
+                  preview: `${BACKEND_URL}/uploads/products/${m.customThumbnail}`
+                };
+              }
+            });
+            if (Object.keys(loadedThumbnails).length > 0) {
+              setInstagramThumbnails(loadedThumbnails);
+            }
+
+            const videoUrlsData = data.media
+              .filter(m => m.fileName && m.fileType === 'video-url')
+              .map(m => m.fileName);
+            setVideoUrls(videoUrlsData);
+          }
+          if (data.instagramFeedLayout) {
+            setInstagramFeedLayout(data.instagramFeedLayout);
+          }
+          if (data.instagramFeedConfig) {
+            try {
+              const config = JSON.parse(data.instagramFeedConfig);
+              if (config.links) setInstagramProductLinks(config.links);
+            } catch (e) {}
+          }
+          if (data.manufacturerLayout) {
+            setManufacturerLayout(data.manufacturerLayout);
           }
         } catch (error) {
           console.error("Failed to load product data", error);
@@ -435,18 +854,32 @@ const AddProduct = () => {
         brand: brand,
         shortDescription: shortDescription,
         description: description,
+        metaTitle: metaTitle || null,
+        metaDescription: metaDescription || null,
         regularPrice: parseFloat(regularPrice) || 0,
         discountPrice: parseFloat(discountPrice) || null,
         sku: sku,
         initialStock: parseInt(initialStock) || 0,
         supportsWholesale: supportsWholesale,
+        wholesaleOnly: wholesaleOnly,
         wholesaleDiscountType: wholesaleDiscountType,
+        wholesalePrice: wholesalePrice ? parseFloat(wholesalePrice) : null,
+        minimumWholesaleQuantity: minimumWholesaleQuantity ? parseInt(minimumWholesaleQuantity) : null,
+        pricingTiers: pricingTiers
+          .filter(t => t.minQuantity !== "")
+          .map(t => ({
+            minQuantity: parseInt(t.minQuantity),
+            maxQuantity: t.maxQuantity ? parseInt(t.maxQuantity) : null,
+            unitPrice: t.unitPrice ? parseFloat(t.unitPrice) : null,
+            discountType: t.discountType || null,
+            discountValue: t.discountValue ? parseFloat(t.discountValue) : null,
+          })),
         weight: parseFloat(weight) || null,
         length: parseFloat(length) || null,
         width: parseFloat(width) || null,
         height: parseFloat(height) || null,
 
-        status: "in", // Setting default status as 'in' stock
+        status: isEditMode ? productStatus : "in",
 
         attributes: attributes
           .filter((a) => a.name && a.value)
@@ -454,16 +887,25 @@ const AddProduct = () => {
         tags: tags.map((t) => ({ name: t })),
         variations: variations
           .filter((v) => v.name)
-          .map((v) => ({
-            name: v.name,
-            sku: v.sku,
-            price: parseFloat(v.price) || null,
-            stock: parseInt(v.stock) || 0,
-            useMainPricing: v.useMainPricing,
-            useMainAttributesAndTags: v.useMainAttributesAndTags !== false,
-            attributes: v.useMainAttributesAndTags !== false ? [] : (v.attributes || []).filter((a) => a.name && a.value).map((a) => ({ name: a.name, value: a.value })),
-            tags: v.useMainAttributesAndTags !== false ? [] : (v.tags || []).map((t) => ({ name: t })),
-          })),
+          .map((v) => {
+            // Preserve existing imageFileName for non-new images
+            const existingImage = (v.images || []).find((img) => !img.isNew);
+            const existingImageFileName = existingImage
+              ? (v.imageFileName || null)
+              : null;
+            // If there are new images, the backend will overwrite imageFileName
+            return {
+              name: v.name,
+              sku: v.sku,
+              price: parseFloat(v.price) || null,
+              stock: parseInt(v.stock) || 0,
+              useMainPricing: v.useMainPricing,
+              useMainAttributesAndTags: v.useMainAttributesAndTags !== false,
+              imageFileName: existingImageFileName,
+              attributes: v.useMainAttributesAndTags !== false ? [] : (v.attributes || []).filter((a) => a.name && a.value).map((a) => ({ name: a.name, value: a.value })),
+              tags: v.useMainAttributesAndTags !== false ? [] : (v.tags || []).map((t) => ({ name: t })),
+            };
+          }),
         linkedProducts: [
           ...upsells.map((u) => ({
             linkedType: "UPSELL",
@@ -473,12 +915,22 @@ const AddProduct = () => {
             linkedType: "CROSS_SELL",
             linkedProductName: c,
           })),
+          ...boughtTogether.map((b) => ({
+            linkedType: "BOUGHT_TOGETHER",
+            linkedProductName: b,
+          })),
         ],
         media: mediaFiles.map((m, index) => ({
           id: m.isNew ? null : m.id,
           isNew: m.isNew,
           isPrimary: index === 0,
+          mediaType: m.mediaType || "gallery",
         })),
+        manufacturerLayout: manufacturerLayout,
+        instagramFeedLayout: instagramFeedLayout,
+        instagramFeedConfig: Object.keys(instagramProductLinks).length > 0
+          ? JSON.stringify({ links: instagramProductLinks })
+          : null,
       };
 
       const formData = new FormData();
@@ -498,20 +950,29 @@ const AddProduct = () => {
         }
       });
 
-      variations.forEach((varItem, vIndex) => {
+      manufacturerMedia.forEach((media) => {
+        if (media.isNew && media.file) {
+          formData.append("manufacturerFiles", media.file);
+        }
+      });
+
+      let filteredVarIndex = 0;
+      variations.forEach((varItem) => {
+        if (!varItem.name) return;
         if (varItem.images) {
           const variationMediaMetadata = [];
           varItem.images.forEach((media, imgIndex) => {
             if (media.isNew && media.file) {
-              formData.append(`variationMedia_${vIndex}`, media.file);
+              formData.append(`variationMedia_${filteredVarIndex}`, media.file);
             }
             variationMediaMetadata.push({
               isNew: media.isNew,
               isPrimary: imgIndex === 0,
             });
           });
-          formData.append(`variationMediaMetadata_${vIndex}`, JSON.stringify(variationMediaMetadata));
+          formData.append(`variationMediaMetadata_${filteredVarIndex}`, JSON.stringify(variationMediaMetadata));
         }
+        filteredVarIndex++;
       });
 
       policyDocuments.forEach((doc) => {
@@ -519,6 +980,31 @@ const AddProduct = () => {
           formData.append("policyFiles", doc.file);
         }
       });
+
+      const existingMfrIds = manufacturerMedia.filter(m => !m.isNew).map(m => m.id);
+      if (existingMfrIds.length > 0) {
+        formData.append("manufacturerMediaIds", JSON.stringify(existingMfrIds));
+      }
+
+      if (videoUrls.length > 0) {
+        formData.append("videoUrls", JSON.stringify(videoUrls));
+      }
+
+      if (instagramUrls.length > 0) {
+        formData.append("instagramUrls", JSON.stringify(instagramUrls));
+        const thumbFiles = Object.entries(instagramThumbnails)
+          .filter(([, v]) => v.file)
+          .sort(([a], [b]) => parseInt(a) - parseInt(b))
+          .map(([, v]) => v.file);
+        if (thumbFiles.length > 0) {
+          thumbFiles.forEach((file) => formData.append("instagramThumbnailFiles", file));
+          formData.append("instagramThumbnailIndices", JSON.stringify(
+            Object.entries(instagramThumbnails)
+              .filter(([, v]) => v.file)
+              .map(([k]) => parseInt(k))
+          ));
+        }
+      }
 
       const loadingToast = toast.loading(
         isEditMode ? "Updating product..." : "Saving product...",
@@ -671,37 +1157,105 @@ const AddProduct = () => {
           </div>
 
           <div className="form-row">
-            <div className="form-group form-col">
+            <div className="form-group form-col" ref={categoryDropdownRef} style={{ position: "relative" }}>
               <label>Category</label>
-              <select
-                className={`form-control ${!category ? 'select-placeholder' : ''} ${errors.category ? "error" : ""}`}
-                value={category}
+              <input
+                type="text"
+                className={`form-control ${errors.category ? "error" : ""}`}
+                placeholder="Search or select category..."
+                value={categorySearch}
                 onChange={(e) => {
-                  setCategory(e.target.value);
+                  setCategorySearch(e.target.value);
+                  setShowCategoryDropdown(true);
+                  if (!e.target.value) {
+                    setCategory("");
+                    setSubCategory("");
+                    setSubCategorySearch("");
+                  }
                   if (errors.category) setErrors(prev => ({ ...prev, category: "" }));
                 }}
-              >
-                <option value="">Select Category</option>
-                <option value="grocery">Grocery & Gourmet Food</option>
-                <option value="health">Health & Household</option>
-                <option value="home">Home & Kitchen</option>
-                <option value="beauty">Beauty & Personal Care</option>
-                <option value="clothing">Clothing, Shoes & Jewellery</option>
-                <option value="toys">Toys & Games</option>
-                <option value="patio">Patio, Lawn & Garden</option>
-                <option value="musical">Musical Instruments</option>
-              </select>
+                onFocus={() => setShowCategoryDropdown(true)}
+              />
+              {showCategoryDropdown && (
+                <ul className="product-suggestions-dropdown">
+                  {categories
+                    .filter((c) => c.status === "Active" && c.name.toLowerCase().includes(categorySearch.toLowerCase()))
+                    .map((c) => (
+                      <li
+                        key={c.id}
+                        className="product-suggestion-item"
+                        onClick={() => {
+                          setCategory(c.name);
+                          setCategorySearch(c.name);
+                          setShowCategoryDropdown(false);
+                          setSubCategory("");
+                          setSubCategorySearch("");
+                          if (errors.category) setErrors(prev => ({ ...prev, category: "" }));
+                        }}
+                      >
+                        {c.name}
+                      </li>
+                    ))}
+                  {categories.filter((c) => c.status === "Active" && c.name.toLowerCase().includes(categorySearch.toLowerCase())).length === 0 && (
+                    <li className="product-suggestion-item" style={{ color: "#888", cursor: "default" }}>
+                      No categories found
+                    </li>
+                  )}
+                </ul>
+              )}
               {errors.category && <span className="error-message">{errors.category}</span>}
             </div>
-            <div className="form-group form-col">
+            <div className="form-group form-col" ref={subCategoryDropdownRef} style={{ position: "relative" }}>
               <label>Sub Category</label>
               <input
                 type="text"
                 className="form-control"
-                placeholder="e.g. Snacks, Makeup, etc."
-                value={subCategory}
-                onChange={(e) => setSubCategory(e.target.value)}
+                placeholder="Search or select sub-category..."
+                value={subCategorySearch}
+                onChange={(e) => {
+                  setSubCategorySearch(e.target.value);
+                  setShowSubCategoryDropdown(true);
+                  if (!e.target.value) {
+                    setSubCategory("");
+                  }
+                }}
+                onFocus={() => setShowSubCategoryDropdown(true)}
+                disabled={!category}
               />
+              {showSubCategoryDropdown && category && (
+                <ul className="product-suggestions-dropdown">
+                  {subCategories
+                    .filter(
+                      (sc) =>
+                        sc.status === "Active" &&
+                        sc.category?.name === category &&
+                        sc.name.toLowerCase().includes(subCategorySearch.toLowerCase())
+                    )
+                    .map((sc) => (
+                      <li
+                        key={sc.id}
+                        className="product-suggestion-item"
+                        onClick={() => {
+                          setSubCategory(sc.name);
+                          setSubCategorySearch(sc.name);
+                          setShowSubCategoryDropdown(false);
+                        }}
+                      >
+                        {sc.name}
+                      </li>
+                    ))}
+                  {subCategories.filter(
+                    (sc) =>
+                      sc.status === "Active" &&
+                      sc.category?.name === category &&
+                      sc.name.toLowerCase().includes(subCategorySearch.toLowerCase())
+                  ).length === 0 && (
+                    <li className="product-suggestion-item" style={{ color: "#888", cursor: "default" }}>
+                      No sub-categories found
+                    </li>
+                  )}
+                </ul>
+              )}
             </div>
           </div>
 
@@ -831,6 +1385,19 @@ const AddProduct = () => {
             </label>
           </div>
 
+          <div className="checkbox-group" style={{ marginBottom: "1rem" }}>
+            <input
+              type="checkbox"
+              id="wholesaleOnly"
+              className="checkbox-custom"
+              checked={wholesaleOnly}
+              onChange={(e) => setWholesaleOnly(e.target.checked)}
+            />
+            <label htmlFor="wholesaleOnly">
+              Wholesale-only (hidden from regular customers)
+            </label>
+          </div>
+
           {supportsWholesale && (
             <div
               className="pricing-grid"
@@ -847,6 +1414,8 @@ const AddProduct = () => {
                   min="0"
                   className="form-control"
                   placeholder="0.00"
+                  value={wholesalePrice}
+                  onChange={(e) => setWholesalePrice(e.target.value)}
                 />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -856,6 +1425,8 @@ const AddProduct = () => {
                   min="1"
                   className="form-control"
                   placeholder="10"
+                  value={minimumWholesaleQuantity}
+                  onChange={(e) => setMinimumWholesaleQuantity(e.target.value)}
                 />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -871,8 +1442,13 @@ const AddProduct = () => {
               </div>
               {wholesaleDiscountType === "percentage" && (
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label>Discount Value</label>
-                  <select className={`form-control select-placeholder`} defaultValue="5">
+                  <label>Discount Value (%)</label>
+                  <select
+                    className={`form-control ${!wholesalePrice ? 'select-placeholder' : ''}`}
+                    value={wholesalePrice}
+                    onChange={(e) => setWholesalePrice(e.target.value)}
+                  >
+                    <option value="">Select Percentage</option>
                     <option value="5">5%</option>
                     <option value="10">10%</option>
                     <option value="15">15%</option>
@@ -892,6 +1468,123 @@ const AddProduct = () => {
               )}
             </div>
           )}
+
+          {/* ─── Bulk / Tiered Pricing Section ─── */}
+          <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid #000" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 600 }}>Bulk / Tiered Pricing</h3>
+                <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "#666" }}>
+                  Set different prices for different quantity ranges. Customers who buy more pay less.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ display: "flex", alignItems: "center", gap: "0.4rem", borderStyle: "dashed", fontSize: "0.85rem" }}
+                onClick={handleAddPricingTier}
+              >
+                <Plus size={16} /> Add Tier
+              </button>
+            </div>
+
+            {pricingTiers.length === 0 && (
+              <div style={{ padding: "1.5rem", background: "#f9f9f9", borderRadius: "8px", border: "1px dashed #ccc", textAlign: "center", color: "#888", fontSize: "0.9rem" }}>
+                No pricing tiers configured. Click "Add Tier" to create quantity-based pricing rules.
+              </div>
+            )}
+
+            {pricingTiers.map((tier, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "flex", gap: "0.75rem", alignItems: "flex-start",
+                  padding: "1rem", marginBottom: "0.75rem",
+                  background: "#fff", borderRadius: "8px", border: "1px solid #e0e0e0",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div className="form-group" style={{ marginBottom: 0, flex: "1 1 120px", minWidth: "100px" }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 500 }}>Min Qty</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="form-control"
+                    placeholder="e.g. 5"
+                    value={tier.minQuantity}
+                    onChange={(e) => handlePricingTierChange(index, "minQuantity", e.target.value)}
+                    style={{ height: "38px", fontSize: "0.85rem" }}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0, flex: "1 1 120px", minWidth: "100px" }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 500 }}>Max Qty</label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="form-control"
+                    placeholder="Leave empty for 10+"
+                    value={tier.maxQuantity}
+                    onChange={(e) => handlePricingTierChange(index, "maxQuantity", e.target.value)}
+                    style={{ height: "38px", fontSize: "0.85rem" }}
+                  />
+                  <small style={{ fontSize: "0.7rem", color: "#999" }}>Leave empty for "and above"</small>
+                </div>
+                <div className="form-group" style={{ marginBottom: 0, flex: "1 1 120px", minWidth: "120px" }}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 500 }}>Pricing Type</label>
+                  <select
+                    className="form-control"
+                    value={tier.discountType}
+                    onChange={(e) => handlePricingTierChange(index, "discountType", e.target.value)}
+                    style={{ height: "38px", fontSize: "0.85rem" }}
+                  >
+                    <option value="percentage">% Discount</option>
+                    <option value="fixed">Fixed Discount (₹)</option>
+                    <option value="unitPrice">Fixed Unit Price</option>
+                  </select>
+                </div>
+                {tier.discountType === "unitPrice" ? (
+                  <div className="form-group" style={{ marginBottom: 0, flex: "1 1 120px", minWidth: "100px" }}>
+                    <label style={{ fontSize: "0.8rem", fontWeight: 500 }}>Unit Price (₹)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="form-control"
+                      placeholder="0.00"
+                      value={tier.unitPrice}
+                      onChange={(e) => handlePricingTierChange(index, "unitPrice", e.target.value)}
+                      style={{ height: "38px", fontSize: "0.85rem" }}
+                    />
+                  </div>
+                ) : (
+                  <div className="form-group" style={{ marginBottom: 0, flex: "1 1 120px", minWidth: "100px" }}>
+                    <label style={{ fontSize: "0.8rem", fontWeight: 500 }}>{tier.discountType === "percentage" ? "Discount %" : "Discount (₹)"}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      className="form-control"
+                      placeholder={tier.discountType === "percentage" ? "e.g. 10" : "e.g. 500"}
+                      value={tier.discountValue}
+                      onChange={(e) => handlePricingTierChange(index, "discountValue", e.target.value)}
+                      style={{ height: "38px", fontSize: "0.85rem" }}
+                    />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleRemovePricingTier(index)}
+                  style={{
+                    marginTop: "1.5rem",
+                    background: "none", border: "none", cursor: "pointer",
+                    color: "#FF5722", fontSize: "1.2rem", padding: "0.25rem",
+                    flexShrink: 0,
+                  }}
+                  title="Remove tier"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Section 3: Product Media */}
@@ -933,8 +1626,8 @@ const AddProduct = () => {
             {errors.media && <span className="error-message" style={{ marginTop: '1rem', display: 'block' }}>{errors.media}</span>}
           </div>
 
-          <div className="image-preview-row" style={{ flexWrap: "wrap" }}>
-            {mediaFiles.map((media, index) => (
+            <div className="image-preview-row" style={{ flexWrap: "wrap" }}>
+              {mediaFiles.map((media, index) => (
               <div
                 className={`image-thumbnail-wrapper ${index === 0 ? "primary" : ""}`}
                 key={media.url} // using url for stability during reorder
@@ -948,16 +1641,17 @@ const AddProduct = () => {
                   opacity: draggedItemIndex === index ? 0.5 : 1,
                 }}
               >
-                {media.type === "video" ? (
-                  <video src={media.url} className="image-thumbnail" muted />
-                ) : (
-                  <img
-                    src={media.url}
-                    alt={`Preview ${index}`}
-                    className="image-thumbnail"
-                    draggable="false"
-                  />
-                )}
+{media.type === "video" ? (
+                    <video src={media.url} className="image-thumbnail" muted/>
+                  ) : (
+                    <img
+                      src={media.url}
+                      alt={`Preview ${index}`}
+                      className="image-thumbnail"
+                      draggable="false"
+                    />
+                  )}
+
                 {index === 0 ? (
                   <div className="primary-label">Primary</div>
                 ) : (
@@ -1315,11 +2009,11 @@ const AddProduct = () => {
                     <div className="image-preview-row" style={{ flexWrap: "wrap", gap: "0.75rem", marginTop: "0.8rem" }}>
                       {(variation.images || []).map((media, imgIndex) => (
                         <div className={`image-thumbnail-wrapper ${imgIndex === 0 ? "primary" : ""}`} key={media.url || imgIndex} style={{ width: "80px", height: "80px", marginBottom: 0, position: "relative", border: "1px solid #ddd", borderRadius: "8px", padding: 0 }}>
-                          {media.type === "video" ? (
-                            <video src={media.url} className="image-thumbnail" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} muted />
-                          ) : (
-                            <img src={media.url} alt={`Var Preview ${imgIndex}`} className="image-thumbnail" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} />
-                          )}
+{media.type === "video" ? (
+                              <video src={media.url} className="image-thumbnail" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }} muted/>
+                            ) : (
+                              <img src={media.url} alt={`Var Preview ${imgIndex}`} className="image-thumbnail" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }}/>
+                            )}
                           {imgIndex === 0 ? (
                             <div className="primary-label" style={{ position: "absolute", bottom: 0, left: 0, width: "100%", background: "rgba(0,0,0,0.6)", color: "#fff", fontSize: "0.6rem", textAlign: "center", padding: "0.1rem 0", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px" }}>Primary</div>
                           ) : (
@@ -1499,15 +2193,55 @@ const AddProduct = () => {
                 product, for example, products that are more profitable or
                 better quality.
               </p>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Press enter to add product name or ID..."
-                value={upsellInput}
-                onChange={(e) => setUpsellInput(e.target.value)}
-                onKeyDown={handleAddUpsell}
-              />
-              {upsells.length > 0 && (
+              <div style={{ position: "relative" }} ref={upsellDropdownRef}>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search by product name or SKU..."
+                  value={upsellInput}
+                  onChange={handleUpsellInputChange}
+                  onKeyDown={handleAddUpsell}
+                />
+                {showUpsellDropdown && upsellSuggestions.length > 0 && (
+                  <ul className="product-suggestions-dropdown">
+{upsellSuggestions.map((product) => (
+                       <li
+                         key={product.id}
+                         onClick={() => handleSelectUpsell(product)}
+                         className="product-suggestion-item"
+                       >
+                         {product.imageUrls?.[0] ? (
+                           <img
+                             key={`upsell-img-${product.id || Math.random()}`}
+                             src={product.imageUrls[0].startsWith("http") ? product.imageUrls[0] : `${BACKEND_URL}${product.imageUrls[0]}`}
+                             alt=""
+                             className="product-suggestion-img"
+                            />
+                          ) : (
+                            <img
+                              key={`upsell-img-${product.id || Math.random()}-placeholder`}
+                            src={PLACEHOLDER_IMG}
+                              alt=""
+                              className="product-suggestion-img"
+                            />
+                           )}
+                         <div className="product-suggestion-info">
+                           <span className="product-suggestion-name">{product.name || product.productName}</span>
+                           <div className="product-suggestion-meta">
+                             {product.sku && (
+                               <span className="product-suggestion-sku">SKU: {product.sku}</span>
+                             )}
+                             {product.regularPrice && (
+                               <span className="product-suggestion-price">&#8377;{product.regularPrice}</span>
+                             )}
+                           </div>
+                         </div>
+                       </li>
+                     ))}
+                   </ul>
+                 )}
+               </div>
+               {upsells.length > 0 && (
                 <div className="product-tags-container">
                   {upsells.map((item, index) => (
                     <span key={index} className="product-tag">
@@ -1538,15 +2272,55 @@ const AddProduct = () => {
                 Products which you promote in the cart, based on the current
                 product.
               </p>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Press enter to add product name or ID..."
-                value={crossSellInput}
-                onChange={(e) => setCrossSellInput(e.target.value)}
-                onKeyDown={handleAddCrossSell}
-              />
-              {crossSells.length > 0 && (
+              <div style={{ position: "relative" }} ref={crossSellDropdownRef}>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search by product name or SKU..."
+                  value={crossSellInput}
+                  onChange={handleCrossSellInputChange}
+                  onKeyDown={handleAddCrossSell}
+                />
+                {showCrossSellDropdown && crossSellSuggestions.length > 0 && (
+                  <ul className="product-suggestions-dropdown">
+{crossSellSuggestions.map((product) => (
+                       <li
+                         key={product.id}
+                         onClick={() => handleSelectCrossSell(product)}
+                         className="product-suggestion-item"
+                       >
+                         {product.imageUrls?.[0] ? (
+                           <img
+                             key={`crosssell-img-${product.id || Math.random()}`}
+                             src={product.imageUrls[0].startsWith("http") ? product.imageUrls[0] : `${BACKEND_URL}${product.imageUrls[0]}`}
+                             alt=""
+                             className="product-suggestion-img"
+                            />
+                          ) : (
+                            <img
+                              key={`crosssell-img-${product.id || Math.random()}-placeholder`}
+                            src={PLACEHOLDER_IMG}
+                              alt=""
+                              className="product-suggestion-img"
+                            />
+                           )}
+                         <div className="product-suggestion-info">
+                           <span className="product-suggestion-name">{product.name || product.productName}</span>
+                           <div className="product-suggestion-meta">
+                             {product.sku && (
+                               <span className="product-suggestion-sku">SKU: {product.sku}</span>
+                             )}
+                             {product.regularPrice && (
+                               <span className="product-suggestion-price">&#8377;{product.regularPrice}</span>
+                             )}
+                           </div>
+                         </div>
+                       </li>
+                     ))}
+                   </ul>
+                 )}
+               </div>
+               {crossSells.length > 0 && (
                 <div className="product-tags-container">
                   {crossSells.map((item, index) => (
                     <span key={index} className="product-tag">
@@ -1564,12 +2338,214 @@ const AddProduct = () => {
               )}
             </div>
           </div>
+
+          <div className="form-row">
+            <div className="form-group form-col">
+              <label>Frequently Bought Together</label>
+              <p style={{ fontSize: "0.8rem", color: "#000", marginTop: "-0.25rem", marginBottom: "0.5rem", minHeight: "3.5rem" }}>
+                Products frequently purchased together with this item. Displayed as a bundle on the product page.
+              </p>
+              <div style={{ position: "relative" }} ref={boughtTogetherDropdownRef}>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search by product name or SKU..."
+                  value={boughtTogetherInput}
+                  onChange={handleBoughtTogetherInputChange}
+                  onKeyDown={handleAddBoughtTogether}
+                />
+                {showBoughtTogetherDropdown && boughtTogetherSuggestions.length > 0 && (
+                  <ul className="product-suggestions-dropdown">
+{boughtTogetherSuggestions.map((product) => (
+                       <li
+                         key={product.id}
+                         onClick={() => handleSelectBoughtTogether(product)}
+                         className="product-suggestion-item"
+                       >
+                         {product.imageUrls?.[0] ? (
+                           <img
+                             key={`boughttogether-img-${product.id || Math.random()}`}
+                             src={product.imageUrls[0].startsWith("http") ? product.imageUrls[0] : `${BACKEND_URL}${product.imageUrls[0]}`}
+                             alt=""
+                             className="product-suggestion-img"
+                            />
+                          ) : (
+                            <img
+                              key={`boughttogether-img-${product.id || Math.random()}-placeholder`}
+                            src={PLACEHOLDER_IMG}
+                              alt=""
+                              className="product-suggestion-img"
+                            />
+                           )}
+                         <div className="product-suggestion-info">
+                           <span className="product-suggestion-name">{product.name || product.productName}</span>
+                           <div className="product-suggestion-meta">
+                             {product.sku && <span className="product-suggestion-sku">SKU: {product.sku}</span>}
+                             {product.regularPrice && <span className="product-suggestion-price">&#8377;{product.regularPrice}</span>}
+                           </div>
+                         </div>
+                       </li>
+                     ))}
+                   </ul>
+                 )}
+               </div>
+               {boughtTogether.length > 0 && (
+                <div className="product-tags-container">
+                  {boughtTogether.map((item, index) => (
+                    <span key={index} className="product-tag">
+                      {item}
+                      <button type="button" onClick={() => handleRemoveBoughtTogether(item)} className="product-tag-remove">&times;</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Section 7: Shipping, Tax & Policies */}
+        {/* Section 6.5: From the Manufacturer Settings */}
         <div className="form-section">
           <div className="section-header">
             <div className="step-indicator">7</div>
+            <h2>From the Manufacturer</h2>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group form-col">
+              <label className="form-label">Layout Design</label>
+              <p className="form-help-text" style={{ fontSize: '0.82rem', color: '#8A7F75', marginBottom: '0.75rem' }}>
+                Choose how the "From the Manufacturer" section appears on the product page.
+              </p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {[
+                  { value: 'collage', label: 'Collage', desc: 'Mixed grid layout' },
+                  { value: 'grid', label: 'Grid', desc: 'Even grid of images' },
+                  { value: 'slider', label: 'Slider', desc: 'Full-width carousel' },
+                  { value: 'masonry', label: 'Masonry', desc: 'Pinterest-style' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setManufacturerLayout(opt.value)}
+                    style={{
+                      padding: '12px 20px',
+                      borderRadius: '10px',
+                      border: manufacturerLayout === opt.value ? '2px solid #FF5722' : '1px solid #E8DDD4',
+                      background: manufacturerLayout === opt.value ? '#FFF3E0' : '#fff',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.2s',
+                      minWidth: '140px',
+                    }}
+                  >
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#2C2C2C', marginBottom: '4px' }}>{opt.label}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#8A7F75' }}>{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-row" style={{ marginTop: '1.5rem' }}>
+            <div className="form-group form-col">
+              <label className="form-label">Manufacturer Images</label>
+              <p className="form-help-text" style={{ fontSize: '0.82rem', color: '#8A7F75', marginBottom: '0.75rem' }}>
+                Upload images for the "From the Manufacturer" section. These will only appear in the "From the Manufacturer" section on the product page, not in the product gallery.
+              </p>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '12px' }}>
+{manufacturerMedia.map((m, i) => (
+                  <div key={m.id || i} style={{
+                    width: '100px', height: '100px', borderRadius: '10px', overflow: 'hidden',
+                    border: '1px solid #E8DDD4', position: 'relative', background: '#F9F5F0', flexShrink: 0
+                  }}>
+                    <img src={m.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
+                  </div>
+                ))}
+                <div
+                  onClick={() => mfrFileInputRef.current?.click()}
+                  style={{
+                    width: '100px', height: '100px', borderRadius: '10px', border: '2px dashed #E8DDD4',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', background: '#FFFBF8', gap: '4px', flexShrink: 0
+                  }}
+                >
+                  <ImageIcon size={20} color="#C9A87C" />
+                  <span style={{ fontSize: '0.7rem', color: '#8A7F75' }}>Add Images</span>
+                </div>
+              </div>
+              <input ref={mfrFileInputRef} type="file" multiple accept="image/*" onChange={handleMfrFileChange} style={{ display: 'none' }} />
+              <div style={{
+                background: '#FFFBF8', border: '1px solid #E8DDD4', borderRadius: '10px',
+                padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px',
+                fontSize: '0.82rem', color: '#6B635B'
+              }}>
+                <ImageIcon size={18} color="#C9A87C" />
+                <span>Currently <strong>{manufacturerMedia.length || 0}</strong> manufacturer image(s).</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 7: Video Gallery */}
+        <div className="form-section">
+          <div className="section-header">
+            <div className="step-indicator">8</div>
+            <h2>Video Gallery</h2>
+          </div>
+          <div className="form-row">
+            <div className="form-group form-col">
+              <label className="form-label">Product Video URLs</label>
+              <p className="form-help-text" style={{ fontSize: '0.82rem', color: '#8A7F75', marginBottom: '0.75rem' }}>
+                Add YouTube or direct video URLs. These will appear in a video gallery section on the product page.
+              </p>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                <input
+                  type="url"
+                  className="form-control"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={videoUrlInput}
+                  onChange={(e) => setVideoUrlInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddVideoUrl(); } }}
+                  style={{ flex: 1 }}
+                />
+                <button type="button" className="btn btn-primary" onClick={handleAddVideoUrl} style={{ whiteSpace: 'nowrap' }}>
+                  Add
+                </button>
+              </div>
+              {videoUrls.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+                  {videoUrls.map((url, i) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 12px', borderRadius: '8px', border: '1px solid #E8DDD4',
+                      background: '#FFFBF8', fontSize: '0.82rem'
+                    }}>
+                      <Video size={16} color="#C9A87C" style={{ flexShrink: 0 }} />
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#2C2C2C' }}>{url}</span>
+                      <button type="button" onClick={() => handleRemoveVideoUrl(i)} style={{
+                        background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '1.1rem', padding: '0 4px'
+                      }}>&times;</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{
+                background: '#FFFBF8', border: '1px solid #E8DDD4', borderRadius: '10px',
+                padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px',
+                fontSize: '0.82rem', color: '#6B635B'
+              }}>
+                <ImageIcon size={18} color="#C9A87C" />
+                <span>Currently <strong>{videoUrls.length || 0}</strong> video URL(s).</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 8: Shipping, Tax & Policies */}
+        <div className="form-section">
+          <div className="section-header">
+            <div className="step-indicator">9</div>
             <h2>Shipping, Tax & Policies</h2>
           </div>
 
@@ -1746,6 +2722,191 @@ const AddProduct = () => {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Instagram Feed Section */}
+        <div className="form-section">
+          <div className="section-header">
+            <div className="step-indicator">10</div>
+            <h2>Instagram Feed</h2>
+          </div>
+          <div className="form-row">
+            <div className="form-group form-col">
+              <label className="form-label">Instagram Post URLs</label>
+              <p className="form-help-text" style={{ fontSize: '0.82rem', color: '#8A7F75', marginBottom: '0.75rem' }}>
+                Add Instagram post URLs (e.g., https://www.instagram.com/p/ABC123/). These will appear in an Instagram-style feed on the product page.
+              </p>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                <input
+                  type="url"
+                  className="form-control"
+                  placeholder="https://www.instagram.com/p/..."
+                  value={instagramUrlInput}
+                  onChange={(e) => setInstagramUrlInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddInstagramUrl(); } }}
+                  style={{ flex: 1 }}
+                />
+                <button onClick={handleAddInstagramUrl} className="btn-primary" style={{ padding: '10px 20px', whiteSpace: 'nowrap' }}>
+                  <Plus size={16} /> Add
+                </button>
+              </div>
+              {instagramUrls.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                  {instagramUrls.map((url, i) => (
+                    <div key={i} style={{
+                      background: '#FFFBF8', border: '1px solid #E8DDD4', borderRadius: '10px',
+                      padding: '10px 14px', fontSize: '0.82rem', maxWidth: '100%'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: instagramProductLinks[i] ? '6px' : 0 }}>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '300px', color: '#2C2C2C', flex: 1 }}>
+                          {url}
+                        </span>
+                        <button onClick={() => handleRemoveInstagramUrl(i)} style={{
+                          background: 'none', border: 'none', cursor: 'pointer', color: '#D4857F',
+                          fontSize: '1.1rem', padding: '0 2px', lineHeight: 1, flexShrink: 0
+                        }}>&times;</button>
+                      </div>
+                      <div style={{ position: 'relative' }} ref={(el) => instagramProductInputRefs.current[i] = el}>
+                        {instagramProductLinks[i] ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#2C2C2C', background: '#FFF3E0', padding: '3px 10px', borderRadius: '6px', border: '1px solid #FFE0B2' }}>
+                              {instagramProductLinks[i]}
+                              <button type="button" onClick={() => handleRemoveInstagramProductLink(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#D4857F', fontSize: '1rem', marginLeft: '6px', padding: 0, lineHeight: 1 }}>&times;</button>
+                            </span>
+                          </div>
+                        ) : (
+                          <input
+                            type="text"
+                            placeholder="Search & link a product (optional)"
+                            value={activeInstagramProductIndex === i ? instagramProductInput : ''}
+                            onChange={(e) => handleInstagramProductInputChange(i, e.target.value)}
+                            onFocus={() => setActiveInstagramProductIndex(i)}
+                            style={{
+                              width: '100%', border: '1px solid #E8DDD4', borderRadius: '6px',
+                              padding: '6px 10px', fontSize: '0.8rem', marginTop: '6px',
+                              background: '#fff', color: '#2C2C2C', outline: 'none',
+                              boxSizing: 'border-box'
+                            }}
+                          />
+                        )}
+                        {showInstagramProductDropdown && activeInstagramProductIndex === i && instagramProductSuggestions.length > 0 && (
+                          <ul style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: '#fff', border: '1px solid #E8DDD4', borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', margin: '2px 0 0', padding: '6px 0', listStyle: 'none', maxHeight: '200px', overflowY: 'auto' }}>
+                            {instagramProductSuggestions.map((product) => (
+                              <li
+                                key={product.id}
+                                onClick={() => handleSelectInstagramProduct(i, product)}
+                                style={{ padding: '8px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', borderBottom: '1px solid #f5f0eb' }}
+                                onMouseDown={(e) => e.preventDefault()}
+                              >
+                                <img
+                                  src={product.imageUrls?.[0] ? (product.imageUrls[0].startsWith('http') ? product.imageUrls[0] : `${BACKEND_URL}${product.imageUrls[0]}`) : PLACEHOLDER_IMG}
+                                  alt="" style={{ width: '28px', height: '28px', borderRadius: '4px', objectFit: 'cover' }}
+                                />
+                                <div>
+                                  <div style={{ fontWeight: 500, color: '#2C2C2C' }}>{product.name || product.productName}</div>
+                                  {product.regularPrice && <div style={{ fontSize: '0.75rem', color: '#888' }}>&#8377;{product.regularPrice}</div>}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
+                        {instagramThumbnails[i]?.preview ? (
+                          <div style={{ position: 'relative', width: '44px', height: '44px', flexShrink: 0 }}>
+                            <img src={instagramThumbnails[i].preview} alt="thumb" style={{ width: '44px', height: '44px', borderRadius: '8px', objectFit: 'cover', border: '1px solid #E8DDD4' }} />
+                            <button type="button" onClick={() => removeInstagramThumbnail(i)} style={{ position: 'absolute', top: '-5px', right: '-5px', width: '16px', height: '16px', borderRadius: '50%', background: '#D4857F', color: '#fff', border: 'none', fontSize: '10px', lineHeight: '16px', textAlign: 'center', cursor: 'pointer', padding: 0 }}>&times;</button>
+                          </div>
+                        ) : (
+                          <label style={{ width: '44px', height: '44px', borderRadius: '8px', border: '1px dashed #E8DDD4', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, color: '#C9A87C', fontSize: '1.2rem' }}>
+                            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { if (e.target.files[0]) handleInstagramThumbnail(i, e.target.files[0]); }} />
+                            +
+                          </label>
+                        )}
+                        <span style={{ fontSize: '0.75rem', color: '#8A7F75' }}>Custom thumbnail</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{
+                background: '#FFFBF8', border: '1px solid #E8DDD4', borderRadius: '10px',
+                padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px',
+                fontSize: '0.82rem', color: '#6B635B', marginBottom: '1.5rem'
+              }}>
+                <ImageIcon size={18} color="#C9A87C" />
+                <span>Currently <strong>{instagramUrls.length || 0}</strong> Instagram URL(s).</span>
+              </div>
+
+              <label className="form-label">Feed Layout</label>
+              <p className="form-help-text" style={{ fontSize: '0.82rem', color: '#8A7F75', marginBottom: '0.75rem' }}>
+                Choose how the Instagram feed appears on the product page.
+              </p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {[
+                  { value: 'grid', label: 'Grid', desc: 'Multi-column grid layout' },
+                  { value: 'slider', label: 'Slider', desc: 'Horizontal carousel with arrows' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setInstagramFeedLayout(opt.value)}
+                    style={{
+                      padding: '12px 20px',
+                      borderRadius: '10px',
+                      border: instagramFeedLayout === opt.value ? '2px solid #FF5722' : '1px solid #E8DDD4',
+                      background: instagramFeedLayout === opt.value ? '#FFF3E0' : '#fff',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.2s',
+                      minWidth: '140px',
+                    }}
+                  >
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#2C2C2C', marginBottom: '4px' }}>{opt.label}</div>
+                    <div style={{ fontSize: '0.75rem', color: '#8A7F75' }}>{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SEO Section */}
+        <div className="form-section">
+          <div className="section-header">
+            <div className="step-indicator">11</div>
+            <h2>Search Engine Optimization</h2>
+          </div>
+
+          <div className="form-group">
+            <label>Meta Title</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter meta title for search engines (e.g., Buy Silk Saree Online | SreeMarket)"
+              value={metaTitle}
+              onChange={(e) => setMetaTitle(e.target.value)}
+              maxLength={70}
+            />
+            <span className="field-hint" style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>
+              {metaTitle.length}/70 characters. This appears as the clickable title in search results.
+            </span>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label>Meta Description</label>
+            <textarea
+              className="form-control"
+              placeholder="Enter meta description for search engines (e.g., Shop premium handwoven silk sarees at SreeMarket. Free shipping across India.)"
+              value={metaDescription}
+              onChange={(e) => setMetaDescription(e.target.value)}
+              maxLength={160}
+              rows={3}
+            ></textarea>
+            <span className="field-hint" style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>
+              {metaDescription.length}/160 characters. This appears as the description snippet in search results.
+            </span>
           </div>
         </div>
 

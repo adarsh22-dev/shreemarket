@@ -1,0 +1,454 @@
+.demo-container {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #333;
+}
+
+/* Loading & Empty States */
+.demo-loading,
+.demo-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 16px;
+    color: #6b7280;
+}
+
+.demo-loading .spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.demo-empty h2 {
+    font-size: 1.3rem;
+    color: #374151;
+    margin: 0;
+}
+
+.demo-empty p {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+/* Header */
+.demo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+}
+
+.demo-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: #1a1a1a;
+}
+
+.demo-subtitle {
+    font-size: 0.9rem;
+    color: #888;
+    margin: 0;
+}
+
+/* Summary Cards */
+.demo-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.demo-summary-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.demo-summary-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.demo-summary-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.demo-summary-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.demo-summary-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* Tabs */
+.demo-tabs {
+    display: flex;
+    gap: 0;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    border: 1px solid #e5e7eb;
+}
+
+.demo-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 20px;
+    background: #fff;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-right: 1px solid #e5e7eb;
+}
+
+.demo-tab:last-child {
+    border-right: none;
+}
+
+.demo-tab:hover {
+    background: #f9fafb;
+    color: #374151;
+}
+
+.demo-tab.active {
+    background: #fff1f0;
+    color: #E03E1A;
+}
+
+/* Tab Content */
+.demo-tab-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.demo-devices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* Cards */
+.demo-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 24px;
+}
+
+.demo-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.demo-card-header h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.demo-card-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 4px 10px;
+    border-radius: 99px;
+}
+
+/* Bar List (reusable for cities, states, browsers, OS) */
+.demo-bar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.demo-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.demo-bar-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+    flex-shrink: 0;
+}
+
+.demo-rank {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #9ca3af;
+    width: 24px;
+}
+
+.demo-city-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.demo-bar-track {
+    flex: 1;
+    height: 10px;
+    background: #f3f4f6;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.demo-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s ease;
+    min-width: 4px;
+}
+
+.demo-bar-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 100px;
+    justify-content: flex-end;
+}
+
+.demo-bar-count {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.demo-bar-pct {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #374151;
+    min-width: 45px;
+    text-align: right;
+}
+
+/* Device dot */
+.demo-device-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Device Cards Grid */
+.demo-device-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 16px;
+}
+
+.demo-device-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 12px;
+    background: #fafafa;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.demo-device-card:hover {
+    border-color: #E03E1A;
+    box-shadow: 0 4px 12px rgba(224, 62, 26, 0.1);
+}
+
+.demo-device-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.demo-device-card-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.demo-device-card-pct {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #E03E1A;
+}
+
+.demo-device-card-count {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* KPI Grid */
+.demo-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.demo-kpi-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.demo-kpi-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.demo-kpi-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+/* Segmentation Bar */
+.demo-segmentation {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.demo-seg-bar {
+    display: flex;
+    height: 40px;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.demo-seg-fill {
+    background: linear-gradient(90deg, #16a34a, #22c55e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+    min-width: fit-content;
+    padding: 0 16px;
+    transition: width 0.6s ease;
+}
+
+.demo-seg-remaining {
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    min-width: fit-content;
+    padding: 0 16px;
+}
+
+.demo-seg-legend {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+}
+
+.demo-seg-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.demo-seg-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.demo-seg-dot.repeat {
+    background: #16a34a;
+}
+
+.demo-seg-dot.single {
+    background: #d1d5db;
+}
+
+.demo-empty-text {
+    color: #9ca3af;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .demo-summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+    .demo-devices-grid { grid-template-columns: 1fr; }
+    .demo-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .demo-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .demo-tabs { overflow-x: auto; }
+    .demo-tab { font-size: 0.8rem; padding: 12px 14px; white-space: nowrap; }
+    .demo-bar-label { min-width: 100px; }
+    .demo-bar-stats { min-width: 80px; }
+}

@@ -73,9 +73,33 @@ const RegisterPage = () => {
             }
         ],
 
+        // Step 2: Business Info (KYC fields)
+        gst: '',
+
         // Step 3: Payment Details
         paymentMethod: '',
         paymentIdentifier: '',
+        // Common KYC fields for all payment methods
+        pan: '',
+        aadhaar: '',
+        // Bank Transfer fields
+        beneficiaryName: '',
+        bankAccountNumber: '',
+        confirmBankAccountNumber: '',
+        ifscCode: '',
+        accountType: 'Savings',
+        remittanceEmail: '',
+        // UPI fields
+        upiId: '',
+        verifiedUpiBankName: '',
+        panNumberUpi: '',
+        remittanceEmailUpi: '',
+        // PayPal fields
+        paypalEmail: '',
+        confirmPaypalEmail: '',
+        paypalLegalName: '',
+        panNumberPaypal: '',
+        purposeCode: 'Goods',
 
         // Step 4: Agreements
         agreeTerms: false,
@@ -90,6 +114,9 @@ const RegisterPage = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [errors, setErrors] = useState({});
     const [logoFile, setLogoFile] = useState(null);
+    const [ifscBranch, setIfscBranch] = useState('');
+    const [ifscLookupLoading, setIfscLookupLoading] = useState(false);
+
     const [isMapModalOpen, setIsMapModalOpen] = useState(false);
     const [activeStoreIndex, setActiveStoreIndex] = useState(0);
 
@@ -123,6 +150,23 @@ const RegisterPage = () => {
             window.location.replace('/admin/dashboard');
         }
     }, []);
+
+    // IFSC auto-lookup
+    useEffect(() => {
+        if (formData.ifscCode?.length === 11 && /^[A-Z]{4}0[A-Z0-9]{6}$/i.test(formData.ifscCode)) {
+            setIfscLookupLoading(true);
+            fetch('https://ifsc.razorpay.com/' + formData.ifscCode.toUpperCase())
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (data?.BRANCH) setIfscBranch(data.BANK + ' - ' + data.BRANCH);
+                    else setIfscBranch('Not found');
+                })
+                .catch(() => setIfscBranch('Lookup failed'))
+                .finally(() => setIfscLookupLoading(false));
+        } else {
+            setIfscBranch('');
+        }
+    }, [formData.ifscCode]);
 
     const handleChange = (e) => {
         const { id, value, type, checked } = e.target;
@@ -250,8 +294,30 @@ const RegisterPage = () => {
 
     const validateStep3 = () => {
         const newErrors = {};
-        if (!formData.paymentMethod) newErrors.paymentMethod = "Selection required";
-        if (!formData.paymentIdentifier.trim()) newErrors.paymentIdentifier = "Identifier required";
+        const pm = formData.paymentMethod;
+        if (!pm) { newErrors.paymentMethod = "Selection required"; setErrors(newErrors); return false; }
+        // Common KYC fields required for all payment methods
+        if (!formData.pan.trim()) newErrors.pan = 'PAN required for KYC';
+        else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan.toUpperCase())) newErrors.pan = 'Invalid PAN format (e.g. ABCDE1234F)';
+        if (!formData.aadhaar.trim()) newErrors.aadhaar = 'Aadhaar required for KYC';
+        else if (!/^\d{12}$/.test(formData.aadhaar.replace(/\s/g, ''))) newErrors.aadhaar = 'Aadhaar must be 12 digits';
+        if (pm === 'bank') {
+            if (!formData.beneficiaryName.trim()) newErrors.beneficiaryName = 'Beneficiary name required';
+            if (!formData.bankAccountNumber.trim()) newErrors.bankAccountNumber = 'Account number required';
+            if (formData.bankAccountNumber !== formData.confirmBankAccountNumber) newErrors.confirmBankAccountNumber = 'Account numbers must match';
+            if (!formData.ifscCode.trim()) newErrors.ifscCode = 'IFSC code required';
+            if (formData.ifscCode.length < 11) newErrors.ifscCode = 'IFSC must be 11 characters';
+            if (!formData.accountType.trim()) newErrors.accountType = 'Account type required';
+            if (!formData.remittanceEmail.trim()) newErrors.remittanceEmail = 'Remittance email required';
+        } else if (pm === 'upi') {
+            if (!formData.upiId.trim()) newErrors.upiId = 'UPI ID required';
+            if (!formData.remittanceEmailUpi.trim()) newErrors.remittanceEmailUpi = 'Remittance email required';
+        } else if (pm === 'paypal') {
+            if (!formData.paypalEmail.trim()) newErrors.paypalEmail = 'PayPal email required';
+            if (formData.paypalEmail !== formData.confirmPaypalEmail) newErrors.confirmPaypalEmail = 'Emails must match';
+            if (!formData.paypalLegalName.trim()) newErrors.paypalLegalName = 'Legal name required';
+            if (!formData.purposeCode.trim()) newErrors.purposeCode = 'Purpose code required';
+        }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -299,12 +365,9 @@ const RegisterPage = () => {
 
             const loadingToast = toast.loading('Registering as vendor...');
             try {
-                let logoUrl = formData.stores[0].storeLogo;
-                if (logoFile) {
-                    toast.loading('Uploading store logo...', { id: loadingToast });
-                    const uploadData = await uploadStoreLogo(logoFile);
-                    logoUrl = uploadData.url;
-                }
+                let logoUrl = formData.stores[0].storeLogo || '';
+                // Logo upload skipped here as it requires authentication.
+                // Vendor can upload logo later from their dashboard settings.
 
                 const updatedStores = [...formData.stores];
                 if (updatedStores.length > 0) {
@@ -312,20 +375,26 @@ const RegisterPage = () => {
                 }
 
                 // Map formData to vendor API structure
+                const { confirmPassword, fullName, confirmBankAccountNumber, confirmPaypalEmail, ...cleanForm } = formData;
                 const vendorData = {
-                    ...formData,
+                    ...cleanForm,
+                    name: fullName,
                     stores: updatedStores,
                     roleId: 3 // Vendor Role
                 };
 
                 toast.loading('Saving account details...', { id: loadingToast });
                 const data = await registerVendor(vendorData);
+
+
+
                 toast.dismiss(loadingToast);
                 toast.success("Vendor registration submitted! Welcome.");
-                localStorage.setItem('user', JSON.stringify(data));
+                localStorage.setItem('user', JSON.stringify({ ...data, userId: data.userId || data.vendorId, roleId: 3 }));
                 window.location.replace('/vendor/dashboard');
             } catch (error) {
                 toast.dismiss(loadingToast);
+                console.error("Vendor registration 400 error:", error.message);
                 toast.error(error.message || "Vendor registration failed");
             }
         } else {
@@ -524,6 +593,11 @@ const RegisterPage = () => {
                                 </React.Fragment>
                             ))}
 
+                            <div className="form-section-label-sub mt-4"><FileCheck size={14} /> BUSINESS KYC DETAILS</div>
+                            <div className="form-row">
+                                <Input id="gst" label="GST NUMBER (optional)" placeholder="22AAAAA0000A1Z5" icon={FileCheck} value={formData.gst} onChange={handleChange} error={errors.gst} />
+                            </div>
+
                             <div className="form-section-label mt-2"><ImageIcon size={16} /> IDENTITY & ACTIONS</div>
                             <div className="form-row">
                                 <label className="upload-placeholder-box cursor-pointer hover:bg-gray-50 transition-colors">
@@ -565,27 +639,100 @@ const RegisterPage = () => {
                                 <p>Set up your preferred payment method to receive earnings from SreeMarket.</p>
                             </div>
                             <div className="form-grid">
-                                <div className="select-container">
+                                <div className="form-section-label-sub" style={{gridColumn:'1/-1'}}><FileCheck size={14} /> KYC DOCUMENTS (Required for all methods)</div>
+                                <div className="form-row" style={{gridColumn:'1/-1'}}>
+                                    <Input id="pan" label="PAN Number *" placeholder="ABCDE1234F" icon={FileCheck} value={formData.pan} onChange={handleChange} error={errors.pan} maxLength={10} />
+                                    <Input id="aadhaar" label="Aadhaar Number *" placeholder="1234 5678 9012" icon={FileCheck} value={formData.aadhaar} onChange={handleChange} error={errors.aadhaar} maxLength={14} />
+                                </div>
+                                <div className="select-container" style={{gridColumn:'1/-1'}}>
                                     <label>Payment Method</label>
                                     <select id="paymentMethod" value={formData.paymentMethod} onChange={handleChange} className="custom-select">
                                         <option value="">Select a payment method</option>
-                                        <option value="bank">Bank Transfer</option>
+                                        <option value="bank">Bank Transfer (NEFT/RTGS)</option>
                                         <option value="upi">UPI / GPay</option>
                                         <option value="paypal">PayPal</option>
                                     </select>
                                     {errors.paymentMethod && <span className="error-text">{errors.paymentMethod}</span>}
                                 </div>
-                                <Input id="paymentIdentifier" label="Payment Email / UPI / Account ID" placeholder="account@example.com" icon={CreditCard} value={formData.paymentIdentifier} onChange={handleChange} error={errors.paymentIdentifier} />
-                                <div className="info-text"><Info size={14} className="mr-1" /> Your details are encrypted and stored securely.</div>
+
+                                {/* Bank Transfer */}
+                                {formData.paymentMethod === 'bank' && (
+                                    <div style={{ background:'#f8faff', borderRadius:10, padding:16, border:'1px solid #e0e7ff', gridColumn:'1/-1' }}>
+                                        <p style={{ fontSize:'0.85rem', fontWeight:700, color:'#4338ca', margin:'0 0 12px' }}>Bank Transfer Details</p>
+                                        <div className="form-row" style={{marginBottom:10}}>
+                                            <Input id="beneficiaryName" label="Legal Business / Beneficiary Name" placeholder="Enter legal business name" icon={User} value={formData.beneficiaryName} onChange={handleChange} error={errors.beneficiaryName} />
+                                            <Input id="bankAccountNumber" label="Bank Account Number" placeholder="Enter account number" icon={CreditCard} value={formData.bankAccountNumber} onChange={handleChange} error={errors.bankAccountNumber} maxLength={20} />
+                                        </div>
+                                        <div className="form-row" style={{marginBottom:10}}>
+                                            <Input id="confirmBankAccountNumber" label="Re-enter Bank Account Number" placeholder="Re-enter account number" icon={CreditCard} value={formData.confirmBankAccountNumber} onChange={handleChange} error={errors.confirmBankAccountNumber} maxLength={20} />
+                                            <Input id="ifscCode" label="IFSC Code (11 digits)" placeholder="E.g. HDFC0001234" icon={Hash} value={formData.ifscCode} onChange={handleChange} error={errors.ifscCode} maxLength={11} />
+                                        </div>
+                                        {ifscLookupLoading && <p style={{fontSize:'0.73rem',color:'#6366f1',margin:'0 0 8px'}}>Looking up IFSC...</p>}
+                                        {ifscBranch && !ifscLookupLoading && <p style={{fontSize:'0.73rem',color:ifscBranch==='Not found'||ifscBranch==='Lookup failed'?'#dc2626':'#16a34a',margin:'0 0 8px'}}>✓ {ifscBranch}</p>}
+                                        <div className="form-row" style={{marginBottom:10}}>
+                                            <div className="select-container">
+                                                <label>Account Type</label>
+                                                <select id="accountType" value={formData.accountType||'Savings'} onChange={handleChange} className="custom-select">
+                                                    <option value="Savings">Savings</option>
+                                                    <option value="Current">Current</option>
+                                                </select>
+                                            </div>
+                                            <Input id="remittanceEmail" label="Vendor Email for Remittance Advice" placeholder="finance@vendor.com" icon={Mail} type="email" value={formData.remittanceEmail} onChange={handleChange} error={errors.remittanceEmail} />
+                                        </div>
+                                        <p style={{fontSize:'0.7rem',color:'#6366f1',margin:'4px 0 0'}}>These details will be verified and used for KYC &amp; payout processing.</p>
+                                    </div>
+                                )}
+
+                                {/* UPI / GPay */}
+                                {formData.paymentMethod === 'upi' && (
+                                    <div style={{ background:'#f0fdf4', borderRadius:10, padding:16, border:'1px solid #bbf7d0', gridColumn:'1/-1' }}>
+                                        <p style={{ fontSize:'0.85rem', fontWeight:700, color:'#16a34a', margin:'0 0 12px' }}>UPI / GPay Details</p>
+                                        <div className="form-row" style={{marginBottom:10}}>
+                                            <Input id="upiId" label="Vendor UPI ID / VPA" placeholder="name@okaxis or mobile@upi" icon={Store} value={formData.upiId} onChange={handleChange} error={errors.upiId} />
+
+                                        </div>
+                                        <div className="form-row" style={{marginBottom:10}}>
+                                            <Input id="verifiedUpiBankName" label="Bank Name" placeholder="Enter bank name" icon={Store} value={formData.verifiedUpiBankName} onChange={handleChange} />
+                                            <Input id="panNumberUpi" label="PAN Number (for TDS)" placeholder="ABCDE1234F" icon={Hash} value={formData.panNumberUpi} onChange={handleChange} error={errors.panNumberUpi} maxLength={10} />
+                                        </div>
+                                        <Input id="remittanceEmailUpi" label="Remittance Email Address" placeholder="finance@vendor.com" icon={Mail} type="email" value={formData.remittanceEmailUpi} onChange={handleChange} error={errors.remittanceEmailUpi} />
+                                    </div>
+                                )}
+
+                                {/* PayPal */}
+                                {formData.paymentMethod === 'paypal' && (
+                                    <div style={{ background:'#fff7ed', borderRadius:10, padding:16, border:'1px solid #fed7aa', gridColumn:'1/-1' }}>
+                                        <p style={{ fontSize:'0.85rem', fontWeight:700, color:'#d97706', margin:'0 0 12px' }}>PayPal Details</p>
+                                        <div className="form-row" style={{marginBottom:10}}>
+                                            <Input id="paypalEmail" label="PayPal Email Address" placeholder="paypal@vendor.com" icon={Mail} type="email" value={formData.paypalEmail} onChange={handleChange} error={errors.paypalEmail} />
+                                            <Input id="confirmPaypalEmail" label="Re-enter PayPal Email" placeholder="Re-enter PayPal email" icon={Mail} type="email" value={formData.confirmPaypalEmail} onChange={handleChange} error={errors.confirmPaypalEmail} />
+                                        </div>
+                                        <div className="form-row" style={{marginBottom:10}}>
+                                            <Input id="paypalLegalName" label="Registered Legal Name" placeholder="Must match PayPal account" icon={User} value={formData.paypalLegalName} onChange={handleChange} error={errors.paypalLegalName} />
+                                            <Input id="panNumberPaypal" label="PAN Number (RBI Compliance)" placeholder="ABCDE1234F" icon={Hash} value={formData.panNumberPaypal} onChange={handleChange} error={errors.panNumberPaypal} maxLength={10} />
+                                        </div>
+                                        <div className="select-container">
+                                            <label>Purpose Code (RBI for cross-border)</label>
+                                            <select id="purposeCode" value={formData.purposeCode||'Goods'} onChange={handleChange} className="custom-select">
+                                                <option value="Goods">Goods (P0101)</option>
+                                                <option value="Software Services">Software Services (P0102)</option>
+                                                <option value="Consultancy">Consultancy (P0103)</option>
+                                                <option value="Freelance">Freelance (P0104)</option>
+                                                <option value="E-Commerce">E-Commerce (P0105)</option>
+                                                <option value="Other">Other (P0199)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="info-text" style={{gridColumn:'1/-1'}}><Info size={14} className="mr-1" /> Your details are encrypted and stored securely.</div>
                             </div>
                             <div className="step-actions mt-12">
                                 <Button variant="outline" onClick={handleBackStep} className="gap-2"><ArrowLeft size={18} /> Back</Button>
                                 <Button onClick={handleNextStep} className="orange-btn">Next Step</Button>
                             </div>
                         </div>
-                    )}
-
-                    {currentStep === 4 && (
+                    )}{currentStep === 4 && (
                         <div className="form-step-content">
                             <div className="step-header">
                                 <span className="step-badge">STEP 4: FINAL STEP</span>

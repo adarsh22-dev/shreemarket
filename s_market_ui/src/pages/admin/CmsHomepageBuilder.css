@@ -1,0 +1,145 @@
+ @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;width:100%}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#E03E1A;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(224,62,26,.4);cursor:pointer;margin-top:-5.5px}
+        input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#E03E1A;border:2.5px solid #fff;cursor:pointer}
+        input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:transparent}
+        input[type=range]::-moz-range-track{height:5px;border-radius:3px;background:#e2e8f0}
+        input[type=range]:focus{outline:none}
+        ::-webkit-scrollbar{width:4px;height:4px}
+        ::-webkit-scrollbar-track{background:#f1f5f9}
+        ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+        button:focus{outline:none}
+
+        /* ── SECTION ROW — desktop ── */
+        .srow{display:grid;grid-template-columns:28px 18px 26px 1fr 84px 70px 160px;align-items:center;padding:8px 12px;border-bottom:1px solid #f8fafc;background:#fff;transition:background .1s}
+        .srow:last-child{border-bottom:none}
+        .srow-num{font-size:.66rem;font-weight:800;color:#d1d5db}
+        .srow-grip{cursor:grab;color:#d1d5db;display:flex;align-items:center}
+        .srow-ico{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .srow-info{display:flex;flex-direction:column;gap:2px;padding:0 8px;min-width:0;overflow:hidden}
+        .srow-lbl{font-size:.8rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .srow-meta{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;overflow:hidden}
+        .srow-note{font-size:.65rem;color:#94a3b8;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+        .srow-date{font-size:.67rem;color:#94a3b8}
+        .srow-acts{display:flex;align-items:center;gap:3px;justify-content:flex-end}
+        .vis-on{display:inline-flex;align-items:center;gap:3px;font-size:.63rem;font-weight:700;padding:2px 7px;border-radius:4px;background:#dcfce7;color:#16a34a;white-space:nowrap}
+        .vis-off{display:inline-flex;align-items:center;gap:3px;font-size:.63rem;font-weight:700;padding:2px 7px;border-radius:4px;background:#f1f5f9;color:#94a3b8;white-space:nowrap}
+
+        /* thead mirrors srow */
+        .thead{display:grid;grid-template-columns:28px 18px 26px 1fr 84px 70px 160px;align-items:center;padding:5px 12px;border-bottom:1.5px solid #f1f5f9;background:#f8fafc}
+        .thead>span{font-size:.58rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
+        .thead .ra{text-align:right}
+
+        /* KPI grid */
+        .grid-containers{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+        /* ── MODAL SCROLLBAR ── */
+        .modal-body{overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth}
+        .modal-body::-webkit-scrollbar{width:4px}
+        .modal-body::-webkit-scrollbar-track{background:#f1f5f9}
+        .modal-body::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px}
+
+        /* ── RESPONSIVE ── */
+
+        /* Tablet ≤ 1024px */
+        @media(max-width:1024px){
+          .grid-containers{grid-template-columns:repeat(2,1fr)!important}
+        }
+
+        /* Phablet ≤ 768px — hide Updated col, shrink actions */
+        @media(max-width:768px){
+          .grid-containers{grid-template-columns:repeat(2,1fr)!important}
+          .srow{grid-template-columns:24px 0px 24px 1fr 80px 140px;gap:0}
+          .thead{grid-template-columns:24px 0px 24px 1fr 80px 140px}
+          .srow-grip,.thead>span:nth-child(2){display:none}
+          /* hide Updated (6th child) */
+          .srow>*:nth-child(6),.thead>span:nth-child(6){display:none}
+          .srow{grid-template-columns:24px 24px 1fr 80px 136px}
+          .thead{grid-template-columns:24px 24px 1fr 80px 136px}
+        }
+
+        /* Phone ≤ 640px — card layout, topbar compact */
+        @media(max-width:640px){
+          /* Top bar: keep on one line, reduce padding */
+          .hb-topbar{padding:8px 12px!important}
+          .hb-topbar-title{font-size:.88rem!important}
+          .hb-topbar-sub{display:none!important}
+          .hb-topbar-actions{gap:5px!important}
+          /* Hide device preview toggles on mobile */
+          .hb-preview-switcher{display:none!important}
+          /* "Add Section" label: icon only on very small */
+          .hb-add-label{display:none}
+
+          /* Main tabs: smaller padding */
+          .hb-maintabs{padding:0 10px!important}
+          .hb-maintab{padding:10px 10px!important;font-size:.73rem!important}
+
+          /* Body padding */
+          .hb-body-wrap{padding:10px 10px!important}
+
+          /* KPIs: 2×2 */
+          .grid-containers{grid-template-columns:repeat(2,1fr)!important;gap:8px!important}
+
+          /* Section table → card per row */
+          .thead{display:none!important}
+          .srow{display:flex!important;flex-direction:column!important;padding:10px 12px!important;gap:6px!important;position:relative!important;}
+          .srow-num{position:absolute;top:10px;left:12px;font-size:.6rem}
+          .srow-grip{display:none!important}
+          .srow-ico{position:absolute;top:10px;left:28px;width:22px!important;height:22px!important}
+          .srow-info{padding:0 0 0 54px!important;width:100%!important}
+          .srow-lbl{white-space:normal!important;font-size:.82rem!important}
+          .srow-meta{flex-wrap:wrap!important}
+          /* vis + date inline */
+          .srow>*:nth-child(5){padding-left:54px}
+          .srow-date{padding-left:54px;font-size:.65rem}
+          .srow-acts{justify-content:flex-start!important;padding-left:0px!important;flex-wrap:wrap!important;gap:2px!important;}
+          .srow-acts button{width:32px!important;height:32px!important}
+
+          /* Form rows stack */
+          .frow{flex-direction:column;gap:10px}
+
+          /* Modals full-width, taller */
+          .modal-inner{padding:10px 14px!important;gap:11px!important}
+          .modal-footer{padding:9px 14px!important}
+
+          /* Hide "Edit → choose..." hint text */
+          .hb-layout-hint{display:none!important}
+        }
+
+        /* Very small ≤ 400px */
+        @media(max-width:400px){
+          .hb-maintab span.tab-label{display:none}
+          .grid-containers{gap:6px!important}
+        }
+
+        /* ── Product / Category / Guide rows ── */
+        .prow{display:flex;align-items:center;gap:9px}
+        .prow-badges{display:flex;align-items:center;gap:5px;flex-shrink:0}
+        .prow-acts{display:flex;align-items:center;gap:3px;flex-shrink:0}
+        .crow{display:flex;align-items:center;gap:9px}
+        .crow-foot{display:flex;align-items:center;gap:6px;flex-shrink:0}
+        .crow-acts{display:flex;align-items:center;gap:3px}
+        .grow{display:flex;align-items:center;gap:10px}
+        .grow-info{flex:1;min-width:0}
+
+        /* Phone ≤ 480px — card layout for product & category rows */
+        @media(max-width:480px){
+          .prow{flex-wrap:wrap!important;padding:10px 12px!important;gap:0!important;position:relative}
+          .prow-img{width:38px!important;height:38px!important;margin-right:9px;flex-shrink:0}
+          .prow-info{flex:1;min-width:0}
+          .prow-badges{width:100%;padding-left:47px;margin-top:5px;flex-wrap:wrap;gap:4px}
+          .prow-acts{width:100%;padding-left:47px;margin-top:5px;justify-content:flex-start}
+          .prow-acts button{width:30px!important;height:30px!important}
+          .crow{flex-wrap:wrap!important;padding:10px 12px!important;gap:0!important;align-items:flex-start!important}
+          .crow-num{margin-right:4px;margin-top:12px}
+          .crow-img{width:38px!important;height:38px!important;margin-right:9px}
+          .crow-info{flex:1;min-width:0}
+          .crow-foot{width:100%;padding-left:51px;margin-top:6px;flex-wrap:wrap;gap:5px;justify-content:flex-start}
+          .crow-acts button{width:30px!important;height:30px!important}
+          .grow{padding:9px 12px!important;gap:8px!important}
+          .grow-info>div:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+          .grow-badge{white-space:nowrap}
+        }
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .spin{animation:spin .8s linear infinite}

@@ -1,0 +1,184 @@
+/* AdminCancellations.css — table layout */
+*, *::before, *::after { box-sizing: border-box; }
+.cn * { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+
+.cn { display: flex; flex-direction: column; gap: 14px; color: #0f172a; }
+
+/* ── Header ── */
+.cn-hdr { display: flex; justify-content: space-between; align-items: flex-start; }
+.cn-hdr__title { margin: 0 0 3px; font-size: 1.1rem; font-weight: 800; color: #0f172a; letter-spacing: -.3px; }
+.cn-hdr__sub   { margin: 0; font-size: 0.78rem; color: #94a3b8; }
+
+/* ── Card ── */
+.cn-card {
+  background: #fff; border-radius: 14px;border: 1px solid #e8ecf0; overflow: hidden;
+}
+
+/* ── Table wrapper (horizontal scroll on mobile) ── */
+.cn-tw {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+}
+.cn-tw::-webkit-scrollbar { height: 5px; }
+.cn-tw::-webkit-scrollbar-track { background: transparent; }
+.cn-tw::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
+
+/* ── Table ── */
+.cn-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+}
+
+/* ── Head ── */
+.cn-tbl thead { position: sticky; top: 0; z-index: 1; }
+.cn-th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.69rem; font-weight: 700;
+  color: #94a3b8; text-transform: uppercase; letter-spacing: .5px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e8ecf0;
+  white-space: nowrap;
+}
+.cn-th--chk { width: 44px; padding-left: 18px; }
+.cn-th--r   { text-align: right; }
+
+/* ── Body ── */
+.cn-td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  font-size: 0.83rem;
+}
+.cn-tbl tbody tr:last-child .cn-td { border-bottom: none; }
+.cn-tr { transition: background .12s ease; }
+.cn-tr:hover .cn-td { background: #fafcff; }
+.cn-tr--sel .cn-td  { background: #fff8f6; }
+
+.cn-td--chk { width: 44px; padding-left: 18px; }
+.cn-td--r   { text-align: right; }
+
+/* ── Checkbox ── */
+.cn-chk {
+  width: 15px; height: 15px; cursor: pointer;
+  accent-color: #E03E1A; border-radius: 4px;
+}
+
+/* ── Product Info cell ── */
+.cn-prod { display: flex; align-items: center; gap: 10px; }
+.cn-thumb {
+  width: 42px; height: 42px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.cn-prod__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cn-prod__name {
+  font-size: 0.85rem; font-weight: 700; color: #0f172a;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;
+}
+.cn-prod__id { font-size: 0.67rem; color: #94a3b8; font-family: monospace; }
+
+/* ── SKU ── */
+.cn-sku { font-size: 0.78rem; color: #64748b; font-family: monospace; }
+
+/* ── Customer ── */
+.cn-cust { display: flex; align-items: center; gap: 8px; }
+.cn-cust__av {
+  width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 800; color: #fff;
+}
+.cn-cust__name { font-size: 0.8rem; font-weight: 600; color: #0f172a; }
+.cn-cust__city { font-size: 0.67rem; color: #94a3b8; }
+
+/* ── Category pill ── */
+.cn-cat {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 0.72rem; font-weight: 500;
+  background: #f1f5f9; color: #475569;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+/* ── Amount ── */
+.cn-amt { font-size: 0.88rem; font-weight: 800; color: #0f172a; }
+
+/* ── Reason ── */
+.cn-reason {
+  font-size: 0.75rem; color: #92400e; font-weight: 500;
+  background: #fef3c7; border: 1px solid #fde68a;
+  padding: 3px 8px; border-radius: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 180px; display: inline-block;
+}
+
+/* ── Date ── */
+.cn-date { font-size: 0.75rem; color: #94a3b8; white-space: nowrap; }
+
+/* ── Cancelled-by badge ── */
+.cn-by {
+  display: inline-flex; align-items: center;
+  font-size: 0.69rem; font-weight: 700;
+  padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+}
+.cn-by--cust { background: #fff0ed; color: #E03E1A; }
+.cn-by--vend { background: #ede9fe; color: #7c3aed; }
+.cn-by--sys  { background: #f1f5f9; color: #64748b; }
+
+/* ── Status badge ── */
+.cn-bdg {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.69rem; font-weight: 700; padding: 3px 10px;
+  border-radius: 999px; white-space: nowrap;
+}
+.cn-bdg__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.cn-bdg--app  { background: #dcfce7; color: #16a34a; }
+.cn-bdg--app  .cn-bdg__dot { background: #22c55e; }
+.cn-bdg--pend { background: #fef3c7; color: #d97706; }
+.cn-bdg--pend .cn-bdg__dot { background: #f59e0b; }
+.cn-bdg--rej  { background: #fee2e2; color: #dc2626; }
+.cn-bdg--rej  .cn-bdg__dot { background: #ef4444; }
+
+/* ── Action buttons ── */
+.cn-acts { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.cn-act {
+  width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e8ecf0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; background: transparent; transition: all .14s ease;
+}
+.cn-act--edit  { color: #64748b; }
+.cn-act--edit:hover  { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
+.cn-act--copy  { color: #64748b; }
+.cn-act--copy:hover  { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
+.cn-act--trash { color: #94a3b8; }
+.cn-act--trash:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+
+/* ── Hide on mobile ── */
+.cn-hm { display: table-cell; }
+
+/* ── 640px ── */
+@media (min-width: 640px) {
+  .cn-hm { display: table-cell; }
+}
+
+/* ── 768px ── */
+@media (min-width: 768px) {
+  .cn-hdr__title { font-size: 1.25rem; }
+  .cn-td   { padding: 15px 16px; }
+  .cn-prod__name { max-width: 240px; }
+}
+
+/* ── 1100px ── */
+@media (min-width: 1100px) {
+  .cn-hdr__title { font-size: 1.35rem; }
+  .cn-prod__name { max-width: 300px; }
+  .cn-reason     { max-width: 220px; }
+}
+
+@media print {
+  .cn-acts, .cn-chk { display: none !important; }
+  .cn-card { box-shadow: none !important; border: 1px solid #e2e2e2; }
+}

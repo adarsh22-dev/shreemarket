@@ -28,4 +28,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, JpaSpecif
 
     @Query("SELECT COUNT(r) FROM Review r WHERE r.product.vendorId = :vendorId AND r.vendorReply IS NULL")
     long countPendingReviewsForVendor(@Param("vendorId") Long vendorId);
+
+    // Admin queries
+    long countByVendorReplyIsNull();
 }

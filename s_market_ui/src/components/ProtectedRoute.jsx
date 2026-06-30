@@ -5,14 +5,18 @@ const ProtectedRoute = ({ allowedRoles }) => {
     const userStr = localStorage.getItem('user');
 
     if (!userStr) {
-        // Redirect to login if not authenticated
         return <Navigate to="/login" replace />;
     }
 
-    const user = JSON.parse(userStr);
+    let user;
+    try {
+        user = JSON.parse(userStr);
+    } catch {
+        localStorage.removeItem('user');
+        return <Navigate to="/login" replace />;
+    }
 
     if (allowedRoles && !allowedRoles.includes(user.roleId)) {
-        // Redirect unauthorized users to the home page
         return <Navigate to="/" replace />;
     }
 

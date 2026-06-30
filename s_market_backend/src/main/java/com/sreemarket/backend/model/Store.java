@@ -58,7 +58,7 @@ public class Store {
     private String country;
 
     @Column(name = "pincode")
-    @JsonProperty("zip")
+    @JsonProperty("pincode")
     private String pincode;
 
     @Column(name = "latitude")

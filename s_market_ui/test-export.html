@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Export CSV</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        #log { margin-top: 20px; padding: 10px; background: #f5f5f5; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h2>Export CSV Test</h2>
+    <button onclick="testExport1()">Test 1: Admin Analytics Style</button>
+    <button onclick="testExport2()">Test 2: Vendor Analytics Style</button>
+    <button onclick="testExport3()">Test 3: Simple Export</button>
+    <div id="log"></div>
+    <script>
+        const log = document.getElementById('log');
+        function logMsg(msg) { log.textContent += msg + '\n'; }
+
+        function exportCSV(rows, filename) {
+            try {
+                logMsg(`[exportCSV] Called with filename="${filename}", rows.length=${rows ? rows.length : 'null'}`);
+                if (!rows || !rows.length) { logMsg('[exportCSV] Empty rows, returning'); return; }
+                const csv = rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+                logMsg(`[exportCSV] CSV length: ${csv.length} chars`);
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename || 'export.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+                logMsg('[exportCSV] SUCCESS - download triggered');
+            } catch (e) {
+                logMsg(`[exportCSV] ERROR: ${e.message}`);
+                console.error(e);
+            }
+        }
+
+        function testExport1() {
+            logMsg('\n--- Test 1: Admin Analytics Style ---');
+            const s = { totalRevenue: 123456, totalVendors: 42, totalProducts: 150, totalCustomers: 3200, totalOrders: 890, todayOrders: 12, todayRevenue: 15600, pendingReviews: 5 };
+            exportCSV([['Metric','Value'],['Total Revenue',s.totalRevenue],['Total Vendors',s.totalVendors],['Total Products',s.totalProducts],['Total Customers',s.totalCustomers],['Total Orders',s.totalOrders],['Today Orders',s.todayOrders],['Today Revenue',s.todayRevenue],['Pending Reviews',s.pendingReviews]],'analytics.csv');
+        }
+
+        function testExport2() {
+            logMsg('\n--- Test 2: Vendor Analytics Style ---');
+            const metrics = { totalRevenue: 50000, totalOrders: 120, avgOrderValue: 416.67, conversionRate: 3.2, revenueGrowth: '+15%', ordersGrowth: '+8%' };
+            const rows = [
+                ['Metric', 'Value'],
+                ['Total Revenue', metrics.totalRevenue || 0],
+                ['Total Orders', metrics.totalOrders || 0],
+                ['Avg Order Value', metrics.avgOrderValue || 0],
+                ['Conversion Rate', metrics.conversionRate || 0],
+                ['Revenue Growth', metrics.revenueGrowth || '--'],
+                ['Orders Growth', metrics.ordersGrowth || '--'],
+            ];
+            exportCSV(rows, 'vendor-analytics.csv');
+        }
+
+        function testExport3() {
+            logMsg('\n--- Test 3: Simple ---');
+            exportCSV([['Name','Value'],['Test','123']], 'simple.csv');
+        }
+    </script>
+</body>
+</html>

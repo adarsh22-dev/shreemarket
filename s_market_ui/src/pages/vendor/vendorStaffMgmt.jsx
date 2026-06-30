@@ -305,6 +305,7 @@ const CSS = `
   .vsm-toast.ok   { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
   .vsm-toast.err  { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
   .vsm-toast.info { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+  .vsm-toast.warn { background:#fffbeb; color:#b45309; border:1px solid #fcd34d; }
   @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
   .vsm-empty { padding:36px 20px; text-align:center; color:var(--vmut); }
   .vsm-empty-ico { width:40px; height:40px; border-radius:10px; background:var(--vbg); border:1px solid var(--vbdr); display:flex; align-items:center; justify-content:center; margin:0 auto 10px; }
@@ -727,9 +728,10 @@ export function VendorStaffManager() {
       }
     } catch (e) {
       console.warn("Failed to fetch vendor staff:", e);
+      showToast("Using local data - server unavailable", 'warn');
       setStaffList(readLS('vp_staff_users', []));
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => { refresh(); const i = setInterval(refresh, 8000); return () => clearInterval(i); }, [refresh]);
 

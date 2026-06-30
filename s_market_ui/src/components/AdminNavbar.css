@@ -168,3 +168,24 @@
     font-size: 0.75rem;
     color: #888;
 }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 1024px) {
+    .admin-navbar { padding: 0.75rem 1.5rem; }
+    .search-bar input { width: 200px; }
+    .admin-navbar-actions { gap: 1rem; }
+}
+@media (max-width: 768px) {
+    .admin-navbar { flex-wrap: wrap; padding: 0.75rem 1rem; gap: 0.5rem; }
+    .search-bar input { width: 180px; }
+    .profile-info { display: none; }
+    .admin-navbar h1 { font-size: 0.95rem; padding-left: 1rem; }
+    .admin-breadcrumbs { font-size: 0.85rem; padding-left: 0.75rem; }
+}
+@media (max-width: 480px) {
+    .admin-navbar h1 { display: none; }
+    .admin-breadcrumbs { display: none; }
+    .search-bar input { width: 140px; font-size: 0.82rem; }
+    .profile-icon { width: 30px; height: 30px; }
+    .admin-profile { padding-left: 0.75rem; }
+}

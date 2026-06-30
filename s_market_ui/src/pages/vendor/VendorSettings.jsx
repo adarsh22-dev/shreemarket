@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorSettings.css';
+import { saveStoreSettings, getStoreSettings, getVendorProfile } from '../../api/api';
+import toast from 'react-hot-toast';
 
 // ═══════════════════════════════════════════════════════════
 // CONSTANTS & STORAGE HELPERS
@@ -104,10 +106,68 @@ const ImageUpload = ({ value, onChange, label, sublabel }) => {
 
 const VendorSettings = () => {
     const [activeTab, setActiveTab] = useState('Store');
-    const [formData, setFormData] = useState(() => {
-        const saved = localStorage.getItem(LS_KEY);
-        return saved ? JSON.parse(saved) : DEFAULT_STATE;
-    });
+    const [formData, setFormData] = useState(DEFAULT_STATE);
+    const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) { setLoading(false); return; }
+        let vendorId;
+        try {
+            const user = JSON.parse(userStr);
+            vendorId = user.userId || user.id;
+        } catch (e) { setLoading(false); return; }
+        if (!vendorId) { setLoading(false); return; }
+
+        Promise.all([
+            getStoreSettings().catch(() => null),
+            getVendorProfile().catch(() => null),
+        ]).then(([settingsData, profile]) => {
+            const updates = {};
+
+            // Apply saved store settings
+            if (settingsData && settingsData.settings) {
+                try {
+                    const parsed = JSON.parse(settingsData.settings);
+                    Object.assign(updates, parsed);
+                } catch (e) {}
+            }
+
+            // Apply vendor registration profile data dynamically
+            if (profile) {
+                if (profile.name) updates.store = { ...updates.store, name: profile.name };
+                if (profile.email) updates.store = { ...updates.store, email: profile.email };
+                if (profile.phone) updates.store = { ...updates.store, phone: profile.phone };
+                if (profile.paymentEmail) updates.payment = { ...updates.payment, paypalEmail: profile.paymentEmail };
+                if (profile.paymentMethod) updates.payment = { ...updates.payment, selectedMethod: profile.paymentMethod };
+                if (profile.stores && profile.stores.length > 0) {
+                    const s = profile.stores[0];
+                    if (s.street) updates.location = { ...updates.location, street: s.street };
+                    if (s.city) updates.location = { ...updates.location, city: s.city };
+                    if (s.state) updates.location = { ...updates.location, state: s.state };
+                    if (s.country) updates.location = { ...updates.location, country: s.country };
+                    if (s.pincode) updates.location = { ...updates.location, postcode: s.pincode };
+                }
+            }
+
+            if (Object.keys(updates).length > 0) {
+                setFormData(prev => ({ ...prev, ...updates }));
+            }
+        }).catch(() => {
+            const saved = localStorage.getItem(LS_KEY);
+            if (saved) {
+                try { setFormData(JSON.parse(saved)); } catch (e) {}
+            }
+        }).finally(() => setLoading(false));
+    }, []);
+
+    const getVendorId = () => {
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            return user.userId || user.id;
+        } catch (e) { return null; }
+    };
 
     const calculateProgress = () => {
         const fields = [
@@ -140,9 +200,24 @@ const VendorSettings = () => {
         }));
     };
 
-    const handleSave = () => {
-        localStorage.setItem(LS_KEY, JSON.stringify(formData));
-        alert('Settings Saved Successfully!');
+    const handleSave = async () => {
+        setSaving(true);
+        const vendorId = getVendorId();
+        if (!vendorId) {
+            toast.error('Vendor ID not found. Please re-login.');
+            setSaving(false);
+            return;
+        }
+        try {
+            await saveStoreSettings(JSON.stringify(formData));
+            localStorage.setItem(LS_KEY, JSON.stringify(formData));
+            toast.success('Settings saved successfully!');
+        } catch (err) {
+            toast.error(err?.message || 'Failed to save settings. Saved locally.');
+            localStorage.setItem(LS_KEY, JSON.stringify(formData));
+        } finally {
+            setSaving(false);
+        }
     };
 
     const renderContent = () => {
@@ -234,14 +309,31 @@ const VendorSettings = () => {
                             <FormRow label="Country">
                                 <select value={formData.location.country} onChange={e => updateField('location', 'country', e.target.value)}>
                                     <option>India</option>
+                                    <option>United States</option>
+                                    <option>United Kingdom</option>
+                                    <option>Canada</option>
+                                    <option>Australia</option>
+                                    <option>Germany</option>
+                                    <option>France</option>
+                                    <option>Singapore</option>
+                                    <option>United Arab Emirates</option>
                                 </select>
                             </FormRow>
                         </Section>
                         <Section title="Store Location">
                             <FormRow label="Find Location">
                                 <div className="vs-map-search">
-                                    <input type="text" placeholder="Search..." />
-                                    <div className="vs-map-placeholder">[Map View Placeholder]</div>
+                                    <input type="text" placeholder="Search for location..." onChange={e => updateField('location', 'address', e.target.value)} />
+                                    {formData.location.latitude && formData.location.longitude ? (
+                                        <iframe
+                                            title="Store Map"
+                                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(formData.location.longitude) - 0.01},${parseFloat(formData.location.latitude) - 0.01},${parseFloat(formData.location.longitude) + 0.01},${parseFloat(formData.location.latitude) + 0.01}&layer=mapnik&marker=${formData.location.latitude},${formData.location.longitude}`}
+                                            width="100%" height="250" style={{ border: '1px solid #e2e8f0', borderRadius: 8 }}
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <div className="vs-map-placeholder">Enter latitude/longitude above to preview location on map</div>
+                                    )}
                                 </div>
                             </FormRow>
                             <FormRow label="Latitude" hint="Decimal latitude, e.g. 19.0760">
@@ -502,11 +594,19 @@ const VendorSettings = () => {
                     </aside>
 
                     <main className="vs-content-body">
-                        {renderContent()}
-                        <div className="vs-footer-actions">
-                            <button className="vs-btn-cancel">Cancel</button>
-                            <button className="vs-btn-save" onClick={handleSave}>Save Changes</button>
-                        </div>
+                        {loading ? (
+                            <div style={{textAlign:'center',padding:'60px 0',color:'var(--text-3)'}}>Loading settings...</div>
+                        ) : (
+                            <>
+                            {renderContent()}
+                            <div className="vs-footer-actions">
+                                <button className="vs-btn-cancel" onClick={() => window.location.reload()}>Reset</button>
+                                <button className="vs-btn-save" onClick={handleSave} disabled={saving}>
+                                    {saving ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                            </>
+                        )}
                     </main>
                 </div>
             </div>

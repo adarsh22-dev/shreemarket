@@ -41,6 +41,9 @@ public class Product {
     private Integer initialStock;
     private Boolean supportsWholesale;
     private String wholesaleDiscountType;
+    private Double wholesalePrice;
+    private Integer minimumWholesaleQuantity;
+    private Boolean wholesaleOnly;
 
     // Shipping, Tax & Policies
     private Double weight;
@@ -50,10 +53,28 @@ public class Product {
     private String shippingClass;
     private String taxStatus;
     private String taxClass;
+    private String hsnCode;
+
+    // Manufacturer section layout
+    private String manufacturerLayout; // "collage", "grid", "slider", "masonry"
+
+    // Instagram feed layout
+    private String instagramFeedLayout;
+
+    // Featured product flag
+    @Column(name = "is_featured")
+    private Boolean isFeatured = false; // "grid" or "slider"
+
+    @Column(columnDefinition = "TEXT")
+    private String instagramFeedConfig; // JSON: {"links":{"url":"productName"}}
 
     // Vendor mapping (store user/vendor ID directly)
     @Column(name = "vendor_id")
     private Long vendorId;
+
+    // Approval status (Pending, Approved, Rejected)
+    @Column(name = "approval_status")
+    private String approvalStatus = "Pending";
 
     // Timestamps
     private Long createdAt;
@@ -86,6 +107,10 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PolicyDocument> policyDocuments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
+    private List<BulkPricingTier> pricingTiers = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -203,6 +228,22 @@ public class Product {
         this.wholesaleDiscountType = wholesaleDiscountType;
     }
 
+    public Double getWholesalePrice() {
+        return wholesalePrice;
+    }
+
+    public void setWholesalePrice(Double wholesalePrice) {
+        this.wholesalePrice = wholesalePrice;
+    }
+
+    public Integer getMinimumWholesaleQuantity() {
+        return minimumWholesaleQuantity;
+    }
+
+    public void setMinimumWholesaleQuantity(Integer minimumWholesaleQuantity) {
+        this.minimumWholesaleQuantity = minimumWholesaleQuantity;
+    }
+
     public Double getWeight() {
         return weight;
     }
@@ -307,6 +348,46 @@ public class Product {
         this.status = status;
     }
 
+    public String getManufacturerLayout() {
+        return manufacturerLayout;
+    }
+
+    public void setManufacturerLayout(String manufacturerLayout) {
+        this.manufacturerLayout = manufacturerLayout;
+    }
+
+    public String getInstagramFeedLayout() {
+        return instagramFeedLayout;
+    }
+
+    public Boolean getIsFeatured() {
+        return isFeatured;
+    }
+
+    public void setIsFeatured(Boolean isFeatured) {
+        this.isFeatured = isFeatured;
+    }
+
+    public void setInstagramFeedLayout(String instagramFeedLayout) {
+        this.instagramFeedLayout = instagramFeedLayout;
+    }
+
+    public String getInstagramFeedConfig() {
+        return instagramFeedConfig;
+    }
+
+    public void setInstagramFeedConfig(String instagramFeedConfig) {
+        this.instagramFeedConfig = instagramFeedConfig;
+    }
+
+    public String getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
+
     public List<ProductMedia> getMedia() {
         return media;
     }
@@ -329,5 +410,13 @@ public class Product {
 
     public List<PolicyDocument> getPolicyDocuments() {
         return policyDocuments;
+    }
+
+    public List<BulkPricingTier> getPricingTiers() {
+        return pricingTiers;
+    }
+
+    public void setPricingTiers(List<BulkPricingTier> pricingTiers) {
+        this.pricingTiers = pricingTiers;
     }
 }

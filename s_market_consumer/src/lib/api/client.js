@@ -97,6 +97,18 @@ export const getAllProducts = async () => {
   return clientFetch('/products');
 };
 
+export const getTopDeals = async () => {
+  return clientFetch('/products/top-deals');
+};
+
+export const getTrendingProducts = async () => {
+  return clientFetch('/products/trending');
+};
+
+export const getNewArrivals = async () => {
+  return clientFetch('/products/new-arrivals');
+};
+
 export const searchProducts = async (query) => {
   return clientFetch(`/products/search?q=${encodeURIComponent(query)}`);
 };
@@ -151,6 +163,11 @@ export const createMockOrder = async (userId) => {
 
 export const submitReturnAPI = async (orderId, formData) => {
   return clientFetchFormData(`/orders/${orderId}/return`, { method: 'POST', body: formData });
+
+export const cancelOrder = async (orderId) => {
+  return clientFetch(`/orders/${orderId}/cancel`, { method: "POST" });
+};
+
 };
 
 // --- REVIEWS ---
@@ -322,6 +339,42 @@ export const getWooAITopIntents = async () => {
 
 export const searchWooAIProducts = async (query) => {
   return clientFetch(`/wooai/search-products?q=${encodeURIComponent(query)}`);
+};
+
+// ═══════════════ Razorpay Payment Gateway ═══════════════
+
+export const createRazorpayOrder = async (params) => {
+  return clientFetch('/payment/create-order', { method: 'POST', body: JSON.stringify(params) });
+};
+
+export const verifyRazorpayPayment = async (paymentData) => {
+  return clientFetch('/payment/verify', { method: 'POST', body: JSON.stringify(paymentData) });
+};
+
+export const getRazorpayConfig = async () => {
+  const response = await fetch(`${API_BASE_URL}/payment/config`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+  return parseJsonResponse(response);
+};
+
+/**
+ * Loads the Razorpay checkout script dynamically.
+ */
+export const loadRazorpayScript = () => {
+  return new Promise((resolve, reject) => {
+    if (window.Razorpay) {
+      resolve(window.Razorpay);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(window.Razorpay);
+    script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
+    document.body.appendChild(script);
+  });
 };
 
 // --- CONTACT ---

@@ -1,0 +1,103 @@
+/* ── PWA Install Banner (top of page) ── */
+.install-banner {
+  background: linear-gradient(90deg, #FF5722, #e64a19);
+  color: #fff;
+  width: 100%;
+  z-index: 1100;
+  position: relative;
+}
+
+.install-banner-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0.5rem 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.install-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.install-banner-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.install-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.install-banner-btn {
+  background: #fff;
+  color: #FF5722;
+  border: none;
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.install-banner-btn:hover {
+  opacity: 0.9;
+}
+
+.install-banner-dismiss {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.15s, background 0.15s;
+}
+
+.install-banner-dismiss:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .install-banner-inner {
+    padding: 0.5rem 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .install-banner-inner {
+    padding: 0.45rem 16px;
+  }
+
+  .install-banner-text {
+    font-size: 0.78rem;
+  }
+
+  .install-banner-btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .install-banner-inner {
+    padding: 0.4rem 12px;
+  }
+
+  .install-banner-text {
+    font-size: 0.73rem;
+  }
+}

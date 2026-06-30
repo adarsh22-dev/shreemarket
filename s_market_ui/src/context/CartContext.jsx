@@ -7,7 +7,8 @@ import {
     clearUserCart,
     mergeUserCart,
     moveToSavedAPI,
-    moveToCartFromSavedAPI
+    moveToCartFromSavedAPI,
+    PLACEHOLDER_IMG
 } from '../api/api';
 
 const CartContext = createContext();
@@ -18,11 +19,12 @@ export const useCart = () => useContext(CartContext);
 const mapBackendItems = (backendItems) => {
     return backendItems.map(bItem => {
         const p = bItem.product || {};
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8082/api";
+        const apiBaseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ? import.meta.env.VITE_API_BASE_URL : "http://localhost:8082/api";
         const backendUrl = apiBaseUrl.replace(/\/api$/, '');
-        let image = "https://via.placeholder.com/400x400";
-        if (p.media && p.media.length > 0) {
-            const primaryMedia = p.media.find(m => m.isPrimary) || p.media[0];
+        let image = PLACEHOLDER_IMG;
+        const gallery = (p.media || []).filter(m => m.mediaType !== 'manufacturer');
+        if (gallery.length > 0) {
+            const primaryMedia = gallery.find(m => m.isPrimary) || gallery[0];
             image = `${backendUrl}/uploads/products/${primaryMedia.fileName}`;
         }
 
@@ -34,11 +36,14 @@ const mapBackendItems = (backendItems) => {
             cartItemId: bItem.id,
             id: bItem.productId || p.id,
             name: p.name || 'Unknown Product',
-            price: p.discountPrice || p.regularPrice || 0,
+            price: bItem.wholesalePrice || p.discountPrice || p.regularPrice || 0,
             image: image,
             quantity: bItem.quantity,
             variant: parsedVariant,
-            isSaved: bItem.isSaved
+            isSaved: bItem.isSaved,
+            wholesalePrice: bItem.wholesalePrice,
+            savings: bItem.savings,
+            appliedTier: bItem.appliedTier
         };
     });
 };
@@ -51,6 +56,7 @@ export const CartProvider = ({ children }) => {
 
     // Auth state for cart
     const [userId, setUserId] = useState(null);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     // Watch for login changes
     useEffect(() => {
@@ -64,6 +70,7 @@ export const CartProvider = ({ children }) => {
             } else {
                 setUserId(null);
             }
+            setIsInitialized(true);
         };
         // Run immediately
         checkUser();
@@ -90,6 +97,8 @@ export const CartProvider = ({ children }) => {
 
     // Centralised cart sync logic
     useEffect(() => {
+        if (!isInitialized) return;
+
         if (userId) {
             const localCartStr = localStorage.getItem('s_market_cart');
             const localSavedStr = localStorage.getItem('s_market_saved');
@@ -145,7 +154,7 @@ export const CartProvider = ({ children }) => {
                 setSavedItems([]);
             }
         }
-    }, [userId]);
+    }, [userId, isInitialized]);
 
     // Load recently viewed consistently
     useEffect(() => {
@@ -197,14 +206,19 @@ export const CartProvider = ({ children }) => {
                 } else {
                     // Proactively resolve image if missing to avoid broken thumbnails in dropdown
                     let finalImage = product.image;
-                    if (!finalImage && product.media && product.media.length > 0) {
-                        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8082/api";
-                        const backendUrl = apiBaseUrl.replace(/\/api$/, '');
-                        const primaryMedia = product.media.find(m => m.isPrimary) || product.media[0];
-                        finalImage = `${backendUrl}/uploads/products/${primaryMedia.fileName}`;
+                    if (!finalImage) {
+                        const gallery = (product.media || []).filter(m => m.mediaType !== 'manufacturer');
+                        if (gallery.length > 0) {
+        const apiBaseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ? import.meta.env.VITE_API_BASE_URL : "http://localhost:8082/api";
+                            const backendUrl = apiBaseUrl.replace(/\/api$/, '');
+                            const primaryMedia = gallery.find(m => m.isPrimary) || gallery[0];
+                            finalImage = `${backendUrl}/uploads/products/${primaryMedia.fileName}`;
+                        }
                     }
 
-                    return [...prevItems, { ...product, image: finalImage, quantity, variant }];
+                    const user = JSON.parse(localStorage.getItem('user') || 'null');
+                    const isWholesaler = user?.roleId === 4;
+                    return [...prevItems, { ...product, image: finalImage, price: isWholesaler && product.wholesalePrice ? product.wholesalePrice : product.price || product.discountPrice || product.regularPrice || 0, quantity, variant }];
                 }
             });
             if (openCartOnAdd) setIsCartOpen(true);
@@ -335,7 +349,12 @@ export const CartProvider = ({ children }) => {
     };
 
     const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
-    const cartTotal = cartItems.reduce((total, item) => total + ((item.price || item.discountPrice || item.regularPrice || 0) * item.quantity), 0);
+    const cartTotal = cartItems.reduce((total, item) => {
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        const isWholesaler = user?.roleId === 4;
+        const unitPrice = isWholesaler && item.wholesalePrice ? item.wholesalePrice : item.price || item.discountPrice || item.regularPrice || 0;
+        return total + (unitPrice * item.quantity);
+    }, 0);
 
     const isProductInCart = (id, variant = null) => {
         return cartItems.some(item =>
@@ -361,7 +380,8 @@ export const CartProvider = ({ children }) => {
             clearCart,
             cartCount,
             cartTotal,
-            isProductInCart
+            isProductInCart,
+            isInitialized
         }}>
             {children}
         </CartContext.Provider>

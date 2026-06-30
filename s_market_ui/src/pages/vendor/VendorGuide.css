@@ -1,5 +1,4 @@
 .guide-container {
-  padding: 30px;
   background: #f9fafc;
 }
 
@@ -115,7 +114,28 @@
   border-radius: 8px;
   margin-top: 20px;
 }
+
 .highlight-box ul {
-  padding-left: 28px;  /* increase this value */
+  padding-left: 28px;
+  /* increase this value */
   margin: 0;
+}
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 768px) {
+  .guide-body { gap: 20px; }
+  .guide-sidebar { flex-wrap: wrap; padding: 10px; }
+  .guide-nav-item { padding: 8px 10px; font-size: 13px; }
+  .guide-content { padding: 16px; }
+  .guide-top h1 { font-size: 22px; }
+  .info-card { padding: 14px; }
+  .highlight-box { padding: 14px; }
+}
+@media (max-width: 480px) {
+  .guide-sidebar { flex-direction: column; padding: 8px; }
+  .guide-nav-item { padding: 8px; font-size: 12px; }
+  .guide-content { padding: 12px; }
+  .guide-top h1 { font-size: 20px; }
+  .guide-section p { font-size: 14px; }
+  .highlight-box ul { padding-left: 20px; }
 }

@@ -13,7 +13,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import './VendorDashboard.css';
-import { fetchVendorOrders, getVendorProducts, BACKEND_URL, fetchVendorNotifications } from '../../api/api';
+import { fetchVendorOrders, getVendorProducts, BACKEND_URL, fetchVendorNotifications, PLACEHOLDER_IMG } from '../../api/api';
 
 const VendorDashboard = () => {
     const navigate = useNavigate();
@@ -207,10 +207,6 @@ const VendorDashboard = () => {
                         <p>Here's what's happening with your store today.</p>
                     </div>
                     <div className="header-actions">
-                        {/* <div className="search-bar">
-                            <Search size={18} color="#888" />
-                            <input type="text" placeholder="Search orders..." />
-                        </div> */}
                         <button className="btn-add-product" onClick={() => navigate('/vendor/products/add')}>
                             <Plus size={18} />
                             Add New Product
@@ -224,9 +220,6 @@ const VendorDashboard = () => {
                             )}
                         </button>
 
-                        {/* <div className="profile-avatar">
-                            <img src="https://ui-avatars.com/api/?name=Artisan&background=e0d5c1&color=333" alt="Profile" style={{ width: '100%', height: '100%' }} />
-                        </div> */}
                     </div>
                 </header>
 
@@ -360,12 +353,13 @@ const VendorDashboard = () => {
                         <h3>Your Products</h3>
                         <div className="product-list">
                             {products.slice(0, 4).map(product => {
-                                const primaryMedia = product.media && product.media.length > 0
-                                    ? product.media.find(m => m.isPrimary) || product.media[0]
+                                const galleryImages = product.media?.filter(m => m.mediaType !== 'manufacturer') || [];
+                                const primaryMedia = galleryImages.length > 0
+                                    ? galleryImages.find(m => m.isPrimary) || galleryImages[0]
                                     : null;
-                                const imageUrl = primaryMedia
+                                const imageUrl = primaryMedia?.fileName
                                     ? `${BACKEND_URL}/uploads/products/${primaryMedia.fileName}`
-                                    : "https://via.placeholder.com/100?text=No+Image";
+                                    : PLACEHOLDER_IMG;
 
                                 return (
                                     <div className="product-list-item" key={product.id}>
