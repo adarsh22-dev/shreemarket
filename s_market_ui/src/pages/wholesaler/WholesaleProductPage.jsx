@@ -33,57 +33,64 @@ const WholesaleProductPage = () => {
     const [activeImage, setActiveImage] = useState(0);
 
     const [isZooming, setIsZooming] = useState(false);
-    const [lensPos, setLensPos] = useState({ x: 0, y: 0 });
-    const [zoomLevel, setZoomLevel] = useState(3);
-    const [bgPos, setBgPos] = useState({ x: 0, y: 0 });
-    const LENS_SIZE = 160;
+    const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
+    const [zoomOverlay, setZoomOverlay] = useState({ x: 0, y: 0, w: 0, h: 0 });
     const imgRef = useRef(null);
+    const zoomPanelRef = useRef(null);
+    const ZOOM_FACTOR = 2.5;
 
     // Share
     const [showShareDropdown, setShowShareDropdown] = useState(false);
     const [selectedVariation, setSelectedVariation] = useState(null);
 
     const handleMouseMove = (e) => {
+        if (!imgRef.current) return;
         const rect = imgRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        const pctX = x / rect.width;
-        const pctY = y / rect.height;
-        const bgW = LENS_SIZE * zoomLevel;
-        const bgH = LENS_SIZE * zoomLevel;
-        setLensPos({ x, y });
-        setBgPos({
-            x: -(pctX * bgW - LENS_SIZE / 2),
-            y: -(pctY * bgH - LENS_SIZE / 2),
-        });
+        const pctX = Math.max(0, Math.min(1, x / rect.width));
+        const pctY = Math.max(0, Math.min(1, y / rect.height));
+
+        const overlaySize = rect.width / ZOOM_FACTOR;
+        const overlayX = Math.max(0, Math.min(x - overlaySize / 2, rect.width - overlaySize));
+        const overlayY = Math.max(0, Math.min(y - overlaySize / 2, rect.height - overlaySize));
+
+        setZoomPos({ x: pctX, y: pctY });
+        setZoomOverlay({ x: overlayX, y: overlayY, w: overlaySize, h: overlaySize });
     };
 
-    const handleTouchMove = (e) => {
-        e.preventDefault();
-        if (e.touches.length === 1) {
-            const touch = e.touches[0];
-            const rect = imgRef.current.getBoundingClientRect();
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-            const pctX = x / rect.width;
-            const pctY = y / rect.height;
-            const bgW = LENS_SIZE * zoomLevel;
-            const bgH = LENS_SIZE * zoomLevel;
-            setLensPos({ x, y });
-            setBgPos({
-                x: -(pctX * bgW - LENS_SIZE / 2),
-                y: -(pctY * bgH - LENS_SIZE / 2),
-            });
-        }
+    const handleMouseEnter = () => {
+        if (window.innerWidth > 768) setIsZooming(true);
+    };
+
+    const handleMouseLeave = () => {
+        setIsZooming(false);
     };
 
     const handleTouchStart = (e) => {
-        setIsZooming(true);
+        if (e.touches.length === 1) {
+            setIsZooming(true);
+        }
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isZooming || !imgRef.current || e.touches.length !== 1) return;
         e.preventDefault();
+        const touch = e.touches[0];
+        const rect = imgRef.current.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        const pctX = Math.max(0, Math.min(1, x / rect.width));
+        const pctY = Math.max(0, Math.min(1, y / rect.height));
+        setZoomPos({ x: pctX, y: pctY });
     };
 
     const handleTouchEnd = () => {
         setIsZooming(false);
+    };
+
+    const toggleMobileZoom = () => {
+        setIsZooming(prev => !prev);
     };
 
     useEffect(() => {
@@ -179,7 +186,10 @@ const WholesaleProductPage = () => {
             const sorted = [...product.pricingTiers].sort((a, b) => a.minQuantity - b.minQuantity);
             for (const tier of sorted) {
                 if (qty >= tier.minQuantity && (!tier.maxQuantity || qty <= tier.maxQuantity)) {
-                    price = tier.unitPrice || price;
+                    if (tier.unitPrice) { price = tier.unitPrice; }
+                    else if (tier.discountType === 'percentage' && tier.discountValue) { price = retailPrice * (1 - tier.discountValue / 100); }
+                    else if (tier.discountType === 'fixed' && tier.discountValue) { price = Math.max(0, retailPrice - tier.discountValue); }
+                    else { price = tier.unitPrice || price; }
                 }
             }
         }
@@ -287,28 +297,37 @@ const WholesaleProductPage = () => {
                                     src={currentImage}
                                     alt={product.name}
                                     className="main-image"
-                                    onMouseEnter={() => setIsZooming(true)}
+                                    onMouseEnter={handleMouseEnter}
                                     onMouseMove={handleMouseMove}
-                                    onMouseLeave={() => setIsZooming(false)}
+                                    onMouseLeave={handleMouseLeave}
+                                    onClick={toggleMobileZoom}
                                     onTouchStart={handleTouchStart}
                                     onTouchMove={handleTouchMove}
                                     onTouchEnd={handleTouchEnd}
+                                    draggable={false}
                                 />
                                 {isZooming && (
-                                    <div className="zoom-magnifier" style={{
-                                        left: lensPos.x - 80,
-                                        top: lensPos.y - 80,
-                                    }}>
-                                        <div className="zoom-lens-inner" style={{
-                                            backgroundImage: `url(${currentImage})`,
-                                            backgroundSize: `${zoomLevel * 100}%`,
-                                            backgroundPosition: `${bgPos.x}px ${bgPos.y}px`,
-                                            backgroundRepeat: 'no-repeat',
-                                        }} />
-                                        <span className="zoom-lens-label">{zoomLevel.toFixed(1)}x</span>
-                                    </div>
+                                    <div className="zoom-overlay" style={{
+                                        left: zoomOverlay.x,
+                                        top: zoomOverlay.y,
+                                        width: zoomOverlay.w,
+                                        height: zoomOverlay.h,
+                                    }} />
                                 )}
                             </div>
+                            {isZooming && (
+                                <div className="zoom-panel" ref={zoomPanelRef}>
+                                    <div
+                                        className="zoom-panel-inner"
+                                        style={{
+                                            backgroundImage: `url(${currentImage})`,
+                                            backgroundSize: `${ZOOM_FACTOR * 100}%`,
+                                            backgroundPosition: `${zoomPos.x * 100}% ${zoomPos.y * 100}%`,
+                                            backgroundRepeat: 'no-repeat',
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {galleryMedia.length > 1 && (
@@ -426,8 +445,8 @@ const WholesaleProductPage = () => {
                             </div>
                         )}
 
-                        <div style={{ background: '#fffbeb', borderRadius: '12px', border: '1px solid #fde68a', padding: '1.25rem', marginBottom: '1.25rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                        <div className="vp-table-wrap">
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                                 <span style={{ fontSize: '0.85rem', color: '#92400e', fontWeight: '500' }}>Wholesale Price</span>
                                 <span style={{ fontSize: '1.8rem', fontWeight: '800', color: '#d97706' }}>₹{effectivePrice.toFixed(2)}</span>
                                 {retailPrice > 0 && (
@@ -445,24 +464,50 @@ const WholesaleProductPage = () => {
                                 </p>
                             )}
 
-                            {product.pricingTiers && product.pricingTiers.length > 0 && (
-                                <div>
-                                    <span style={{ fontSize: '0.8rem', fontWeight: '600', color: '#92400e', display: 'block', marginBottom: '0.5rem' }}>Volume Pricing Tiers</span>
-                                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                        {[...product.pricingTiers].sort((a, b) => a.minQuantity - b.minQuantity).map((tier, i) => (
-                                            <div key={i} style={{
-                                                padding: '0.5rem 0.75rem', borderRadius: '8px',
-                                                background: quantity >= tier.minQuantity && (!tier.maxQuantity || quantity <= tier.maxQuantity) ? '#d97706' : '#fff',
-                                                color: quantity >= tier.minQuantity && (!tier.maxQuantity || quantity <= tier.maxQuantity) ? '#fff' : '#d97706',
-                                                fontSize: '0.8rem', fontWeight: '600',
-                                                border: quantity >= tier.minQuantity && (!tier.maxQuantity || quantity <= tier.maxQuantity) ? '1px solid #d97706' : '1px solid #fde68a',
-                                                transition: 'all 0.2s'
-                                            }}>
-                                                {tier.minQuantity}{tier.maxQuantity ? `-${tier.maxQuantity}` : '+'} units — <IndianRupee size={11} style={{ display: 'inline', verticalAlign: 'middle' }} />{tier.unitPrice}/unit
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                            {product?.pricingTiers?.length > 0 && (
+                                <>
+                                    <h3 className="vp-table-heading">Volume Pricing Tiers</h3>
+                                    <table className="vp-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Quantity</th>
+                                                <th>Unit Price</th>
+                                                <th>Savings</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {[...product.pricingTiers]
+                                                .sort((a, b) => a.minQuantity - b.minQuantity)
+                                                .map((tier, i) => {
+                                                    const calcPrice = () => {
+                                                        if (tier.unitPrice) return tier.unitPrice;
+                                                        if (tier.discountType === 'percentage' && tier.discountValue)
+                                                            return retailPrice * (1 - tier.discountValue / 100);
+                                                        if (tier.discountType === 'fixed' && tier.discountValue)
+                                                            return Math.max(0, retailPrice - tier.discountValue);
+                                                        return retailPrice;
+                                                    };
+                                                    const effectivePrice = calcPrice();
+                                                    const saving = retailPrice && effectivePrice < retailPrice
+                                                        ? Math.round((1 - effectivePrice / retailPrice) * 100) : 0;
+                                                    return (
+                                                        <tr key={i} className={quantity >= tier.minQuantity && (!tier.maxQuantity || quantity <= tier.maxQuantity) ? 'vp-row-active' : ''}>
+                                                            <td className="vp-qty">
+                                                                {tier.minQuantity}{tier.maxQuantity ? ` - ${tier.maxQuantity}` : '+'}
+                                                            </td>
+                                                            <td className="vp-price">
+                                                                ₹{Number(effectivePrice).toFixed(2)}
+                                                                <span className="vp-per-unit">/ unit</span>
+                                                            </td>
+                                                            <td className="vp-save">
+                                                                {saving > 0 && <span className="vp-save-badge">Save {saving}%</span>}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                        </tbody>
+                                    </table>
+                                </>
                             )}
                         </div>
 

@@ -25,11 +25,6 @@
     to { transform: rotate(360deg); }
 }
 
-@keyframes magnifierPop {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
 @keyframes ppFadeIn {
     from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: translateY(0); }
@@ -129,6 +124,7 @@
     grid-column: 1;
     grid-row: 1 / -1;
     min-width: 0;
+    overflow: visible;
 }
 
 .product-page-body { display: contents; }
@@ -268,49 +264,44 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transition: transform 0.15s ease;
     background: white;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
-.zoom-magnifier {
+.zoom-overlay {
     position: absolute;
-    width: 220px;
-    height: 220px;
-    border-radius: 50%;
-    overflow: hidden;
+    border: 2px solid rgba(201, 168, 124, 0.6);
+    background: rgba(255, 255, 255, 0.25);
     pointer-events: none;
-    z-index: 10;
-    box-shadow:
-        0 0 0 3px rgba(201, 168, 124, 0.5),
-        0 0 0 8px rgba(255, 255, 255, 0.3),
-        0 20px 60px rgba(0, 0, 0, 0.3);
-    background: #fff;
-    animation: magnifierPop 0.2s ease-out;
-    backdrop-filter: blur(4px);
-    transition: all 0.15s ease;
+    z-index: 5;
+    transition: width 0.1s ease, height 0.1s ease;
 }
 
-.zoom-lens-inner {
+/* Amazon-style zoom panel — appears to the right of the main image */
+.zoom-panel {
+    position: absolute;
+    top: 0;
+    left: calc(100% + 16px);
+    width: 420px;
+    height: 420px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #E8DDD4;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    background: #fff;
+    animation: zoomPanelFadeIn 0.2s ease-out;
+}
+
+.zoom-panel-inner {
     width: 100%;
     height: 100%;
-    position: absolute;
-    inset: 0;
 }
 
-.zoom-lens-label {
-    position: absolute;
-    bottom: 6px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.7);
-    color: #fff;
-    font-size: 0.6rem;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-weight: 600;
-    white-space: nowrap;
-    backdrop-filter: blur(8px);
-    letter-spacing: 0.5px;
+@keyframes zoomPanelFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 /* Thumbnails */
@@ -2898,9 +2889,7 @@
     .product-gallery { position: static; }
     .main-image-wrapper { max-height: 280px !important; border-radius: 12px; }
     .zoom-container { border-radius: 14px; }
-    .zoom-magnifier { display: none !important; }
-    .zoom-lens-label { display: none !important; }
-    .zoom-controls { display: none !important; }
+    .zoom-overlay { display: none !important; }
     .gallery-actions-bar { top: 10px; right: 10px; gap: 6px; }
     .gallery-action-btn { width: 36px; height: 36px; }
     .share-dropdown-popup { top: 50px; right: 10px; left: 10px; padding: 16px; }
@@ -2909,6 +2898,18 @@
 
     /* Gallery Nav — hidden on mobile, use thumbnails instead */
     .gallery-nav { display: none !important; }
+
+    /* Mobile Zoom Panel — appears below the image */
+    .zoom-panel {
+        position: relative;
+        top: auto;
+        left: auto;
+        width: 100%;
+        height: 250px;
+        border-radius: 12px;
+        margin-top: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
 
     /* Thumbnails */
     .thumb-wrapper { flex: 0 0 calc(33.33% - 0.5rem); border-radius: 8px; }
@@ -3139,4 +3140,83 @@
     .additional-details table { width: 100%; }
     .additional-details th,
     .additional-details td { padding: 6px 8px; }
+}
+
+/* ───── Volume Pricing Tiers Table ───── */
+.vp-table-wrap {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+.vp-table-heading {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #92400e;
+    margin: 0 0 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.vp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.vp-table thead th {
+    text-align: Center;
+    padding: 0.6rem 0.75rem;
+    font-weight: 600;
+    color: #78350f;
+    border-bottom: 2px solid #fde68a;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.vp-table tbody tr {
+    border-bottom: 1px solid #fef3c7;
+    transition: background 0.15s;
+}
+.vp-table tbody tr:last-child { border-bottom: none; }
+.vp-table tbody tr:hover { background: #fef3c7; }
+.vp-table tbody tr.vp-row-active { background: #fef3c7; font-weight: 600; }
+.vp-table tbody tr.vp-row-active .vp-price { color: #b45309; }
+.vp-table tbody td {
+    text-align: center;
+    padding: 0.7rem 0.75rem;
+    color: #333;
+}
+.vp-qty {
+    font-weight: 600;
+    color: #92400e;
+}
+.vp-price {
+    font-weight: 700;
+    color: #d97706;
+    font-size: 0.95rem;
+}
+.vp-per-unit {
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: #a16207;
+    margin-left: 2px;
+}
+.vp-save { text-align: center; }
+.vp-save-badge {
+    display: inline-block;
+    background: #059669;
+    color: #fff;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    .vp-table-wrap { padding: 0.85rem; }
+    .vp-table { font-size: 0.8rem; }
+    .vp-table thead th { padding: 0.4rem 0.5rem; }
+    .vp-table tbody td { padding: 0.5rem; }
+    .vp-price { font-size: 0.85rem; }
 }

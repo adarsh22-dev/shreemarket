@@ -14,7 +14,7 @@ import './ProductPage.css';
 const ProductPage = () => {
     const { id } = useParams();
     const [quantity, setQuantity] = useState(1);
-    const { cartItems, addToCart, removeFromCart, isProductInCart, recentlyViewed, addToRecentlyViewed } = useCart();
+    const { addToCart, addToRecentlyViewed } = useCart();
     const { isInWishlist, addToWishlist, removeFromWishlist, isLoggedIn } = useWishlist();
     const { isInCompare, addToCompare, removeFromCompare } = useCompare();
 
@@ -43,60 +43,65 @@ const ProductPage = () => {
     // Share Dropdown State
     const [showShareDropdown, setShowShareDropdown] = useState(false);
 
-     // Image Zoom State
+     // Image Zoom State (Amazon-style)
     const [isZooming, setIsZooming] = useState(false);
-    const [lensPos, setLensPos] = useState({ x: 0, y: 0 });
-    const [zoomLevel, setZoomLevel] = useState(3);
-    const [bgPos, setBgPos] = useState({ x: 0, y: 0 });
-    const LENS_SIZE = 160;
+    const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
+    const [zoomOverlay, setZoomOverlay] = useState({ x: 0, y: 0, w: 0, h: 0 });
     const imgRef = useRef(null);
+    const zoomPanelRef = useRef(null);
+    const ZOOM_FACTOR = 2.5;
 
     const handleMouseMove = (e) => {
+        if (!imgRef.current) return;
         const rect = imgRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        const pctX = x / rect.width;
-        const pctY = y / rect.height;
-        const bgW = LENS_SIZE * zoomLevel;
-        const bgH = LENS_SIZE * zoomLevel;
-        setLensPos({ x, y });
-        setBgPos({
-            x: -(pctX * bgW - LENS_SIZE / 2),
-            y: -(pctY * bgH - LENS_SIZE / 2),
-        });
+        const pctX = Math.max(0, Math.min(1, x / rect.width));
+        const pctY = Math.max(0, Math.min(1, y / rect.height));
+
+        const overlaySize = rect.width / ZOOM_FACTOR;
+        const overlayW = overlaySize;
+        const overlayH = overlaySize;
+        const overlayX = Math.max(0, Math.min(x - overlayW / 2, rect.width - overlayW));
+        const overlayY = Math.max(0, Math.min(y - overlayH / 2, rect.height - overlayH));
+
+        setZoomPos({ x: pctX, y: pctY });
+        setZoomOverlay({ x: overlayX, y: overlayY, w: overlayW, h: overlayH });
     };
 
-    const handleTouchMove = (e) => {
-        e.preventDefault(); // Prevent scrolling while zooming
-        if (e.touches.length === 1) {
-            const touch = e.touches[0];
-            const rect = imgRef.current.getBoundingClientRect();
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-            const pctX = x / rect.width;
-            const pctY = y / rect.height;
-            const bgW = LENS_SIZE * zoomLevel;
-            const bgH = LENS_SIZE * zoomLevel;
-            setLensPos({ x, y });
-            setBgPos({
-                x: -(pctX * bgW - LENS_SIZE / 2),
-                y: -(pctY * bgH - LENS_SIZE / 2),
-            });
-        }
+    const handleMouseEnter = () => {
+        if (window.innerWidth > 768) setIsZooming(true);
+    };
+
+    const handleMouseLeave = () => {
+        setIsZooming(false);
     };
 
     const handleTouchStart = (e) => {
-        setIsZooming(true);
-        // Prevent default to avoid scroll interference
+        if (e.touches.length === 1) {
+            setIsZooming(true);
+        }
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isZooming || !imgRef.current || e.touches.length !== 1) return;
         e.preventDefault();
+        const touch = e.touches[0];
+        const rect = imgRef.current.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        const pctX = Math.max(0, Math.min(1, x / rect.width));
+        const pctY = Math.max(0, Math.min(1, y / rect.height));
+        setZoomPos({ x: pctX, y: pctY });
     };
 
     const handleTouchEnd = () => {
         setIsZooming(false);
     };
 
-    const zoomIn = () => setZoomLevel(prev => Math.min(prev + 0.3, 5));
-    const zoomOut = () => setZoomLevel(prev => Math.max(prev - 0.3, 1.5));
+    const toggleMobileZoom = () => {
+        setIsZooming(prev => !prev);
+    };
 
     // Filter out manufacturer images from main gallery
     const galleryMedia = product?.media?.filter(m => m.mediaType !== 'manufacturer' && m.fileName && m.fileName !== 'null' && m.fileName !== 'undefined' && m.fileType !== 'video-url' && m.fileType !== 'instagram-url') || [];
@@ -153,11 +158,10 @@ const ProductPage = () => {
     const [instaSettings, setInstaSettings] = useState({ productPageEnabled: true, storyShape: 'circle' });
 
     const instagramMedia = product?.media?.filter(m => m.fileName && m.fileName !== 'null' && m.fileName !== 'undefined' && m.fileType === 'instagram-url') || [];
-    const instagramFeedLayout = product?.instagramFeedLayout || 'slider';
     let instagramFeedConfig = {};
     try {
         if (product?.instagramFeedConfig) instagramFeedConfig = JSON.parse(product.instagramFeedConfig);
-    } catch (e) {}
+    } catch { }
 
     const getLinkedProductName = (url, index) => {
         if (instagramFeedConfig?.links?.[index]) return instagramFeedConfig.links[index];
@@ -703,181 +707,35 @@ const ProductPage = () => {
                                      src={mainImageUrl}
                                      alt={product.name}
                                      className="main-image"
-                                     onMouseEnter={() => setIsZooming(true)}
+                                     onMouseEnter={handleMouseEnter}
                                      onMouseMove={handleMouseMove}
-                                     onMouseLeave={() => setIsZooming(false)}
-                                     onClick={(e) => {
-                                       e.preventDefault();
-                                       setIsZooming(!isZooming);
-                                     }}
+                                     onMouseLeave={handleMouseLeave}
+                                     onClick={toggleMobileZoom}
                                      onTouchStart={handleTouchStart}
                                      onTouchMove={handleTouchMove}
                                      onTouchEnd={handleTouchEnd}
+                                     draggable={false}
                                  />
                                 {isZooming && (
-                                    <div className="zoom-magnifier" style={{
-                                        left: lensPos.x - 80,
-                                        top: lensPos.y - 80,
-                                    }}>
-                                        <div className="zoom-lens-inner" style={{
-                                            backgroundImage: `url(${mainImageUrl})`,
-                                            backgroundSize: `${zoomLevel * 100}%`,
-                                            backgroundPosition: `${bgPos.x}px ${bgPos.y}px`,
-                                            backgroundRepeat: 'no-repeat',
-                                        }} />
-                                        <span className="zoom-lens-label">{zoomLevel.toFixed(1)}x</span>
-                                    </div>
+                                    <div className="zoom-overlay" style={{
+                                        left: zoomOverlay.x,
+                                        top: zoomOverlay.y,
+                                        width: zoomOverlay.w,
+                                        height: zoomOverlay.h,
+                                    }} />
                                 )}
-                                 {!isZooming && (
-                                     <div className="zoom-controls" style={{
-                                         position: 'absolute',
-                                         bottom: '12px',
-                                         right: '12px',
-                                         display: 'flex',
-                                         gap: '6px',
-                                         zIndex: 5
-                                     }}>
-                                     <button
-                                         onClick={(e) => { e.preventDefault(); zoomOut(); }}
-                                         style={{
-                                             width: '36px',
-                                             height: '36px',
-                                             borderRadius: '10px',
-                                             border: 'none',
-                                             background: 'rgba(255,255,255,0.95)',
-                                             cursor: 'pointer',
-                                             fontSize: '1.2rem',
-                                             display: 'flex',
-                                             alignItems: 'center',
-                                             justifyContent: 'center',
-                                             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                             color: '#555',
-                                             transition: 'all 0.2s ease',
-                                             transform: 'scale(1)'
-                                         }}
-                                         onMouseEnter={(e) => {
-                                             e.currentTarget.style.transform = 'scale(1.1)';
-                                             e.currentTarget.style.background = '#FF5722';
-                                             e.currentTarget.style.color = 'white';
-                                         }}
-                                         onMouseLeave={(e) => {
-                                             e.currentTarget.style.transform = 'scale(1)';
-                                             e.currentTarget.style.background = 'rgba(255,255,255,0.95)';
-                                             e.currentTarget.style.color = '#555';
-                                         }}
-                                     >
-                                         −
-                                     </button>
-                                     <span style={{
-                                         padding: '0 12px',
-                                         fontSize: '0.85rem',
-                                         fontWeight: 600,
-                                         color: '#2C2C2C',
-                                         background: 'rgba(255,255,255,0.9)',
-                                         borderRadius: '10px',
-                                         display: 'flex',
-                                         alignItems: 'center',
-                                         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                         minWidth: '40px',
-                                         textAlign: 'center',
-                                         transition: 'all 0.2s ease',
-                                         transform: 'scale(1)'
-                                     }}
-                                     onMouseEnter={(e) => {
-                                         e.currentTarget.style.transform = 'scale(1.05)';
-                                         e.currentTarget.style.background = 'rgba(255,255,255,0.95)';
-                                     }}
-                                     onMouseLeave={(e) => {
-                                         e.currentTarget.style.transform = 'scale(1)';
-                                         e.currentTarget.style.background = 'rgba(255,255,255,0.9)';
-                                     }}>
-                                         {zoomLevel.toFixed(1)}x
-                                     </span>
-                                     <button
-                                         onClick={(e) => { e.preventDefault(); zoomIn(); }}
-                                         style={{
-                                             width: '36px',
-                                             height: '36px',
-                                             borderRadius: '10px',
-                                             border: 'none',
-                                             background: 'rgba(255,255,255,0.95)',
-                                             cursor: 'pointer',
-                                             fontSize: '1.2rem',
-                                             display: 'flex',
-                                             alignItems: 'center',
-                                             justifyContent: 'center',
-                                             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                             color: '#555',
-                                             transition: 'all 0.2s ease',
-                                             transform: 'scale(1)'
-                                         }}
-                                         onMouseEnter={(e) => {
-                                             e.currentTarget.style.transform = 'scale(1.1)';
-                                             e.currentTarget.style.background = '#FF5722';
-                                             e.currentTarget.style.color = 'white';
-                                         }}
-                                         onMouseLeave={(e) => {
-                                             e.currentTarget.style.transform = 'scale(1)';
-                                             e.currentTarget.style.background = 'rgba(255,255,255,0.95)';
-                                             e.currentTarget.style.color = '#555';
-                                         }}
-                                     >
-                                         +
-                                     </button>
-                                     </div>
-                                 )}
                                 {/* Left/Right Navigation Arrows */}
-                                {galleryMedia && galleryMedia.length > 1 && (
+                                {!isZooming && galleryMedia && galleryMedia.length > 1 && (
                                     <>
                                         <button
                                             className="gallery-nav gallery-nav-prev"
-                                            onClick={(e) => { e.preventDefault(); goToPrevImage(); }}
-                                            style={{
-                                                position: 'absolute',
-                                                left: '12px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                width: '36px',
-                                                height: '36px',
-                                                borderRadius: '50%',
-                                                border: 'none',
-                                                background: 'rgba(255,255,255,0.9)',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                                zIndex: 5,
-                                                transition: 'all 0.2s'
-                                            }}
-                                            onMouseEnter={e => { e.currentTarget.style.background = '#FF5722'; e.currentTarget.style.color = 'white'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.9)'; e.currentTarget.style.color = 'inherit'; }}
+                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToPrevImage(); }}
                                         >
                                             <ChevronLeft size={20} />
                                         </button>
                                         <button
                                             className="gallery-nav gallery-nav-next"
-                                            onClick={(e) => { e.preventDefault(); goToNextImage(); }}
-                                            style={{
-                                                position: 'absolute',
-                                                right: '12px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                width: '36px',
-                                                height: '36px',
-                                                borderRadius: '50%',
-                                                border: 'none',
-                                                background: 'rgba(255,255,255,0.9)',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                                                zIndex: 5,
-                                                transition: 'all 0.2s'
-                                            }}
-                                            onMouseEnter={e => { e.currentTarget.style.background = '#FF5722'; e.currentTarget.style.color = 'white'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.9)'; e.currentTarget.style.color = 'inherit'; }}
+                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToNextImage(); }}
                                         >
                                             <ChevronRight size={20} />
                                         </button>
@@ -886,6 +744,20 @@ const ProductPage = () => {
                             </div>
 
                         </div>
+                        {/* Amazon-style Zoom Panel (Desktop only) */}
+                        {isZooming && (
+                            <div className="zoom-panel" ref={zoomPanelRef}>
+                                <div
+                                    className="zoom-panel-inner"
+                                    style={{
+                                        backgroundImage: `url(${mainImageUrl})`,
+                                        backgroundSize: `${ZOOM_FACTOR * 100}%`,
+                                        backgroundPosition: `${zoomPos.x * 100}% ${zoomPos.y * 100}%`,
+                                        backgroundRepeat: 'no-repeat',
+                                    }}
+                                />
+                            </div>
+                        )}
                         <div className="thumbnails">
                             {galleryMedia && galleryMedia.map((med, index) => (
                                 <div
@@ -1182,56 +1054,52 @@ const ProductPage = () => {
                             </div>
                         </div>
 
-                        {(() => {
-                            const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-                            const currentUser = userStr ? JSON.parse(userStr) : null;
-                            const isWholesaler = currentUser?.roleId === 4;
-                            if (!isWholesaler) return null;
-                            const wholesalePrice = product.wholesalePrice || 0;
-                            const hasWholesaleData = wholesalePrice > 0 || (product.pricingTiers && product.pricingTiers.length > 0);
-                            if (!hasWholesaleData) return null;
-                            const retailPrice = product.discountPrice || product.regularPrice || 0;
-                            const savingsPercent = wholesalePrice && retailPrice > wholesalePrice
-                                ? Math.round(((retailPrice - wholesalePrice) / retailPrice) * 100) : 0;
-                            return (
-                                <div style={{ background: '#fffbeb', borderRadius: '12px', border: '1px solid #fde68a', padding: '1.25rem', marginBottom: '1.25rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                                        <span style={{ background: '#d97706', color: '#fff', padding: '0.2rem 0.75rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Wholesale</span>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                                        <span style={{ fontSize: '0.85rem', color: '#92400e', fontWeight: '500' }}>Wholesale Price</span>
-                                        <span style={{ fontSize: '1.8rem', fontWeight: '800', color: '#d97706' }}>₹{wholesalePrice.toFixed(2)}</span>
-                                        {retailPrice > 0 && (
-                                            <span style={{ fontSize: '1rem', color: '#9ca3af', textDecoration: 'line-through' }}>₹{retailPrice.toFixed(2)}</span>
-                                        )}
-                                        {savingsPercent > 0 && (
-                                            <span style={{ background: '#059669', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>Save {savingsPercent}%</span>
-                                        )}
-                                    </div>
-                                    {product.minimumWholesaleQuantity && (
-                                        <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: '#92400e' }}>
-                                            <Tag size={14} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} />
-                                            Minimum order: <strong>{product.minimumWholesaleQuantity} units</strong>
-                                        </p>
-                                    )}
-                                    {product.pricingTiers && product.pricingTiers.length > 0 && (
-                                        <div>
-                                            <span style={{ fontSize: '0.8rem', fontWeight: '600', color: '#92400e', display: 'block', marginBottom: '0.5rem' }}>Volume Pricing Tiers</span>
-                                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                                {[...product.pricingTiers].sort((a, b) => a.minQuantity - b.minQuantity).map((tier, i) => (
-                                                    <div key={i} style={{
-                                                        padding: '0.5rem 0.75rem', borderRadius: '8px', background: '#fff',
-                                                        color: '#d97706', fontSize: '0.8rem', fontWeight: '600', border: '1px solid #fde68a'
-                                                    }}>
-                                                        {tier.minQuantity}{tier.maxQuantity ? `-${tier.maxQuantity}` : '+'} units — <IndianRupee size={11} style={{ display: 'inline', verticalAlign: 'middle' }} />{tier.unitPrice}/unit
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })()}
+                        {product?.pricingTiers?.length > 0 && (
+                            <div className="vp-table-wrap">
+                                <h3 className="vp-table-heading">Volume Pricing Tiers</h3>
+                                <table className="vp-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Quantity</th>
+                                            <th>Unit Price</th>
+                                            <th>Savings</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {[...product.pricingTiers]
+                                            .sort((a, b) => a.minQuantity - b.minQuantity)
+                                            .map((tier, i, arr) => {
+                                                const basePrice = product.discountPrice || product.regularPrice || 0;
+                                                const calcPrice = () => {
+                                                    if (tier.unitPrice) return tier.unitPrice;
+                                                    if (tier.discountType === 'percentage' && tier.discountValue)
+                                                        return basePrice * (1 - tier.discountValue / 100);
+                                                    if (tier.discountType === 'fixed' && tier.discountValue)
+                                                        return Math.max(0, basePrice - tier.discountValue);
+                                                    return basePrice;
+                                                };
+                                                const effectivePrice = calcPrice();
+                                                const saving = basePrice && effectivePrice < basePrice
+                                                    ? Math.round((1 - effectivePrice / basePrice) * 100) : 0;
+                                                return (
+                                                    <tr key={i}>
+                                                        <td className="vp-qty">
+                                                            {tier.minQuantity}{tier.maxQuantity ? ` - ${tier.maxQuantity}` : '+'}
+                                                        </td>
+                                                        <td className="vp-price">
+                                                            ₹{Number(effectivePrice).toFixed(2)}
+                                                            <span className="vp-per-unit">/ unit</span>
+                                                        </td>
+                                                        <td className="vp-save">
+                                                            {saving > 0 && <span className="vp-save-badge">Save {saving}%</span>}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
 
                         {/* Instagram Story Circles */}
                         {instagramMedia.length > 0 && instaSettings.productPageEnabled !== false && (
