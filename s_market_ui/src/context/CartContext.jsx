@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     fetchUserCart,
     addToUserCart,
@@ -10,10 +10,7 @@ import {
     moveToCartFromSavedAPI,
     PLACEHOLDER_IMG
 } from '../api/api';
-
-const CartContext = createContext();
-
-export const useCart = () => useContext(CartContext);
+import { CartContext } from './CartContextValues';
 
 // A simple utility to map backend CartItem structure to frontend's expected item format
 const mapBackendItems = (backendItems) => {
@@ -29,7 +26,7 @@ const mapBackendItems = (backendItems) => {
         }
 
         let parsedVariant = bItem.variant;
-        try { if (typeof bItem.variant === 'string' && bItem.variant.startsWith('{')) parsedVariant = JSON.parse(bItem.variant); } catch (e) { }
+        try { if (typeof bItem.variant === 'string' && bItem.variant.startsWith('{')) parsedVariant = JSON.parse(bItem.variant); } catch { /* ignore parse error */ }
 
         return {
             ...p,
@@ -66,7 +63,9 @@ export const CartProvider = ({ children }) => {
                 try {
                     const userObj = JSON.parse(userStr);
                     setUserId(userObj.userId || userObj.id || null);
-                } catch (e) { setUserId(null); }
+                } catch {
+                    setUserId(null);
+                }
             } else {
                 setUserId(null);
             }
@@ -84,16 +83,16 @@ export const CartProvider = ({ children }) => {
         setSavedItems(mapped.filter(i => i.isSaved));
     };
 
-    const loadCentralCart = async (uid) => {
+    const loadCentralCart = useCallback(async (uid) => {
         try {
             const cart = await fetchUserCart(uid);
             if (cart && cart.items) {
                 processBackendCart(cart.items);
             }
-        } catch (e) {
-            console.error("Failed to load central cart", e);
+        } catch (err) {
+            console.error("Failed to load central cart", err);
         }
-    };
+    }, []);
 
     // Centralised cart sync logic
     useEffect(() => {
@@ -128,12 +127,12 @@ export const CartProvider = ({ children }) => {
                         localStorage.removeItem('s_market_saved');
                         if (cart && cart.items) processBackendCart(cart.items);
                     })
-                    .catch(e => {
-                        console.error("Failed to merge cart. Falling back to fetch.", e);
+                    .catch(err => {
+                        console.error("Failed to merge cart. Falling back to fetch.", err);
                         loadCentralCart(userId);
                     });
             } else {
-                loadCentralCart(userId);
+                setTimeout(() => loadCentralCart(userId), 0);
             }
         } else {
             // Load from local storage for guests
@@ -141,27 +140,33 @@ export const CartProvider = ({ children }) => {
             const savedLater = localStorage.getItem('s_market_saved');
 
             if (savedCart) {
-                try { setCartItems(JSON.parse(savedCart)); }
-                catch (e) { console.error("Failed to parse cart", e); }
+                try {
+                    const parsed = JSON.parse(savedCart);
+                    setTimeout(() => setCartItems(parsed), 0);
+                } catch (err) { console.error("Failed to parse cart", err); }
             } else {
-                setCartItems([]);
+                setTimeout(() => setCartItems([]), 0);
             }
 
             if (savedLater) {
-                try { setSavedItems(JSON.parse(savedLater)); }
-                catch (e) { console.error("Failed to parse saved items", e); }
+                try {
+                    const parsed = JSON.parse(savedLater);
+                    setTimeout(() => setSavedItems(parsed), 0);
+                } catch (err) { console.error("Failed to parse saved items", err); }
             } else {
-                setSavedItems([]);
+                setTimeout(() => setSavedItems([]), 0);
             }
         }
-    }, [userId, isInitialized]);
+    }, [userId, isInitialized, loadCentralCart]);
 
     // Load recently viewed consistently
     useEffect(() => {
         const savedRecentlyViewed = localStorage.getItem('s_market_recent');
         if (savedRecentlyViewed) {
-            try { setRecentlyViewed(JSON.parse(savedRecentlyViewed)); }
-            catch (e) { }
+            try {
+                const parsed = JSON.parse(savedRecentlyViewed);
+                setTimeout(() => setRecentlyViewed(parsed), 0);
+            } catch { /* ignore parse error */ }
         }
     }, []);
 

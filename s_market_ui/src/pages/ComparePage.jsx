@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { useCompare } from '../context/CompareContext';
+import { useCompare } from '../hooks/useCompare';
 import { X, ShoppingBag, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { BACKEND_URL, getPrimaryGalleryImage, PLACEHOLDER_IMG } from '../api/api';
 import './ComparePage.css';

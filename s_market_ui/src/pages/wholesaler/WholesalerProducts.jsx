@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Filter, ShoppingCart, Plus, Minus, Heart, Share2, GitCompare, Eye, ShoppingBag, Link as LinkIcon } from 'lucide-react';
 import { getWholesaleProducts } from '../../api/api';
-import { useWishlist } from '../../context/WishlistContext';
-import { useCompare } from '../../context/CompareContext';
-import { useCart } from '../../context/CartContext';
+import { useWishlist } from '../../hooks/useWishlist';
+import { useCompare } from '../../hooks/useCompare';
+import { useCart } from '../../hooks/useCart';
 import toast from 'react-hot-toast';
 
 const WholesalerProducts = () => {

@@ -249,8 +249,8 @@ function App() {
 
               <Route element={<WholesalerProtectedRoute />}>
                 <Route path="/wholesale" element={<WholesalePage />} />
-                <Route path="/wholesale/product/:id" element={<WholesaleProductPage />} />
               </Route>
+              <Route path="/wholesale/product/:id" element={<WholesaleProductPage />} />
 
               <Route element={<ProtectedRoute allowedRoles={[1]} />}>
                 <Route path="/admin" element={<AdminLayout />}>

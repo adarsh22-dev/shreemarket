@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import {
     fetchUserWishlist,
@@ -6,10 +6,7 @@ import {
     removeUserWishlist,
     PLACEHOLDER_IMG
 } from '../api/api';
-
-const WishlistContext = createContext();
-
-export const useWishlist = () => useContext(WishlistContext);
+import { WishlistContext } from './WishlistContextValues';
 
 export const WishlistProvider = ({ children }) => {
     const [wishlistItems, setWishlistItems] = useState([]);
@@ -25,7 +22,7 @@ export const WishlistProvider = ({ children }) => {
                     const userObj = JSON.parse(userStr);
                     const newId = userObj.userId || userObj.id || null;
                     setUserId(prev => prev !== newId ? newId : prev);
-                } catch (e) { setUserId(null); }
+                } catch { setUserId(null); }
             } else {
                 setUserId(null);
             }
@@ -43,6 +40,10 @@ export const WishlistProvider = ({ children }) => {
          setWishlistLoading(true);
          try {
              const items = await fetchUserWishlist(uid);
+             if (!Array.isArray(items)) {
+                 setWishlistItems([]);
+                 return;
+             }
              // Backend returns list of Wishlist entity, we want the products
              const products = items.map(item => {
                  const p = item.product;
@@ -83,7 +84,7 @@ export const WishlistProvider = ({ children }) => {
         try {
             await addToUserWishlist(userId, product.id);
             loadWishlist(userId);
-        } catch (e) { console.error("Failed to add to backend wishlist", e); }
+        } catch (err) { console.error("Failed to add to backend wishlist", err); }
     };
 
     const removeFromWishlist = async (productId) => {
@@ -91,7 +92,7 @@ export const WishlistProvider = ({ children }) => {
         try {
             await removeUserWishlist(userId, productId);
             loadWishlist(userId);
-        } catch (e) { console.error("Failed to remove from backend wishlist", e); }
+        } catch (err) { console.error("Failed to remove from backend wishlist", err); }
     };
 
     const isInWishlist = (productId) => {

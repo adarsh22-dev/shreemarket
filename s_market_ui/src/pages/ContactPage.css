@@ -251,7 +251,7 @@
 .form-group select {
   appearance: none;
   cursor: pointer;
-  color: #fff;
+  color: #757575;
 }
 
 .form-group select option {

@@ -29,6 +29,8 @@ const ProductPageClient = ({ product, vendor, relatedProducts, initialReviews })
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [sliderIndex, setSliderIndex] = useState(0);
   const [productLightboxIndex, setProductLightboxIndex] = useState(-1);
+  const [showFullView, setShowFullView] = useState(false);
+  const [fullViewIndex, setFullViewIndex] = useState(0);
 
   // Review Form State
   const [isWritingReview, setIsWritingReview] = useState(false);
@@ -89,6 +91,7 @@ const ProductPageClient = ({ product, vendor, relatedProducts, initialReviews })
 
   // Gallery data — filter image URLs from media
   const galleryMedia = product?.media?.filter(m => m.fileName && m.fileType === 'instagram-url') || [];
+  const productImages = product?.media?.filter(m => m.fileName && m.fileName !== 'null' && m.fileName !== 'undefined' && m.fileType !== 'video-url' && m.fileType !== 'instagram-url') || [];
   const galleryLayout = product?.instagramFeedLayout || 'slider';
 
   const handleReviewSubmit = async (e) => {
@@ -182,8 +185,8 @@ const ProductPageClient = ({ product, vendor, relatedProducts, initialReviews })
     }
   };
 
-  const mainImageUrl = product.media && product.media.length > 0
-    ? `${BACKEND_URL}/uploads/products/${product.media[activeImage]?.fileName}`
+  const mainImageUrl = productImages.length > 0
+    ? getImageUrl(productImages[activeImage]?.fileName)
     : "https://via.placeholder.com/600x600?text=No+Image";
 
   const store = vendor?.stores?.[0];
@@ -275,17 +278,18 @@ const ProductPageClient = ({ product, vendor, relatedProducts, initialReviews })
                  src={mainImageUrl} 
                  alt={product.name} 
                  className="main-image"
-                 onClick={() => setProductLightboxIndex(activeImage)}
+                 onClick={() => { setFullViewIndex(activeImage); setShowFullView(true); }}
                />
+
             </div>
             <div className="thumbnails">
-              {product.media && product.media.map((med, index) => (
+              {productImages.map((med, index) => (
                 <div
                   key={med.id}
                   className={`thumb-wrapper ${index === activeImage ? 'active' : ''}`}
                   onClick={() => setActiveImage(index)}
                 >
-                  <img src={`${BACKEND_URL}/uploads/products/${med.fileName}`} alt={`Thumbnail ${index + 1}`} />
+                  <img src={getImageUrl(med.fileName)} alt={`Thumbnail ${index + 1}`} />
                 </div>
               ))}
             </div>
@@ -842,7 +846,7 @@ const ProductPageClient = ({ product, vendor, relatedProducts, initialReviews })
                      </div>
                      <div className="instafeed-lightbox-info">
                        <a
-                         href={galleryMedia[lightboxIndex].fileName}
+                         href={getImageUrl(galleryMedia[lightboxIndex].fileName)}
                          target="_blank"
                          rel="noopener noreferrer"
                          className="instafeed-lightbox-link"
@@ -869,67 +873,67 @@ const ProductPageClient = ({ product, vendor, relatedProducts, initialReviews })
                  </div>
                </div>
              )}
-             
-             {/* Product Image Lightbox */}
-             {productLightboxIndex >= 0 && product.media && product.media[productLightboxIndex] && (
-               <div className="product-lightbox-overlay" onClick={() => setProductLightboxIndex(-1)}>
-                 <div className="product-lightbox-content" onClick={(e) => e.stopPropagation()}>
-                   <button className="product-lightbox-close" onClick={() => setProductLightboxIndex(-1)}>&times;</button>
-                   <div className="product-lightbox-body">
-                     <div className="product-lightbox-image">
-                       <img
-                         src={`${BACKEND_URL}/uploads/products/${product.media[productLightboxIndex].fileName}`}
-                         alt={product.name}
-                         className="product-lightbox-img"
-                       />
-                     </div>
-                     <div className="product-lightbox-details">
-                       <h3 className="product-lightbox-title">{product.name}</h3>
-                       <div className="product-lightbox-price">
-                         {product.discountPrice ? (
-                           <>
-                             <span className="product-lightbox-price-new">&#8377;{product.discountPrice.toFixed(2)}</span>
-                             <span className="product-lightbox-price-old">&#8377;{product.regularPrice.toFixed(2)}</span>
-                             {product.regularPrice > product.discountPrice && (
-                               <span className="product-lightbox-badge">
-                                 -{Math.round(((product.regularPrice - product.discountPrice) / product.regularPrice) * 100)}%
-                               </span>
-                             )}
-                           </>
-                         ) : (
-                           `&#8377;${product.regularPrice.toFixed(2)}`
+           </section>
+         )}
+
+         {/* Full-View Product Image Lightbox */}
+         {showFullView && productImages.length > 0 && (
+           <div className="product-lightbox-overlay" onClick={() => setShowFullView(false)}>
+             <div className="product-lightbox-content" onClick={(e) => e.stopPropagation()}>
+               <button className="product-lightbox-close" onClick={() => setShowFullView(false)}>&times;</button>
+               <div className="product-lightbox-body">
+                 <div className="product-lightbox-image">
+                   <img
+                     src={getImageUrl(productImages[fullViewIndex]?.fileName)}
+                     alt={product.name}
+                     className="product-lightbox-img"
+                   />
+                 </div>
+                 <div className="product-lightbox-details">
+                   <h3 className="product-lightbox-title">{product.name}</h3>
+                   <div className="product-lightbox-price">
+                     {product.discountPrice ? (
+                       <>
+                         <span className="product-lightbox-price-new">&#8377;{product.discountPrice.toFixed(2)}</span>
+                         <span className="product-lightbox-price-old">&#8377;{product.regularPrice.toFixed(2)}</span>
+                         {product.regularPrice > product.discountPrice && (
+                           <span className="product-lightbox-badge">
+                             -{Math.round(((product.regularPrice - product.discountPrice) / product.regularPrice) * 100)}%
+                           </span>
                          )}
-                       </div>
-                       <div className="product-lightbox-rating">
-                         {renderStars(Math.round(parseFloat(averageRating)))}
-                         <span className="product-lightbox-rating-text">
-                           {averageRating} ({reviews.length} reviews)
-                         </span>
-                       </div>
-                       <p className="product-lightbox-description">
-                         {product.shortDescription || product.description?.substring(0, 100) + '...'}
-                       </p>
-                     </div>
+                       </>
+                     ) : (
+                       <span className="product-lightbox-price-new">&#8377;{product.regularPrice.toFixed(2)}</span>
+                     )}
                    </div>
-                   {product.media.length > 1 && (
-                     <div className="product-lightbox-nav">
-                       <button className="product-lightbox-nav-btn prev"
-                         onClick={() => setProductLightboxIndex(prev => (prev - 1 + product.media.length) % product.media.length)}>
-                         <ChevronLeft size={24} />
-                       </button>
-                       <div className="product-lightbox-counter">
-                         {productLightboxIndex + 1} / {product.media.length}
-                       </div>
-                       <button className="product-lightbox-nav-btn next"
-                         onClick={() => setProductLightboxIndex(prev => (prev + 1) % product.media.length)}>
-                         <ChevronRight size={24} />
-                       </button>
-                     </div>
-                   )}
+                   <div className="product-lightbox-rating">
+                     {renderStars(Math.round(parseFloat(averageRating)))}
+                     <span className="product-lightbox-rating-text">
+                       {averageRating} ({reviews.length} reviews)
+                     </span>
+                   </div>
+                   <p className="product-lightbox-description">
+                     {product.shortDescription || product.description?.substring(0, 100) + '...'}
+                   </p>
                  </div>
                </div>
-             )}
-           </section>
+               {productImages.length > 1 && (
+                 <div className="product-lightbox-nav">
+                   <button className="product-lightbox-nav-btn prev"
+                     onClick={() => setFullViewIndex(prev => (prev - 1 + productImages.length) % productImages.length)}>
+                     <ChevronLeft size={24} />
+                   </button>
+                   <div className="product-lightbox-counter">
+                     {fullViewIndex + 1} / {productImages.length}
+                   </div>
+                   <button className="product-lightbox-nav-btn next"
+                     onClick={() => setFullViewIndex(prev => (prev + 1) % productImages.length)}>
+                     <ChevronRight size={24} />
+                   </button>
+                 </div>
+               )}
+             </div>
+           </div>
          )}
         </main>
       </div>

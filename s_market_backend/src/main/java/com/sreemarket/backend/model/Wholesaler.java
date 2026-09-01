@@ -37,6 +37,10 @@ public class Wholesaler {
     private Boolean agreeTerms;
     private Boolean agreePolicies;
 
+    private String gstCertificate;
+    private String businessProof;
+    private String addressProof;
+
     private Long createdAt;
     private Long updatedAt;
 }

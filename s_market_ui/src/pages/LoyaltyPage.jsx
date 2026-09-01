@@ -58,16 +58,6 @@ const LoyaltyPage = () => {
         return colors[tier?.toLowerCase()] || '#64748b';
     };
 
-    const getTierBg = (tier) => {
-        const bg = {
-            bronze: '#fff7ed',
-            silver: '#f8fafc',
-            gold: '#fef9c3',
-            platinum: '#ede9fe'
-        };
-        return bg[tier?.toLowerCase()] || '#f8fafc';
-    };
-
     if (loading) {
         return (
             <div className="loyalty-page">

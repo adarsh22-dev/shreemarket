@@ -15,7 +15,6 @@ const LoginPage = () => {
     const [email, setEmail] = useState(() => localStorage.getItem('rememberedEmail') || '');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem('rememberedEmail'));
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -52,13 +51,8 @@ const LoginPage = () => {
 
             // Save user to localStorage
             localStorage.setItem('user', JSON.stringify(data));
+            localStorage.setItem('rememberedEmail', email);
             window.dispatchEvent(new Event('storage'));
-
-            if (rememberMe) {
-                localStorage.setItem('rememberedEmail', email);
-            } else {
-                localStorage.removeItem('rememberedEmail');
-            }
 
             toast.success(`Welcome back, ${data.fullName}!`);
 

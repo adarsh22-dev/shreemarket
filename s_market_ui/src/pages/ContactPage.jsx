@@ -51,7 +51,7 @@ export default function ContactPage() {
       await submitContact(form);
       toast.success("Message sent successfully! We'll get back to you soon.");
       setForm({ firstName: "", lastName: "", email: "", phone: "", reason: "", message: "" });
-    } catch (err) {
+    } catch {
       toast.error("Failed to send message. Please try again later.");
     }
   };

@@ -77,7 +77,7 @@ const MapModal = ({ isOpen, onClose, onSelect, initialLat, initialLon }) => {
         };
         setMarkerPos(newPos);
         fetchAddressFromCoords(newPos.lat, newPos.lng);
-    }, []);
+    }, [fetchAddressFromCoords]);
 
     const onPlaceSelected = () => {
         if (autocompleteRef.current !== null) {

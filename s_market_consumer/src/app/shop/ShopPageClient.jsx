@@ -49,6 +49,11 @@ const ShopPageClient = ({ products, initialCategory, initialSearch }) => {
         }
     }, [searchParams]);
 
+    // Sync search from URL
+    useEffect(() => {
+        setSearchQuery(searchParams.get('search') || '');
+    }, [searchParams]);
+
     // Build categories from products
     useEffect(() => {
         window.scrollTo(0, 0);

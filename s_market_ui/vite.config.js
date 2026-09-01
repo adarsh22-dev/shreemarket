@@ -95,6 +95,22 @@ export default defineConfig({
     })
   ],
   server: {
-    port: 5173
+    port: 5173,
+    host: true,
+    origin: 'http://localhost:5173',
+    hmr: {
+      host: 'localhost',
+      port: 5173
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+      },
+    }
   }
 })

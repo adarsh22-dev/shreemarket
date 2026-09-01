@@ -247,7 +247,7 @@
     aspect-ratio: 1;
     border-radius: 18px;
     overflow: hidden;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0px 20px rgba(0, 0, 0, 0.1);
     background: #f8f8f8;
     position: relative;
     transition: box-shadow 0.3s ease;
@@ -1215,6 +1215,7 @@
 .td-card-wrap {
   flex: 1 1 0;
   min-width: 0;
+  max-width: 300px;
   scroll-snap-align: start;
   transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
 }
@@ -3530,4 +3531,20 @@ a.btn-hero-explore {
     .view-all-link {padding: 8px 8px !important;}
     .td-hot-badge { padding: 6px 12px;}
     .insta-section-header {flex-direction: row;align-items: flex-start;gap: 12px;}
+}
+.css-text-146c3p1.r-color-1862ga2.r-fontSize-1gkfh8e.r-marginTop-1cvj4g8 {
+    font-size: 10px !important;
+}
+.r-fontSize-1gkfh8e {
+    font-size: 10px !important;
+}
+
+.r-paddingBlock-1yd117h
+ {
+    margin-bottom: 35px;
+    padding-bottom: 20px;
+    padding-top: 7px;
+} 
+.css-view-g5y9jx.r-WebkitOverflowScrolling-150rngu.r-flexDirection-18u37iz.r-flexGrow-16y2uox.r-flexShrink-1wbh5a2.r-overflowX-lltvgl.r-overflowY-buy8e9.r-transform-agouwx.r-scrollbarWidth-2eszeu {
+    height: 110px !important;
 }

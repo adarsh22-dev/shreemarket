@@ -18,7 +18,7 @@ export default function AdminSizeGuides() {
 
   const load = async () => {
     setLoading(true);
-    try { setGuides(await getSizeGuides()); } catch (e) { console.error(e); }
+    try { setGuides(await getSizeGuides()); } catch { /* ignore */ }
     setLoading(false);
   };
 
@@ -36,7 +36,7 @@ export default function AdminSizeGuides() {
       }
       await load();
       setModal(null);
-    } catch (e) { showToast(e.message, 'error'); }
+    } catch (err) { showToast(err.message, 'error'); }
   };
 
   const confirmDelete = async (g) => {
@@ -45,7 +45,7 @@ export default function AdminSizeGuides() {
       await deleteSizeGuide(g.id);
       await load();
       showToast('Size guide deleted', 'error');
-    } catch (e) { showToast(e.message, 'error'); }
+    } catch (err) { showToast(err.message, 'error'); }
   };
 
   const filtered = guides.filter(g => g.name?.toLowerCase().includes(search.toLowerCase()));

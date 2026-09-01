@@ -418,7 +418,7 @@ export default function WooAIWidget() {
         default:
           return null;
       }
-    } catch (err) {
+    } catch {
       return "Sorry, I couldn't fetch that information right now. Please try again later.";
     }
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getVendorStores, createVendorStore, updateVendorStore, deleteVendorStore, uploadStoreLogo } from '../../api/api';
+import { getVendorStores, createVendorStore, updateVendorStore, deleteVendorStore } from '../../api/api';
 import { Store, Plus, Edit2, Trash2, Loader2, Check, X } from 'lucide-react';
 import VendorLayout from '../../components/vendor/VendorLayout';
 import toast from 'react-hot-toast';

@@ -6,13 +6,12 @@ import { ArrowRight, ChevronRight, ChevronLeft, Heart, Users, DollarSign, Shoppi
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import ProductModal from '../components/ProductModal';
-import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishlistContext';
-import { useCompare } from '../context/CompareContext';
-import { getAllProducts, getCategories, BACKEND_URL, getPrimaryGalleryImage, getGalleryImageUrl, PLACEHOLDER_IMG, PLACEHOLDER_FAILED, getPlatformSettings, getHomepageSections } from '../api/api';
+import { useCart } from '../hooks/useCart';
+import { useWishlist } from '../hooks/useWishlist';
+import { useCompare } from '../hooks/useCompare';
+import { getAllProducts, getPublicCategories, BACKEND_URL, PLACEHOLDER_IMG, PLACEHOLDER_FAILED, getPlatformSettings, getHomepageSections, getWholesaleProducts } from '../api/api';
 import DynamicSectionRenderer from '../components/DynamicSectionRenderer';
 import FeaturedProductSection from '../components/FeaturedProductSection';
-import homepageim1 from '../assets/homepgI1.png'
 import GroceryGourmentFoodCatImg from '../assets/Grocery_&_Gourmet_Food.svg'
 import HealthHouseholdCatImg from '../assets/Health_&_Household.svg'
 import HomeKitchenCatImg from '../assets/Home_&_Kitchen.svg'
@@ -43,18 +42,25 @@ const CATEGORY_IMAGE_MAP = {
     'arts & crafts': ArtsCraftsCatImg,
     'arts': ArtsCraftsCatImg,
 };
+
+const getCategoryImage = (name) => {
+    if (!name) return null;
+    const lower = name.toLowerCase();
+    if (CATEGORY_IMAGE_MAP[lower]) return CATEGORY_IMAGE_MAP[lower];
+    for (const [key, img] of Object.entries(CATEGORY_IMAGE_MAP)) {
+        if (lower.includes(key) || key.includes(lower)) return img;
+        const keyWords = key.split(/[\s&,]+/);
+        const nameWords = lower.split(/[\s&,]+/);
+        if (keyWords.some(k => nameWords.includes(k))) return img;
+    }
+    return null;
+};
 import BannerImg1 from '../assets/BannerImg1.svg'
 import BannerImg2 from '../assets/BannerImg2.svg'
 import BannerImg3 from '../assets/BannerImg3.svg'
 import BannerImg4 from '../assets/BannerImg4.svg'
 import PromoBannerImg from '../assets/PromoBannerImg.svg'
 import PromoBannerImg2 from '../assets/promo_banner_craft.png'
-import homepgI2 from '../assets/homepgI2.png'
-import homepgI3 from '../assets/Traditional_Potli_Gift.png'
-import handcraftcarousel from '../assets/WalnutEdgeBoard.png'
-import kanjivaramSaree from '../assets/kanjivaramsaree1.jpeg'
-import kanjivaramSaree3 from '../assets/kanjivaram3.jpeg'
-import logo from '../assets/smarketlogo.svg';
 import Wooaiwidget from '../components/Wooaiwidget';
 import TestimonialCarousel from '../components/TestimonialCarousel';
 import { WebsiteSeo, OrganizationSeo } from '../components/SeoMeta';
@@ -139,8 +145,8 @@ const useRevealOnScroll = () => {
 
 const HomePage = () => {
     const [selectedProduct, setSelectedProduct] = React.useState(null);
-    const { cartItems, addToCart } = useCart();
-    const { isInWishlist, addToWishlist, removeFromWishlist, isLoggedIn } = useWishlist();
+    const { addToCart } = useCart();
+    const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
     const { isInCompare, addToCompare, removeFromCompare } = useCompare();
     const [topDeals, setTopDeals] = React.useState([]);
     const [trendingProducts, setTrendingProducts] = React.useState([]);
@@ -149,8 +155,13 @@ const HomePage = () => {
     const [dynamicCategories, setDynamicCategories] = React.useState([]);
     const [cmsSections, setCmsSections] = React.useState(null);
 
+
+    const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    const user = userStr ? JSON.parse(userStr) : null;
+    const isWholesaler = user?.roleId === 4;
+
     // Image error handler for broken images
-    const handleImageError = (e, productName) => {
+    const handleImageError = (e) => {
         e.target.onerror = null;
         if (!e.target.src.startsWith('data:image/svg+xml')) {
             e.target.src = PLACEHOLDER_FAILED;
@@ -211,30 +222,30 @@ const HomePage = () => {
                      return getDiscountPercentage(b) - getDiscountPercentage(a);
                  });
 
-                  // Get top 5 discounted products (slider)
-                  setTopDeals(sortedByDiscount.slice(0, 5));
+                    // Get top 5 discounted products (slider)
+                    setTopDeals(sortedByDiscount.slice(0, 5));
 
-                 // Set trending products (Sort by bookingCount descending, max 12)
-                  const trending = [...data]
-                      .sort((a, b) => (b.bookingCount || 0) - (a.bookingCount || 0))
-                      .slice(0, 12);
-                  setTrendingProducts(trending);
+                   // Set trending products (Sort by bookingCount descending, max 12)
+                    const trending = [...data]
+                        .sort((a, b) => (b.bookingCount || 0) - (a.bookingCount || 0))
+                        .slice(0, 12);
+                    setTrendingProducts(trending);
                   // Set featured (next 5 products from the sorted list)
                   setFeaturedProducts(sortedByDiscount.length > 7 ? sortedByDiscount.slice(7, 12) : sortedByDiscount.slice(0, 5));
 
                   // Fetch admin-managed categories
                   try {
-                      const cats = await getCategories();
+                      const cats = await getPublicCategories();
                       const activeCats = (cats || [])
-                          .filter(cat => cat.status === 'Active')
                           .map(cat => ({
                               id: cat.id,
-                              name: cat.name,
-                              slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+                              name: cat.name || cat.categoryName || '',
+                              slug: cat.slug || (cat.name || cat.categoryName || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
                               image: cat.image
                                   ? (cat.image.startsWith('/uploads') ? `${BACKEND_URL}${cat.image}` : cat.image)
-                                  : CATEGORY_IMAGE_MAP[cat.name.toLowerCase()] || null,
-                          }));
+                                  : getCategoryImage(cat.name || cat.categoryName || ''),
+                          }))
+                          .filter(cat => cat.name);
                       // Merge with vendor/product category names not in admin list
                       const productCatNames = [...new Set((data || []).map(p => p.category).filter(Boolean))];
                       const adminCatNames = new Set(activeCats.map(c => c.name.toLowerCase()));
@@ -246,7 +257,7 @@ const HomePage = () => {
                             id: null,
                             name,
                             slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-                            image: CATEGORY_IMAGE_MAP[lower] || null,
+                            image: getCategoryImage(name),
                           });
                         }
                       }
@@ -257,9 +268,9 @@ const HomePage = () => {
                  try {
                      const settings = await getPlatformSettings();
                      if (settings?.instagram) setInstaSettings(settings.instagram);
-                 } catch (e) {
-                     // ignore — use defaults
-                 }
+} catch {
+                      // ignore — use defaults
+                  }
              } catch (error) {
                  console.error("Failed to load products for home page:", error);
                  // Set empty arrays as fallback
@@ -269,17 +280,29 @@ const HomePage = () => {
                  setDynamicCategories([]);
              }
          };
-         fetchHomePageProducts();
-         // Fetch CMS-managed homepage sections (public, visible only)
+          fetchHomePageProducts();
+
+          // Fetch wholesale products if user is a wholesaler
+          if (isWholesaler) {
+              getWholesaleProducts().then(data => {
+                  const wsProducts = Array.isArray(data) ? data : [];
+                  const sortedByDiscount = [...wsProducts].sort((a, b) => {
+                      const getPct = (p) => {
+                          if (!p.regularPrice || !p.discountPrice || p.regularPrice <= p.discountPrice) return 0;
+                          return ((p.regularPrice - p.discountPrice) / p.regularPrice) * 100;
+                      };
+                      return getPct(b) - getPct(a);
+                  });
+                  const wsTopDealsSlice = sortedByDiscount.slice(0, 5);
+                  const wsTrendingSlice = [...wsProducts].sort((a, b) => (b.bookingCount || 0) - (a.bookingCount || 0)).slice(0, 12);
+                  setTopDeals(wsTopDealsSlice);
+                  setTrendingProducts(wsTrendingSlice);
+              }).catch(() => {});
+          }
+
+          // Fetch CMS-managed homepage sections (public, visible only)
           getHomepageSections().then(data => {
-            if (!Array.isArray(data)) {
-              console.warn("[HomePage] getHomepageSections did not return an array:", data);
-              return;
-            }
-            if (data.length === 0) {
-              console.warn("[HomePage] getHomepageSections returned empty array");
-              return;
-            }
+            if (!Array.isArray(data) || data.length === 0) return;
             const transformed = [];
             for (const s of data) {
               if (s.visible === false) continue;
@@ -341,8 +364,6 @@ const HomePage = () => {
             price: product.price || product.discountPrice || product.regularPrice || 0
         }, 1, product.variant);
     };
-
-    const isProductInCart = (id) => cartItems.some(item => item.id === id);
 
     const [shareProductId, setShareProductId] = useState(null);
 
@@ -449,19 +470,22 @@ const HomePage = () => {
                     const fc = cmsSections.find(s => s.t === 'featured_cats');
                     if (!fc) return null;
                     const catIds = fc.cfg?.cat_ids || [];
-                    const filteredCats = catIds.length > 0 ? dynamicCategories.filter(c => catIds.includes(c.id)) : dynamicCategories;
-                  return (
-                    <section className="featured-categories-section">
-                      <div className="section-header-row">
-                        <h2 className="section-heading">{fc.cfg?.heading || 'FEATURED CATEGORIES'}</h2>
-                        {fc.cfg?.sa_enabled !== false && <Link to={fc.cfg?.sa_link || '/shop'} className="view-all-link" style={{ background: fc.cfg?.sa_bg, color: fc.cfg?.sa_text }}>{fc.cfg?.sa_label || 'See All'} <ArrowRight size={16} /></Link>}
-                      </div>
-                      <div className="cat-slider-container">
-                        <CategoriesSlider categories={dynamicCategories} />
-                      </div>
-                    </section>
-                  );
-                })()
+                    const filtered = catIds.length > 0 ? dynamicCategories.filter(c => catIds.includes(c.id)) : dynamicCategories;
+                    // Fallback to all categories if filtered is empty
+                    const categoriesToShow = filtered.length > 0 ? filtered : dynamicCategories;
+                    if (categoriesToShow.length === 0) return null;
+                    return (
+                      <section className="featured-categories-section">
+                        <div className="section-header-row">
+                          <h2 className="section-heading">{fc.cfg?.heading || 'FEATURED CATEGORIES'}</h2>
+                          {fc.cfg?.sa_enabled !== false && <Link to={fc.cfg?.sa_link || '/shop'} className="view-all-link" style={{ background: fc.cfg?.sa_bg, color: fc.cfg?.sa_text }}>{fc.cfg?.sa_label || 'See All'} <ArrowRight size={16} /></Link>}
+                        </div>
+                        <div className="cat-slider-container">
+                          <CategoriesSlider categories={categoriesToShow} />
+                        </div>
+                      </section>
+                    );
+                  })()
               : null) || (
               /* fallback: always show categories from Product Management */
               <section className="featured-categories-section">
@@ -555,6 +579,7 @@ const HomePage = () => {
               copyShareLink={copyShareLink}
               handleImageError={handleImageError}
             />
+
             {cmsSections && cmsSections.length > 0 ? (
               cmsSections.map((sec, i) => {
                 if (sec.t === 'featured_cats') return null;

@@ -15,7 +15,7 @@ const AdminNavbar = ({ title, breadcrumbs }) => {
             const roleMap = { 1: 'Admin', 2: 'Customer', 3: 'Vendor' };
             userRole = roleMap[u.roleId] || 'Admin';
         }
-    } catch (_) { /* invalid JSON, ignore */ }
+    } catch { /* invalid JSON, ignore */ }
 
     const handleLogout = async () => {
         try {

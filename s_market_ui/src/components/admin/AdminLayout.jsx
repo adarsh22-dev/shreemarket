@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import ErrorBoundary from '../ErrorBoundary';
 import {
@@ -190,35 +190,23 @@ const AdminLayout = () => {
         }
     };
 
-    const [openGroups, setOpenGroups] = useState(() => {
-        const init = {};
+    const [manualOpenGroups, setManualOpenGroups] = useState({});
+
+    const isActive = useCallback((path, exact) =>
+        exact ? p === path : p === path || p.startsWith(path + '/'), [p]);
+
+    const openGroups = useMemo(() => {
+        const next = { ...manualOpenGroups };
         NAV.forEach(item => {
             if (item.children) {
-                const active = item.children.some(c => p === c.path || p.startsWith(c.path + '/'));
-                if (active) init[item.label] = true;
+                const hasActiveChild = item.children.some(c => isActive(c.path));
+                if (hasActiveChild) next[item.label] = true;
             }
         });
-        return init;
-    });
+        return next;
+    }, [p, manualOpenGroups, isActive]);
 
-    // Auto-expand the group containing the active route whenever path changes
-    useEffect(() => {
-        setOpenGroups(prev => {
-            const next = { ...prev };
-            NAV.forEach(item => {
-                if (item.children) {
-                    const hasActiveChild = item.children.some(c => p === c.path || p.startsWith(c.path + '/'));
-                    if (hasActiveChild) next[item.label] = true;
-                }
-            });
-            return next;
-        });
-    }, [p]);
-
-    const toggle = (label) => setOpenGroups(prev => ({ ...prev, [label]: !prev[label] }));
-
-    const isActive = (path, exact) =>
-        exact ? p === path : p === path || p.startsWith(path + '/');
+    const toggle = (label) => setManualOpenGroups(prev => ({ ...prev, [label]: !prev[label] }));
 
     return (
         <div className="al-root">

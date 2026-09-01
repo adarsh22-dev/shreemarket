@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Star, ArrowRight, Minus, Plus, ShoppingBag, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hooks/useCart';
 import { BACKEND_URL, PLACEHOLDER_IMG } from '../api/api';
 import './ProductModal.css';
 
@@ -29,11 +29,6 @@ const ProductModal = ({ product, onClose }) => {
 
     const isInstagramReel = (url) => {
         return url && url.includes('/reel/');
-    };
-
-    const getInstagramEmbedUrl = (url) => {
-        const shortcode = extractInstagramShortcode(url);
-        return shortcode ? `https://www.instagram.com/p/${shortcode}/embed/` : null;
     };
 
     useEffect(() => {

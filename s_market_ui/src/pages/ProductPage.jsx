@@ -4,9 +4,9 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Minus, Plus, Star, ThumbsUp, ThumbsDown, Package, RotateCcw, ShieldCheck, HeartHandshake, Leaf, MapPin, Heart, Loader2, CornerDownRight, Share2, ArrowLeft, GitCompare, Link as LinkIcon, ChevronLeft, ChevronRight, Play, X, ShoppingBag, IndianRupee, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishlistContext';
-import { useCompare } from '../context/CompareContext';
+import { useCart } from '../hooks/useCart';
+import { useWishlist } from '../hooks/useWishlist';
+import { useCompare } from '../hooks/useCompare';
 import { getProduct, getVendorById, getAllProducts, getProductReviews, submitProductReview, searchProducts, getPlatformSettings, BACKEND_URL, PLACEHOLDER_IMG, handleImageError } from '../api/api';
 import { ProductSeo, BreadcrumbSeo } from '../components/SeoMeta';
 import './ProductPage.css';
@@ -50,6 +50,10 @@ const ProductPage = () => {
     const imgRef = useRef(null);
     const zoomPanelRef = useRef(null);
     const ZOOM_FACTOR = 2.5;
+
+    // Full-view Lightbox State
+    const [showFullView, setShowFullView] = useState(false);
+    const [fullViewIndex, setFullViewIndex] = useState(0);
 
     const handleMouseMove = (e) => {
         if (!imgRef.current) return;
@@ -161,7 +165,9 @@ const ProductPage = () => {
     let instagramFeedConfig = {};
     try {
         if (product?.instagramFeedConfig) instagramFeedConfig = JSON.parse(product.instagramFeedConfig);
-    } catch { }
+    } catch (e) {
+        console.warn('Failed to parse instagramFeedConfig:', e);
+    }
 
     const getLinkedProductName = (url, index) => {
         if (instagramFeedConfig?.links?.[index]) return instagramFeedConfig.links[index];
@@ -332,7 +338,9 @@ const ProductPage = () => {
                 try {
                     const settings = await getPlatformSettings();
                     if (settings?.instagram) setInstaSettings(settings.instagram);
-                } catch (e) {}
+                } catch (e) {
+                    console.warn('Failed to fetch platform settings:', e);
+                }
 
                 window.scrollTo(0, 0);
             } catch (err) {
@@ -743,6 +751,7 @@ const ProductPage = () => {
                                 )}
                             </div>
 
+
                         </div>
                         {/* Amazon-style Zoom Panel (Desktop only) */}
                         {isZooming && (
@@ -1068,7 +1077,7 @@ const ProductPage = () => {
                                     <tbody>
                                         {[...product.pricingTiers]
                                             .sort((a, b) => a.minQuantity - b.minQuantity)
-                                            .map((tier, i, arr) => {
+                                            .map((tier, i) => {
                                                 const basePrice = product.discountPrice || product.regularPrice || 0;
                                                 const calcPrice = () => {
                                                     if (tier.unitPrice) return tier.unitPrice;
@@ -2030,6 +2039,59 @@ const ProductPage = () => {
             )}
 
             <Footer />
+
+            {/* Full-View Lightbox */}
+            {showFullView && galleryMedia && galleryMedia.length > 0 && (
+                <div className="fullview-lightbox-overlay" onClick={() => setShowFullView(false)}>
+                    <div className="fullview-lightbox-content" onClick={(e) => e.stopPropagation()}>
+                        <button className="fullview-lightbox-close" onClick={() => setShowFullView(false)}>
+                            <X size={24} />
+                        </button>
+                        <div className="fullview-lightbox-body">
+                            <div className="fullview-lightbox-image">
+                                <img
+                                    src={`${BACKEND_URL}/uploads/products/${galleryMedia[fullViewIndex]?.fileName}`}
+                                    alt={product.name}
+                                    className="fullview-lightbox-img"
+                                />
+                            </div>
+                            <div className="fullview-lightbox-details">
+                                <h3 className="fullview-lightbox-title">{product.name}</h3>
+                                <div className="fullview-lightbox-price">
+                                    {product.discountPrice ? (
+                                        <>
+                                            <span className="fullview-lightbox-price-new">₹{product.discountPrice.toFixed(2)}</span>
+                                            <span className="fullview-lightbox-price-old">₹{product.regularPrice.toFixed(2)}</span>
+                                            {product.regularPrice > product.discountPrice && (
+                                                <span className="fullview-lightbox-badge">
+                                                    -{Math.round(((product.regularPrice - product.discountPrice) / product.regularPrice) * 100)}%
+                                                </span>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <span className="fullview-lightbox-price-new">₹{product.regularPrice.toFixed(2)}</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        {galleryMedia.length > 1 && (
+                            <div className="fullview-lightbox-nav">
+                                <button className="fullview-lightbox-nav-btn"
+                                    onClick={() => setFullViewIndex(prev => (prev - 1 + galleryMedia.length) % galleryMedia.length)}>
+                                    <ChevronLeft size={24} />
+                                </button>
+                                <div className="fullview-lightbox-counter">
+                                    {fullViewIndex + 1} / {galleryMedia.length}
+                                </div>
+                                <button className="fullview-lightbox-nav-btn"
+                                    onClick={() => setFullViewIndex(prev => (prev + 1) % galleryMedia.length)}>
+                                    <ChevronRight size={24} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

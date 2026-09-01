@@ -5,14 +5,14 @@ import {
     CreditCard, CheckCircle, FileCheck, ArrowRight, ArrowLeft,
     Image as ImageIcon, AlignLeft, Info, Map
 } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import MapModal from '../components/MapModal';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Checkbox from '../components/ui/Checkbox';
 import './RegisterPage.css';
 import toast from 'react-hot-toast';
-import { registerUser, registerVendor, uploadStoreLogo } from '../api/api';
+import { registerUser, registerVendor } from '../api/api';
 
 const VENDOR_STEP_IMAGES = [
     'https://images.unsplash.com/photo-1491975474562-1f4e30bc9468?q=80&w=1887&auto=format&fit=crop', // Step 1: Professional details
@@ -43,7 +43,6 @@ const VENDOR_STEPS_CONTENT = [
 const FORM_STEPS = ["Account", "Store", "Payment", "Policies"];
 
 const RegisterPage = () => {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const isVendor = searchParams.get('type') === 'vendor';
     const [currentStep, setCurrentStep] = useState(1);
@@ -153,9 +152,10 @@ const RegisterPage = () => {
 
     // IFSC auto-lookup
     useEffect(() => {
-        if (formData.ifscCode?.length === 11 && /^[A-Z]{4}0[A-Z0-9]{6}$/i.test(formData.ifscCode)) {
+        const ifscCode = formData.ifscCode;
+        if (ifscCode?.length === 11 && /^[A-Z]{4}0[A-Z0-9]{6}$/i.test(ifscCode)) {
             setIfscLookupLoading(true);
-            fetch('https://ifsc.razorpay.com/' + formData.ifscCode.toUpperCase())
+            fetch('https://ifsc.razorpay.com/' + ifscCode.toUpperCase())
                 .then(r => r.ok ? r.json() : null)
                 .then(data => {
                     if (data?.BRANCH) setIfscBranch(data.BANK + ' - ' + data.BRANCH);
@@ -165,6 +165,7 @@ const RegisterPage = () => {
                 .finally(() => setIfscLookupLoading(false));
         } else {
             setIfscBranch('');
+            setIfscLookupLoading(false);
         }
     }, [formData.ifscCode]);
 
@@ -375,7 +376,7 @@ const RegisterPage = () => {
                 }
 
                 // Map formData to vendor API structure
-                const { confirmPassword, fullName, confirmBankAccountNumber, confirmPaypalEmail, ...cleanForm } = formData;
+                const { confirmPassword: _, confirmBankAccountNumber: __, confirmPaypalEmail: ___, fullName, ...cleanForm } = formData;
                 const vendorData = {
                     ...cleanForm,
                     name: fullName,

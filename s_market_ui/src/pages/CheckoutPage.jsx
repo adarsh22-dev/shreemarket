@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hooks/useCart';
 import {
     ChevronLeft,
     ChevronRight,
@@ -57,7 +57,6 @@ const CheckoutPage = () => {
     const [showNewAddressForm, setShowNewAddressForm] = useState(false);
 
     // Tax rate states
-    const [taxRates, setTaxRates] = useState([]);
     const [selectedTaxRate, setSelectedTaxRate] = useState(null);
     const [loadingTaxRates, setLoadingTaxRates] = useState(true);
 
@@ -163,7 +162,6 @@ const CheckoutPage = () => {
     const loadTaxRates = async () => {
         try {
             const data = await getActiveTaxRatesPublic();
-            setTaxRates(data);
             const defaultRate = data.filter(r => r.rate > 0).sort((a, b) => b.rate - a.rate)[0] || data[0];
             if (defaultRate) setSelectedTaxRate(defaultRate);
         } catch (error) {
@@ -185,7 +183,7 @@ const CheckoutPage = () => {
                 try {
                     const result = await quickPincodeCheck(value);
                     setPincodeStatus(result);
-                } catch (err) {
+                } catch {
                     setPincodeStatus({ serviceable: false, message: 'Failed to check pincode.' });
                 }
             }, 500);

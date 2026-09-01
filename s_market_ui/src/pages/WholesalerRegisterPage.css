@@ -1,0 +1,360 @@
+.ws-register-page {
+    min-height: 100vh;
+    width: 100%;
+    background: #f0f2f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.ws-layout {
+    display: flex;
+    max-width: 1100px;
+    width: 100%;
+    min-height: 90vh;
+    background: #fff;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08), 0 8px 20px rgba(0,0,0,0.04);
+}
+
+.ws-hero {
+    width: 42%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%), url('https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1974&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-blend-mode: overlay;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3rem 2.5rem;
+    position: relative;
+    color: #fff;
+}
+
+.ws-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%);
+    z-index: 1;
+}
+
+.ws-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.ws-hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    margin-bottom: 3rem;
+    color: rgba(255,255,255,0.9);
+}
+
+.ws-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+}
+
+.ws-hero > .ws-hero-content > p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 2rem;
+    max-width: 320px;
+}
+
+.ws-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.ws-benefit {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.85);
+}
+
+.ws-benefit svg {
+    color: #f97316;
+    flex-shrink: 0;
+}
+
+.ws-hero-footer {
+    position: relative;
+    z-index: 2;
+}
+
+.ws-hero-footer a {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.ws-hero-footer a:hover {
+    color: #fff;
+}
+
+.ws-hero-footer strong {
+    color: #f97316;
+}
+
+.ws-form-panel {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2.5rem 3rem;
+    overflow-y: auto;
+}
+
+.ws-form-inner {
+    width: 100%;
+    max-width: 560px;
+}
+
+.ws-header {
+    margin-bottom: 1.5rem;
+}
+
+.ws-header h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 0.25rem;
+}
+
+.ws-header p {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.ws-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #f97316;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+}
+
+.ws-section-label ~ .ws-section-label {
+    margin-top: 1.25rem;
+}
+
+.ws-row {
+    display: flex;
+    gap: 1.25rem;
+    width: 100%;
+}
+
+.ws-row > * {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.ws-form-panel .form-group {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.ws-form-panel .form-group label {
+    display: block;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.ws-select {
+    width: 100%;
+    padding: 0.45rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color, #e5e7eb);
+    font-size: 1rem;
+    color: var(--text-main);
+    background: var(--bg-primary);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.ws-select:focus {
+    border-color: #f97316;
+}
+
+.ws-upload-desc {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-bottom: 0.75rem;
+}
+
+.ws-uploads {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.ws-file-upload {
+    flex: 1;
+    min-width: 0;
+}
+
+.ws-file-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.35rem;
+}
+
+.ws-upload-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    padding: 0.85rem;
+    border: 2px dashed #e5e7eb;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 52px;
+}
+
+.ws-upload-box:hover {
+    border-color: #f97316;
+    background: #fff9f8;
+}
+
+.ws-upload-box.has-file {
+    border-color: #10b981;
+    border-style: solid;
+    background: #f0fdf4;
+    cursor: default;
+}
+
+.ws-upload-box > span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    line-height: 1.3;
+}
+
+.ws-upload-box > span small {
+    font-weight: 400;
+    color: #9ca3af;
+}
+
+.ws-file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.ws-file-icon {
+    color: #f97316;
+    flex-shrink: 0;
+}
+
+.ws-file-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.ws-file-name {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #374151;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ws-file-size {
+    font-size: 0.6rem;
+    color: #9ca3af;
+}
+
+.ws-check-icon {
+    color: #10b981;
+    flex-shrink: 0;
+}
+
+.ws-remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 0.2rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: all 0.15s;
+}
+
+.ws-remove-btn:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.ws-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1.25rem 0;
+}
+
+@media (max-width: 900px) {
+    .ws-layout {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .ws-hero {
+        width: 100%;
+        padding: 2rem;
+        min-height: 240px;
+    }
+
+    .ws-hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .ws-benefits {
+        display: none;
+    }
+
+    .ws-hero-brand {
+        margin-bottom: 1.5rem;
+    }
+
+    .ws-form-panel {
+        padding: 1.5rem;
+    }
+
+    .ws-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .ws-uploads {
+        flex-direction: column;
+    }
+}
+select#businessType {
+    border: 1px solid rgb(229 229 229) !important;
+}

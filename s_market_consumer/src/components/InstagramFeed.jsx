@@ -129,6 +129,7 @@ const InstagramFeed = ({ products, maxPosts = 3, storyShape = 'circle' }) => {
             <div className="story-ring"></div>
           </div>
         ))}
+        </div>
         {productsWithInsta.length > 3 && (
           <button
             type="button"

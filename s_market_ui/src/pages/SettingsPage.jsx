@@ -7,7 +7,7 @@ import { Pencil, Trash2, Plus, Bell, Hash, CreditCard, Home as HomeIcon, Briefca
 import {
     getUserDetails, updateUserDetails,
     fetchUserAddresses, addUserAddress,
-    updateUserAddress, deleteUserAddress, setAddressAsDefault,
+    deleteUserAddress, setAddressAsDefault,
     updateUserPassword, updateVendorPassword,
     deleteUser, deleteVendor,
     getUserDevices, logoutDevice,
@@ -154,7 +154,6 @@ const SettingsPage = () => {
         fullName: 'Alex Johnson'
     };
 
-    const phoneNumber = user.phone || '+1 (555) 000-0000';
     const fullName = user.fullName || `${user.firstName || 'Alex'} ${user.lastName || 'Johnson'}`;
     const memberSince = user.createdAt
         ? new Date(user.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', month: 'long', year: 'numeric' })
@@ -363,7 +362,7 @@ const SettingsPage = () => {
                 roleId: storedUser.roleId || 1 // Fallback role if undefined
             };
 
-            const savedAddress = await addUserAddress(payload);
+            await addUserAddress(payload);
 
             // Reload addresses from the server to guarantee true state
             const updatedAddresses = await fetchUserAddresses(storedUser.userId);

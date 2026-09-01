@@ -4,10 +4,10 @@ import {
     Search, ShoppingBag, User, Globe, ChevronDown,
     ChevronRight, Loader2, Heart, Package, LogOut, GitCompare, MapPin
 } from 'lucide-react';
-import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishlistContext';
-import { useCompare } from '../context/CompareContext';
-import { searchProducts, getCategories, BACKEND_URL, getPrimaryGalleryImage, logoutUser } from '../api/api';
+import { useCart } from '../hooks/useCart';
+import { useWishlist } from '../hooks/useWishlist';
+import { useCompare } from '../hooks/useCompare';
+import { searchProducts, getPublicCategories, BACKEND_URL, getPrimaryGalleryImage, logoutUser } from '../api/api';
 import CartDropdown from './CartDropdown';
 import UserDropdown from './UserDropdown';
 import logo from '../assets/smarketlogo.svg';
@@ -49,20 +49,23 @@ const Navbar = () => {
     const [suggestions,     setSuggestions]     = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isSearching,     setIsSearching]     = useState(false);
+    const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
     const searchRef       = useRef(null); // desktop
     const mobileSearchRef = useRef(null); // mobile top row
+    const abortControllerRef = useRef(null); // for search race condition
+    const suggestionsRef = useRef(null); // for keyboard navigation
 
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const data = await getCategories();
+                const data = await getPublicCategories();
                 const active = (data || [])
-                    .filter(cat => cat.status === 'Active')
                     .map(cat => ({
-                        label: cat.name,
-                        slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-                    }));
+                        label: cat.name || cat.categoryName,
+                        slug: cat.slug || (cat.name || cat.categoryName || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+                    }))
+                    .filter(cat => cat.label);
                 if (active.length > 0) setCategories(active);
             } catch (err) {
                 console.error('Failed to fetch categories:', err);
@@ -72,6 +75,14 @@ const Navbar = () => {
     }, []);
 
     useEffect(() => { setIsMobileOpen(false); }, [location.pathname]);
+
+    // Sync search input with /shop?search= URL param
+    useEffect(() => {
+        if (location.pathname === '/shop') {
+            const params = new URLSearchParams(location.search);
+            setSearchQuery(params.get('search') || '');
+        }
+    }, [location]);
 
     useEffect(() => {
         document.body.style.overflow = isMobileOpen ? 'hidden' : '';
@@ -86,9 +97,19 @@ const Navbar = () => {
     useEffect(() => {
         const timer = setTimeout(async () => {
             if (searchQuery.trim().length >= 2) {
+                // Abort any in-flight request
+                if (abortControllerRef.current) {
+                    abortControllerRef.current.abort();
+                }
+                const controller = new AbortController();
+                abortControllerRef.current = controller;
+
                 setIsSearching(true);
                 try {
-                    const data = await searchProducts(searchQuery);
+                    const data = await searchProducts(searchQuery, controller.signal);
+                    // Check if request was aborted
+                    if (controller.signal.aborted) return;
+                    
                     const products = Array.isArray(data) ? data : data?.content || [];
 
                     // Also match categories
@@ -102,27 +123,41 @@ const Navbar = () => {
                     setSuggestions(combined);
                     setShowSuggestions(true);
                 } catch (err) {
+                    // Ignore abort errors
+                    if (err.name === 'AbortError' || controller.signal.aborted) return;
                     console.error('Search failed:', err);
                     setSuggestions([]);
                 } finally {
-                    setIsSearching(false);
+                    if (!controller.signal.aborted) {
+                        setIsSearching(false);
+                    }
                 }
             } else {
                 setSuggestions([]);
                 setShowSuggestions(false);
             }
         }, 150); // Faster response
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
     }, [searchQuery, categories]);
 
     useEffect(() => {
         const handler = (e) => {
-            const inDesktop = searchRef.current?.contains(e.target);
-            const inMobile  = mobileSearchRef.current?.contains(e.target);
+            const target = e.target;
+            const inDesktop = searchRef.current?.contains(target);
+            const inMobile  = mobileSearchRef.current?.contains(target);
             if (!inDesktop && !inMobile) setShowSuggestions(false);
         };
         document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
+        document.addEventListener('touchstart', handler, { passive: true });
+        return () => {
+            document.removeEventListener('mousedown', handler);
+            document.removeEventListener('touchstart', handler);
+        };
     }, []);
 
     // Detect user location
@@ -142,7 +177,10 @@ const Navbar = () => {
                 })
                 .catch(() => {});
         };
-        if ('geolocation' in navigator) {
+        
+        const isSecureContext = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        
+        if ('geolocation' in navigator && isSecureContext) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     const { latitude, longitude } = pos.coords;
@@ -152,7 +190,6 @@ const Navbar = () => {
                             const addr = data.address;
                             const city = addr.city || addr.town || addr.village || addr.county;
                             const state = addr.state;
-                            const country = addr.country;
                             if (city) {
                                 const loc = `${city}${state ? ', ' + state : ''}`;
                                 setUserLocation(loc);
@@ -181,7 +218,6 @@ const Navbar = () => {
                             const addr = data.address;
                             const city = addr.city || addr.town || addr.village || addr.county;
                             const state = addr.state;
-                            const country = addr.country;
                             if (city) {
                                 const loc = `${city}${state ? ', ' + state : ''}`;
                                 setUserLocation(loc);
@@ -216,6 +252,7 @@ const Navbar = () => {
             navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
             setShowSuggestions(false);
             setIsMobileOpen(false);
+            setHighlightedIndex(-1);
         }
     };
 
@@ -228,58 +265,119 @@ const Navbar = () => {
         setSearchQuery('');
         setShowSuggestions(false);
         setIsMobileOpen(false);
+        setHighlightedIndex(-1);
+    };
+
+    const handleKeyDown = (e) => {
+        if (!showSuggestions || suggestions.length === 0) return;
+        
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                setHighlightedIndex(prev => 
+                    prev >= suggestions.length - 1 ? 0 : prev + 1
+                );
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                setHighlightedIndex(prev => 
+                    prev <= 0 ? suggestions.length - 1 : prev - 1
+                );
+                break;
+            case 'Enter':
+                if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+                    e.preventDefault();
+                    handleSuggestionClick(suggestions[highlightedIndex]);
+                }
+                break;
+            case 'Escape':
+                setShowSuggestions(false);
+                setHighlightedIndex(-1);
+                break;
+            default:
+                break;
+        }
+    };
+
+    const handleInputFocus = () => {
+        if (searchQuery.trim().length >= 2) {
+            setShowSuggestions(true);
+            setHighlightedIndex(-1);
+        }
+    };
+
+    const handleInputBlur = () => {
+        // Delay hiding to allow click on suggestions
+        setTimeout(() => {
+            setShowSuggestions(false);
+            setHighlightedIndex(-1);
+        }, 200);
     };
 
     const isActive = (path) => location.pathname === path;
 
     const SuggestionsDropdown = () => (
-        <div className="search-suggestions-dropdown">
-            {suggestions.map((item, index) => (
-                item.isCategory ? (
-                    <div
-                        key={`cat-${index}`}
-                        className="suggestion-item suggestion-category-item"
-                        onClick={() => handleSuggestionClick(item)}
-                    >
-                        <div className="suggestion-image">
-                            <div className="suggestion-image-placeholder" style={{ background: '#F5EDE6' }}>
-                                <span style={{ fontSize: '0.75rem', color: '#C9A87C' }}>CAT</span>
+        <div className="search-suggestions-dropdown" ref={suggestionsRef} role="listbox">
+            {suggestions.length === 0 && searchQuery.trim().length >= 2 && !isSearching ? (
+                <div className="suggestion-no-results">
+                    No results found for "{searchQuery}"
+                </div>
+            ) : (
+                suggestions.map((item, index) => (
+                    item.isCategory ? (
+                        <div
+                            key={`cat-${index}`}
+                            className={`suggestion-item suggestion-category-item ${index === highlightedIndex ? 'highlighted' : ''}`}
+                            onClick={() => handleSuggestionClick(item)}
+                            onMouseEnter={() => setHighlightedIndex(index)}
+                            role="option"
+                            aria-selected={index === highlightedIndex}
+                        >
+                            <div className="suggestion-image">
+                                <div className="suggestion-image-placeholder" style={{ background: '#F5EDE6' }}>
+                                    <span style={{ fontSize: '0.75rem', color: '#C9A87C' }}>CAT</span>
+                                </div>
+                            </div>
+                            <div className="suggestion-info">
+                                <div className="suggestion-name">{item.name}</div>
+                                <div className="suggestion-category" style={{ color: '#C9A87C' }}>Category</div>
                             </div>
                         </div>
-                        <div className="suggestion-info">
-                            <div className="suggestion-name">{item.name}</div>
-                            <div className="suggestion-category" style={{ color: '#C9A87C' }}>Category</div>
+                    ) : (
+                        <div
+                            key={item.id}
+                            className={`suggestion-item ${index === highlightedIndex ? 'highlighted' : ''}`}
+                            onClick={() => handleSuggestionClick(item)}
+                            onMouseEnter={() => setHighlightedIndex(index)}
+                            role="option"
+                            aria-selected={index === highlightedIndex}
+                        >
+                            <div className="suggestion-image">
+                                {(() => {
+                                    const img = getPrimaryGalleryImage(item);
+                                    if (img) return <img src={img} alt={item.name} />;
+                                    return (
+                                        <div className="suggestion-image-placeholder">
+                                            <Search size={13} />
+                                        </div>);
+                                })()}
+                            </div>
+                            <div className="suggestion-info">
+                                <div className="suggestion-name">{item.name}</div>
+                                <div className="suggestion-category">{item.category}</div>
+                            </div>
+                            <div className="suggestion-price">
+                                ₹{item.discountPrice || item.regularPrice}
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <div
-                        key={item.id}
-                        className="suggestion-item"
-                        onClick={() => handleSuggestionClick(item)}
-                    >
-                        <div className="suggestion-image">
-                            {(() => {
-                                const img = getPrimaryGalleryImage(item);
-                                if (img) return <img src={img} alt={item.name} />;
-                                return (
-                                    <div className="suggestion-image-placeholder">
-                                        <Search size={13} />
-                                    </div>);
-                            })()}
-                        </div>
-                        <div className="suggestion-info">
-                            <div className="suggestion-name">{item.name}</div>
-                            <div className="suggestion-category">{item.category}</div>
-                        </div>
-                        <div className="suggestion-price">
-                            ₹{item.discountPrice || item.regularPrice}
-                        </div>
-                    </div>
-                )
-            ))}
-            <div className="suggestion-all" onClick={handleSearchSubmit}>
-                See all results for "{searchQuery}"
-            </div>
+                    )
+                ))
+            )}
+            {suggestions.length > 0 && (
+                <div className="suggestion-all" onClick={handleSearchSubmit}>
+                    See all results for "{searchQuery}"
+                </div>
+            )}
         </div>
     );
 
@@ -308,7 +406,9 @@ const Navbar = () => {
                                 className="navbar-search-input"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                onFocus={() => searchQuery.trim().length > 1 && setShowSuggestions(true)}
+                                onKeyDown={handleKeyDown}
+                                onFocus={handleInputFocus}
+                                onBlur={handleInputBlur}
                             />
                             <button type="submit" className="navbar-search-btn">
                                 {isSearching
@@ -316,7 +416,7 @@ const Navbar = () => {
                                     : <Search size={18} color="white" />}
                             </button>
                         </form>
-                        {showSuggestions && suggestions.length > 0 && <SuggestionsDropdown />}
+                        {showSuggestions && <SuggestionsDropdown />}
                     </div>
 
                     {/* Right Actions */}
@@ -408,7 +508,9 @@ const Navbar = () => {
                                 className="navbar-search-input"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                onFocus={() => searchQuery.trim().length > 1 && setShowSuggestions(true)}
+                                onKeyDown={handleKeyDown}
+                                onFocus={handleInputFocus}
+                                onBlur={handleInputBlur}
                             />
                             <button type="submit" className="navbar-search-btn">
                                 {isSearching
@@ -560,7 +662,7 @@ const Navbar = () => {
                         <button
                             className="navbar-mobile-logout-btn"
                             onClick={async () => {
-                                try { await logoutUser(); } catch (e) {}
+                                try { await logoutUser(); } catch { /* ignore logout error */ }
                                 localStorage.removeItem('user');
                                 setIsMobileOpen(false);
                                 window.location.replace('/login');

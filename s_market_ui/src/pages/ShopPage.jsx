@@ -17,11 +17,11 @@ import {
     Link as LinkIcon,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useCart } from '../context/CartContext';
-import { useCompare } from '../context/CompareContext';
-import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../hooks/useCart';
+import { useCompare } from '../hooks/useCompare';
+import { useWishlist } from '../hooks/useWishlist';
 import './ShopPage.css';
-import { getAllProducts, BACKEND_URL, getPrimaryGalleryImage, getGalleryImageUrl, PLACEHOLDER_IMG } from '../api/api';
+import { getAllProducts, getPublicCategories, BACKEND_URL, getPrimaryGalleryImage, getGalleryImageUrl, PLACEHOLDER_IMG } from '../api/api';
 
 const PRODUCTS_PER_PAGE = 9;
 
@@ -34,6 +34,7 @@ const ShopPage = () => {
 
     const queryParams = new URLSearchParams(location.search);
     const initialCategory = queryParams.get('category') || 'All';
+    const initialSearch = queryParams.get('search') || '';
 
     const handleAddToCart = (e, product) => {
         e.preventDefault();
@@ -117,10 +118,10 @@ const ShopPage = () => {
     };
 
     const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-    const [viewMode, setViewMode] = useState('grid');
+    const [viewMode] = useState('grid');
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
     const [sortOption, setSortOption] = useState('featured');
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -132,60 +133,76 @@ const ShopPage = () => {
     // Sync category from URL
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const cat = params.get('category');
-        if (cat) {
-            setSelectedCategory(cat);
+        const catSlug = params.get('category');
+        if (catSlug) {
+            // Find category name from slug
+            const cat = dynamicCategories.find(c => c.slug === catSlug);
+            setSelectedCategory(cat ? cat.name : catSlug);
         } else {
             setSelectedCategory('All');
         }
+    }, [location.search, dynamicCategories]);
+
+    // Sync search from URL
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        setSearchQuery(params.get('search') || '');
     }, [location.search]);
 
-    // Fetch products on mount
+    // Fetch products and categories on mount
     useEffect(() => {
         window.scrollTo(0, 0);
-        const fetchProducts = async () => {
+        const fetchData = async () => {
             try {
-                const data = await getAllProducts();
-                setAllProducts(data);
+                const [productsData, categoriesData] = await Promise.all([
+                    getAllProducts(),
+                    getPublicCategories()
+                ]);
+                setAllProducts(productsData);
 
-                // Build categories from products
-                const catCount = {};
-                (data || []).forEach(p => {
-                    if (p.category) {
-                        catCount[p.category] = (catCount[p.category] || 0) + 1;
-                    }
-                });
-                const cats = Object.entries(catCount)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([name, count]) => ({ name, count }));
-                setDynamicCategories(cats);
+                // Use public categories API data
+                if (Array.isArray(categoriesData)) {
+                    const catsWithCount = categoriesData.map(cat => {
+                        const name = cat.name || cat.categoryName || '';
+                        const slug = cat.slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                        // Count products in this category
+                        const count = (productsData || []).filter(p => 
+                            p.category === name || 
+                            p.category?.toLowerCase() === name.toLowerCase()
+                        ).length;
+                        return { name, count, slug };
+                    });
+                    setDynamicCategories(catsWithCount);
+                }
             } catch (error) {
                 console.error("Failed to load products:", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchProducts();
+        fetchData();
     }, []);
 
-    const handleCategoryClick = (categoryName) => {
+    const handleCategoryClick = (categoryName, categorySlug) => {
         setSelectedCategory(categoryName);
         setCurrentPage(1);
         if (categoryName === 'All') {
             navigate('/shop');
         } else {
-            navigate(`/shop?category=${encodeURIComponent(categoryName)}`);
+            const slug = categorySlug || categoryName;
+            navigate(`/shop?category=${encodeURIComponent(slug)}`);
         }
     };
 
     const categories = useMemo(() => {
         return [
-            { name: 'All Categories', value: 'All', icon: LayoutGrid, count: allProducts.length },
+            { name: 'All Categories', value: 'All', icon: LayoutGrid, count: allProducts.length, slug: null },
             ...dynamicCategories.map(cat => ({
                 name: cat.name,
                 value: cat.name,
                 icon: ShoppingBag,
                 count: cat.count,
+                slug: cat.slug
             })),
         ];
     }, [dynamicCategories, allProducts.length]);
@@ -340,13 +357,13 @@ const ShopPage = () => {
                         <div className="filter-section">
                             <h3 className="filter-title">CATEGORIES</h3>
                             <ul className="category-list">
-                                {categories.map(cat => (
-                                    <li key={cat.value} className={`category-item ${selectedCategory === cat.value ? 'active' : ''}`} onClick={() => handleCategoryClick(cat.value)} style={{ cursor: 'pointer' }}>
-                                        <cat.icon size={18} />
-                                        <span className="category-text">{cat.name}</span>
-                                        <span className="category-count">({cat.count})</span>
-                                    </li>
-                                ))}
+{categories.map(cat => (
+                                     <li key={cat.value} className={`category-item ${selectedCategory === cat.value ? 'active' : ''}`} onClick={() => handleCategoryClick(cat.value, cat.slug)} style={{ cursor: 'pointer' }}>
+                                         <cat.icon size={18} />
+                                         <span className="category-text">{cat.name}</span>
+                                         <span className="category-count">({cat.count})</span>
+                                     </li>
+                                 ))}
                             </ul>
                         </div>
 

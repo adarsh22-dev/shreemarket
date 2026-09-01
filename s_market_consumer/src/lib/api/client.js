@@ -163,11 +163,10 @@ export const createMockOrder = async (userId) => {
 
 export const submitReturnAPI = async (orderId, formData) => {
   return clientFetchFormData(`/orders/${orderId}/return`, { method: 'POST', body: formData });
+};
 
 export const cancelOrder = async (orderId) => {
   return clientFetch(`/orders/${orderId}/cancel`, { method: "POST" });
-};
-
 };
 
 // --- REVIEWS ---

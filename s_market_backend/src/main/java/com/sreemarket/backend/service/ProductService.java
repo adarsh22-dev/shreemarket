@@ -328,7 +328,7 @@ public class ProductService {
     }
 
     public List<Product> searchProducts(String query) {
-        return productRepository.findByNameContainingIgnoreCaseOrSkuContainingIgnoreCaseAndApprovalStatus(query, query, "Approved").stream()
+        return productRepository.searchApprovedByNameOrSku(query, "Approved").stream()
             .filter(p -> {
                 boolean hasImage = p.getMedia() != null && !p.getMedia().isEmpty()
                     && p.getMedia().stream().anyMatch(m -> m.getFileName() != null && !m.getFileName().isEmpty());

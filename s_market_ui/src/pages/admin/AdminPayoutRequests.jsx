@@ -7,16 +7,12 @@ import toast from 'react-hot-toast';
 const FILTERS = ['All','pending','approved','processing','paid','rejected'];
 const PER = 8;
 
-const priorityColor = p => p === 'high' ? '#dc2626' : p === 'normal' ? '#2563eb' : '#94a3b8';
-const priorityBg    = p => p === 'high' ? '#fee2e2' : p === 'normal' ? '#dbeafe' : '#f1f5f9';
-
 export default function PayoutRequests() {
   const [filter,  setFilter]  = useState('All');
   const [search,  setSearch]  = useState('');
   const [page,    setPage]    = useState(0);
   const [modal,   setModal]   = useState(null);
   const [rows,    setRows]    = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedForBatch, setSelectedForBatch] = useState([]);
   const [batchModal, setBatchModal] = useState(false);
   const [batchMethod, setBatchMethod] = useState('NEFT');
@@ -50,9 +46,7 @@ export default function PayoutRequests() {
         orders: p.orders || 0,
       }));
       setRows(mapped);
-    } catch (e) {
-      toast.error('Failed to load payout requests');
-    } finally {
+    } catch { toast.error('Failed to load payout requests'); } finally {
       setLoading(false);
     }
   }, []);
@@ -80,9 +74,7 @@ export default function PayoutRequests() {
       await updatePayout({ id: row.dbId, status: 'approved' });
       toast.success('Payout approved successfully');
       setRows(rs => rs.map(r => r.id === id ? {...r, status:'approved', note:'Manually approved'} : r));
-    } catch (e) {
-      toast.error('Failed to approve payout');
-    }
+    } catch { toast.error('Failed to approve payout'); }
   };
 
   const reject = async id => {
@@ -92,9 +84,7 @@ export default function PayoutRequests() {
       await updatePayout({ id: row.dbId, status: 'rejected' });
       toast.success('Payout rejected');
       setRows(rs => rs.map(r => r.id === id ? {...r, status:'rejected', note:'Admin rejected'} : r));
-    } catch (e) {
-      toast.error('Failed to reject payout');
-    }
+    } catch { toast.error('Failed to reject payout'); }
   };
 
   const openBatchModal = () => {
@@ -117,9 +107,7 @@ export default function PayoutRequests() {
       setBatchModal(false);
       setSelectedForBatch([]);
       fetchRequests(filter, search);
-    } catch (e) {
-      toast.error('Batch processing failed: ' + e.message);
-    } finally {
+    } catch (err) { toast.error('Batch processing failed: ' + err.message); } finally {
       setBatchProcessing(false);
     }
   };

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { useWishlist } from '../context/WishlistContext';
-import { useCart } from '../context/CartContext';
+import { useWishlist } from '../hooks/useWishlist';
+import { useCart } from '../hooks/useCart';
 import { ShoppingCart, Trash2, Heart, HeartHandshake, Share2, Link as LinkIcon, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './WishlistPage.css';

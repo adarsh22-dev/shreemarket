@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Search, ChevronDown, Leaf, HeartHandshake, Package, Printer } from 'lucide-react';
 import './OrdersPage.css';
-import { fetchUserOrders, createMockOrder, getAllProducts, submitProductReview, getUserReviews, BACKEND_URL, submitReturnAPI } from '../api/api';
+import { fetchUserOrders, getAllProducts, submitProductReview, getUserReviews, BACKEND_URL, submitReturnAPI } from '../api/api';
 import { Star, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { jsPDF } from 'jspdf';
@@ -92,18 +92,6 @@ const OrdersPage = () => {
             setUserReviews(reviewMap);
         } catch (error) {
             console.error("Failed to load user reviews:", error);
-        }
-    };
-
-    const handleGenerateMocks = async () => {
-        if (!userId) return;
-        const toastId = toast.loading("Generating mock orders...");
-        try {
-            await createMockOrder(userId);
-            toast.success("Mock orders generated!", { id: toastId });
-            await loadOrders(userId); // Refresh the list
-        } catch (error) {
-            toast.error("Failed to generate orders", { id: toastId });
         }
     };
 
@@ -316,7 +304,6 @@ const OrdersPage = () => {
         y += 10;
 
         // Bill To & Billing Address - side by side
-        const startY = y;
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.text('Bill To / Ship To:', 20, y);
@@ -513,7 +500,7 @@ const OrdersPage = () => {
             setReturnedOrderIds(prev => new Set(prev).add(returnOrder.id));
             toast.success("Return request submitted successfully");
             setIsReturnOpen(false);
-        } catch (error) {
+        } catch {
             toast.error("Failed to submit return request");
         } finally {
             setSubmittingReturn(false);
@@ -1063,8 +1050,5 @@ const OrdersPage = () => {
         </div>
     );
 };
-
-// Extracted purely for scoping reasons.
-const iconSize = 18;
 
 export default OrdersPage;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hooks/useCart';
 import { BACKEND_URL, PLACEHOLDER_IMG, PLACEHOLDER_FAILED, getPrimaryGalleryImage } from '../api/api';
 import { X, Minus, Plus, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';

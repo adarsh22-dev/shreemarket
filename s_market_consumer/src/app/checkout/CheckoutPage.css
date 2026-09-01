@@ -906,23 +906,6 @@
     .continue-shopping-btn { padding: 14px; font-size: 14px; }
 }
 
-    .checkout-summary-section {
-        order: -1;
-    }
-
-    .stepper {
-        gap: 6px;
-    }
-
-    .step-line {
-        width: 30px;
-    }
-
-    .payment-methods-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 /* Order Confirmation Step */
 .confirmation-step {
     max-width: 900px;

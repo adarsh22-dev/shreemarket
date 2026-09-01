@@ -118,11 +118,21 @@
     gap: 12px;
     transition: background-color 0.15s;
 }
-.suggestion-item:hover { background-color: #f9f9f9; }
+.suggestion-item:hover,
+.suggestion-item.highlighted { background-color: #fff3ee; }
+.suggestion-item.highlighted { outline: none; }
+
+.suggestion-no-results {
+    padding: 16px;
+    text-align: center;
+    font-size: 0.88rem;
+    color: #999;
+    background-color: #fafafa;
+}
 
 .suggestion-image {
-    width: 100%;
-    height: auto;
+    width: 38px;
+    height: 38px;
     border-radius: 6px;
     overflow: hidden;
     flex-shrink: 0;

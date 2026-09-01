@@ -70,9 +70,6 @@ const handleResponse = async (response) => {
     if (response.status === 401 || response.status === 403) {
         const url = response.url || 'unknown';
         logError('AUTH_REDIRECT', `${response.status} on ${url}`, { status: response.status, url });
-        localStorage.removeItem("user");
-        localStorage.removeItem("rememberedEmail");
-        window.location.href = '/login';
         throw new Error("Session expired or unauthorized");
     }
 
@@ -80,19 +77,16 @@ const handleResponse = async (response) => {
         logError('API_ERROR', `${response.status} on ${response.url}`);
     }
 
-    // Check if the response has content before trying to parse it as JSON
-    const contentType = response.headers.get("content-type");
+    const text = await response.text();
     let data = null;
-
-    if (contentType && contentType.includes("application/json")) {
-        const text = await response.text();
-        if (text) {
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                console.error("JSON parsing error:", e, "Source text:", text);
-                throw new Error("Invalid server response format");
+    if (text) {
+        try {
+            data = JSON.parse(text);
+        } catch {
+            if (!response.ok) {
+                throw new Error(`HTTP Error ${response.status}`);
             }
+            return null;
         }
     }
 
@@ -284,11 +278,12 @@ export const getVendorById = async (vendorId) => {
 };
 
 export const registerWholesaler = async (data) => {
+    const isFormData = data instanceof FormData;
     const response = await fetchWithTimeout(`${API_BASE_URL}/register/wholesaler`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: isFormData ? {} : { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(data),
+        body: isFormData ? data : JSON.stringify(data),
     });
     return handleResponse(response);
 };
@@ -801,7 +796,7 @@ export const getAllProducts = async (category) => {
         if (Array.isArray(products)) {
             return products.filter(isValidProduct);
         }
-        return products;
+        return [];
     } catch (error) {
         // If there's a network error or other issue, return empty array for fallback
         console.warn("Failed to fetch products, using empty array:", error);
@@ -812,14 +807,16 @@ export const getAllProducts = async (category) => {
 /**
  * Searches for products by name.
  * @param {string} query - Search query
+ * @param {AbortSignal} [signal] - Optional abort signal for cancellation
  */
-export const searchProducts = async (query) => {
+export const searchProducts = async (query, signal) => {
     const response = await fetchWithTimeout(`${API_BASE_URL}/products/search?q=${encodeURIComponent(query)}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
         },
         credentials: "include",
+        signal,
     });
     return handleResponse(response);
 };
@@ -2028,7 +2025,8 @@ export const getHomepageSections = async () => {
         cache: "no-store",
     });
     if (response.status === 401) return [];
-    return handleResponse(response);
+    const data = await handleResponse(response);
+    return Array.isArray(data) ? data : [];
 };
 
 export const getAdminHomepageSections = async () => {
@@ -5215,7 +5213,7 @@ export const deleteVendorReviewTemplate = async (id) => {
 export const getPublicCategories = async () => {
     try {
         const response = await fetchWithTimeout(`${API_BASE_URL}/categories`, {
-            method: 'GET', headers: { 'Content-Type': 'application/json' }
+            method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include'
         });
         if (response.status === 401) return [];
         return handleResponse(response);

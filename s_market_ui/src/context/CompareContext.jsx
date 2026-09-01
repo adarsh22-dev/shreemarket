@@ -1,8 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-
-const CompareContext = createContext();
-
-export const useCompare = () => useContext(CompareContext);
+import React, { useState, useEffect } from 'react';
+import { CompareContext } from './CompareContextValues';
 
 export const CompareProvider = ({ children }) => {
     const [compareItems, setCompareItems] = useState(() => {

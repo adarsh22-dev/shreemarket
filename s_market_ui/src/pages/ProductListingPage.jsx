@@ -4,10 +4,10 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { ChevronDown, SlidersHorizontal, LayoutGrid, List, X, Loader, Heart, ShoppingBag, Share2, GitCompare, Link as LinkIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishlistContext';
-import { useCompare } from '../context/CompareContext';
-import { getAllProducts, getPublicCategories, getProductImageUrl, getPrimaryGalleryImage } from '../api/api';
+import { useCart } from '../hooks/useCart';
+import { useWishlist } from '../hooks/useWishlist';
+import { useCompare } from '../hooks/useCompare';
+import { getAllProducts, getPublicCategories, getPrimaryGalleryImage } from '../api/api';
 import './ProductListingPage.css';
 
 const ProductListingPage = () => {
@@ -16,7 +16,7 @@ const ProductListingPage = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [totalItems, setTotalItems] = useState(0);
-    const [viewMode, setViewMode] = useState('grid');
+    const [viewMode] = useState('grid');
     const { addToCart } = useCart();
     const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
     const { isInCompare, addToCompare, removeFromCompare } = useCompare();
@@ -29,20 +29,23 @@ const ProductListingPage = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        setLoading(true);
-        Promise.all([
-            getPublicCategories(),
-            getAllProducts(categoryName || undefined)
-        ]).then(([cats, prods]) => {
-            setCategories(cats || []);
-            const list = Array.isArray(prods) ? prods : [];
-            setProducts(list);
-            setTotalItems(list.length);
-        }).catch(() => {
-            toast.error('Failed to load products');
-        }).finally(() => {
-            setLoading(false);
-        });
+        // Use setTimeout to avoid synchronous state update in effect
+        setTimeout(() => {
+            setLoading(true);
+            Promise.all([
+                getPublicCategories(),
+                getAllProducts(categoryName || undefined)
+            ]).then(([cats, prods]) => {
+                setCategories(cats || []);
+                const list = Array.isArray(prods) ? prods : [];
+                setProducts(list);
+                setTotalItems(list.length);
+            }).catch(() => {
+                toast.error('Failed to load products');
+            }).finally(() => {
+                setLoading(false);
+            });
+        }, 0);
     }, [categorySlug, categoryName]);
 
     const currentCategory = useMemo(() => {

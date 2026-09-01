@@ -3,8 +3,10 @@ package com.sreemarket.backend.controller;
 import com.sreemarket.backend.model.Wholesaler;
 import com.sreemarket.backend.service.WholesalerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -25,12 +27,38 @@ public class WholesalerAuthController {
     @Autowired
     private WholesalerService wholesalerService;
 
-    @PostMapping("/register/wholesaler")
-    public ResponseEntity<?> registerWholesaler(@RequestBody Wholesaler wholesaler) {
+    @PostMapping(value = "/register/wholesaler", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> registerWholesaler(
+            @RequestParam("fullName") String fullName,
+            @RequestParam("email") String email,
+            @RequestParam("phone") String phone,
+            @RequestParam("password") String password,
+            @RequestParam("businessName") String businessName,
+            @RequestParam("gstNumber") String gstNumber,
+            @RequestParam("businessAddress") String businessAddress,
+            @RequestParam("businessPhone") String businessPhone,
+            @RequestParam("businessType") String businessType,
+            @RequestParam(value = "agreeTerms", defaultValue = "false") boolean agreeTerms,
+            @RequestParam(value = "agreePolicies", defaultValue = "false") boolean agreePolicies,
+            @RequestParam(value = "gstCertificate", required = false) MultipartFile gstCertificate,
+            @RequestParam(value = "businessProof", required = false) MultipartFile businessProof,
+            @RequestParam(value = "addressProof", required = false) MultipartFile addressProof) {
         try {
+            Wholesaler wholesaler = new Wholesaler();
+            wholesaler.setFullName(fullName);
+            wholesaler.setEmail(email);
+            wholesaler.setPhone(phone);
+            wholesaler.setPassword(password);
+            wholesaler.setBusinessName(businessName);
+            wholesaler.setGstNumber(gstNumber);
+            wholesaler.setBusinessAddress(businessAddress);
+            wholesaler.setBusinessPhone(businessPhone);
+            wholesaler.setBusinessType(businessType);
+            wholesaler.setAgreeTerms(agreeTerms);
+            wholesaler.setAgreePolicies(agreePolicies);
             wholesaler.setRoleId(4L);
-            if (wholesaler.getStatus() == null) wholesaler.setStatus("Pending");
-            Wholesaler registered = wholesalerService.registerWholesaler(wholesaler);
+            wholesaler.setStatus("Pending");
+            Wholesaler registered = wholesalerService.registerWholesaler(wholesaler, gstCertificate, businessProof, addressProof);
             return ResponseEntity.ok(Map.of(
                 "message", "Wholesaler registration submitted for approval",
                 "wholesalerId", registered.getId()

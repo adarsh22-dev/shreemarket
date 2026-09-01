@@ -92,15 +92,13 @@ const LineChart = ({ data, labels, color = '#E03E1A', height = 180 }) => {
 /* ══ DONUT ═══════════════════════════════════ */
 const Donut = ({ data, size = 130, center, sub }) => {
     const [hov, setHov] = useState(null);
+    const pt = (cx, cy, r, deg) => { const a = (deg - 90) * Math.PI / 180; return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+    };
     const R = size/2, r = R*0.63, cx = R, cy = R;
     const tot = data.reduce((s,d) => s + d.pct, 0) || 1;
-    let cum = 0;
-    const pt = (cx,cy,r,deg) => {
-        const rad = (deg-90)*Math.PI/180;
-        return { x: cx+r*Math.cos(rad), y: cy+r*Math.sin(rad) };
-    };
-    const segs = data.map(d => {
-        const s = (cum/tot)*360, e = ((cum+=d.pct)/tot)*360;
+    const segs = data.map((d, i) => {
+        const prev = data.slice(0, i).reduce((s, d2) => s + d2.pct, 0);
+        const s = (prev/tot)*360, e = ((prev + d.pct)/tot)*360;
         const g=1.8, sa=s+g/2, ea=e-g/2;
         const p1=pt(cx,cy,r,sa), p2=pt(cx,cy,r,ea);
         const i1=pt(cx,cy,R*0.36,sa), i2=pt(cx,cy,R*0.36,ea);

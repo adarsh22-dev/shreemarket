@@ -1,8 +1,17 @@
-# Maven target directory
+# Maven build output
 target/
+
+# Next.js build output
+.next/
+out/
+
+# Vite / Webpack build output
+dist/
+build/
 
 # IntelliJ IDEA
 .idea/
+*.iml
 
 # Eclipse
 .project
@@ -14,18 +23,27 @@ target/
 
 # Log files
 *.log
+backend.log
+frontend.log
 
-# Test files
+# Test / temporary files
 test-image.jpg
 test-policy.pdf
 test-product.json
 cookies.txt
+*.tmp
+*.temp
 
 # Uploaded files
 uploads/
 
-# Node modules (if any)
+# Node modules
 node_modules/
+
+# Package lock files (uncomment if you want to ignore, but recommended to track for apps)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
 
 # Environment files
 .env
@@ -33,6 +51,22 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# TypeScript incremental build
+*.tsbuildinfo
+
+# ESLint cache
+.eslintcache
+
+# Prettier cache
+.prettiercache
+
+# Turbopack / Vite cache
+.turbo/
+.vite/
+
+# Next.js generated types
+next-env.d.ts
 
 # OS generated files
 .DS_Store

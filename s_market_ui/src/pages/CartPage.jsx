@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../hooks/useCart';
 import { Heart, ShieldCheck, Award, Lock, ArrowRight, Minus, Plus, Loader2 } from 'lucide-react';
 import { getAllProducts, BACKEND_URL, getPrimaryGalleryImage, PLACEHOLDER_IMG, getActiveTaxRatesPublic } from '../api/api';
 import './CartPage.css';
@@ -20,7 +20,6 @@ const CartPage = () => {
         cartCount,
         recentlyViewed
     } = useCart();
-    const navigate = useNavigate();
 
     const [suggestedProducts, setSuggestedProducts] = React.useState([]);
     const [loadingSuggestions, setLoadingSuggestions] = React.useState(true);

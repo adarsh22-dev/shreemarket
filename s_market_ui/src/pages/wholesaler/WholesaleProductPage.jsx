@@ -8,9 +8,9 @@ import {
     ShoppingBag, Loader2, CornerDownRight, ThumbsUp, ThumbsDown, HeartHandshake, Leaf
 } from 'lucide-react';
 import { getProduct, getVendorById, getAllProducts, getProductReviews, BACKEND_URL, PLACEHOLDER_IMG, handleImageError } from '../../api/api';
-import { useCart } from '../../context/CartContext';
-import { useWishlist } from '../../context/WishlistContext';
-import { useCompare } from '../../context/CompareContext';
+import { useCart } from '../../hooks/useCart';
+import { useWishlist } from '../../hooks/useWishlist';
+import { useCompare } from '../../hooks/useCompare';
 import toast from 'react-hot-toast';
 import '../ProductPage.css';
 

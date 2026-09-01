@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import {
@@ -11,9 +11,9 @@ import {
 import './ShopPage.css';
 import { getWholesaleProducts, BACKEND_URL, getPrimaryGalleryImage, PLACEHOLDER_IMG, submitBulkInquiry } from '../api/api';
 import toast from 'react-hot-toast';
-import { useWishlist } from '../context/WishlistContext';
-import { useCompare } from '../context/CompareContext';
-import { useCart } from '../context/CartContext';
+import { useWishlist } from '../hooks/useWishlist';
+import { useCompare } from '../hooks/useCompare';
+import { useCart } from '../hooks/useCart';
 
 const PRODUCTS_PER_PAGE = 9;
 
@@ -24,7 +24,7 @@ const WholesalePage = () => {
     const initialCategory = queryParams.get('category') || 'All';
 
     const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-    const [viewMode, setViewMode] = useState('grid');
+    const [viewMode] = useState('grid');
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
     const [searchQuery, setSearchQuery] = useState('');

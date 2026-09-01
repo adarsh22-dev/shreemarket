@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
     Search, ShoppingBag, User, Globe, ChevronDown,
     ChevronRight, Loader2, Heart, Menu, X, Package, LogOut
@@ -42,6 +42,7 @@ const Navbar = () => {
 
     const pathname = usePathname();
     const router   = useRouter();
+    const searchParams = useSearchParams();
 
     // Search state
     const [searchQuery,    setSearchQuery]    = useState('');
@@ -71,6 +72,13 @@ const Navbar = () => {
 
     // Close mobile drawer on route change
     useEffect(() => { setIsMobileOpen(false); }, [pathname]);
+
+    // Sync search input with /shop?search= URL param
+    useEffect(() => {
+        if (pathname === '/shop') {
+            setSearchQuery(searchParams.get('search') || '');
+        }
+    }, [pathname, searchParams]);
 
     // Lock body scroll when mobile menu open
     useEffect(() => {

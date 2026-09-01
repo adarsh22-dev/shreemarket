@@ -17,13 +17,16 @@ function ProductCard({ product, onSelect, onHeart, onCart, inWishlist, inCompare
   const img = getProductImageUrl(product);
   const img2 = product.media?.length > 1 ? `${BACKEND_URL}/uploads/products/${product.media[1].fileName}` : null;
   const dp = product.discountPrice || product.regularPrice || 0;
+  const wp = product.wholesalePrice || 0;
   const dpct = product.discountPrice && product.regularPrice > product.discountPrice ? Math.round(((product.regularPrice - product.discountPrice) / product.regularPrice) * 100) : null;
+  const isWholesale = wp > 0;
   const wishlisted = inWishlist(product.id);
   const compared = inCompare(product.id);
   return (
     <div key={product.id} className="figma-product-card" onClick={() => onSelect({ ...product, image: img, price: dp, details: product.details || { material: 'Handwoven' } })}>
       <div className="figma-img-wrapper">
-        {dpct && <span className="discount-badge">-{dpct}%</span>}
+        {isWholesale && <span className="discount-badge" style={{ background: 'linear-gradient(135deg, #d97706, #b45309)' }}>Wholesale</span>}
+        {!isWholesale && dpct && <span className="discount-badge">-{dpct}%</span>}
         <div className="figma-actions">
           <button className={`figma-action-btn${wishlisted ? ' figma-action-active' : ''}`} title="Wishlist" onClick={e => { e.stopPropagation(); onHeart(e, product); }}>
             <Heart size={15} fill={wishlisted ? "#ef4444" : "none"} color={wishlisted ? "#ef4444" : "#555"} strokeWidth={2} />
@@ -49,7 +52,7 @@ function ProductCard({ product, onSelect, onHeart, onCart, inWishlist, inCompare
               </div>
             )}
           </div>
-          <button className="figma-action-btn" title="Quick View" onClick={e => { e.stopPropagation(); onSelect({ ...product, image: img, price: dp, details: product.details || { material: 'Handwoven' } }); }}>
+          <button className="figma-action-btn" title="Quick View" onClick={e => { e.stopPropagation(); onSelect({ ...product, image: img, price: isWholesale ? wp : dp, details: product.details || { material: 'Handwoven' } }); }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
@@ -61,8 +64,17 @@ function ProductCard({ product, onSelect, onHeart, onCart, inWishlist, inCompare
         <h3 className="figma-product-title">{product.name}</h3>
         <p className="figma-product-subtitle">{product.vendor?.storeName || 'SreeMarket Vendor'}</p>
         <div className="figma-price-row">
-          <span className="price-new">₹{parseFloat(dp).toFixed(2)}</span>
-          {dpct && <span className="price-old">₹{parseFloat(product.regularPrice).toFixed(2)}</span>}
+          {isWholesale ? (
+            <>
+              <span className="price-new" style={{ color: '#d97706' }}>₹{parseFloat(wp).toFixed(2)}</span>
+              <span className="price-old">₹{parseFloat(product.regularPrice || dp).toFixed(2)}</span>
+            </>
+          ) : (
+            <>
+              <span className="price-new">₹{parseFloat(dp).toFixed(2)}</span>
+              {dpct && <span className="price-old">₹{parseFloat(product.regularPrice).toFixed(2)}</span>}
+            </>
+          )}
         </div>
         <button className="card-add-to-cart-btn" onClick={e => { e.stopPropagation(); onCart(e, product); }}>
           <ShoppingBag size={14} strokeWidth={2} /> Add to Cart

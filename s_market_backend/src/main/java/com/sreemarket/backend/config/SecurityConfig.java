@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/wooai/callbacks").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/orders/track/*", "/api/orders/lookup/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/admin/categories", "/api/admin/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/admin/refunds/process").hasRole("ADMIN")
                         .requestMatchers("/api/admin/refunds/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/payout-processing/**").hasRole("ADMIN")
@@ -98,6 +99,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/price-drop-alerts/**").authenticated()
                         .requestMatchers("/api/gift-cards/**").authenticated()
                         .requestMatchers("/api/**").authenticated()
+                        // OpenAPI / Swagger endpoints - public access
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().denyAll());
         return http.build();
     }
@@ -114,14 +117,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(
+        configuration.setAllowedOriginPatterns(
                 Arrays.asList(
-                    "http://localhost:5173", "http://localhost:5174",
-                    "https://localhost:5173", "https://localhost:5174",
-                    "http://127.0.0.1:5173", "http://127.0.0.1:5174",
-                    "https://127.0.0.1:5173", "https://127.0.0.1:5174",
-                    "http://localhost:3000", "https://localhost:3000",
-                    "http://localhost:4173", "https://localhost:4173"));
+                    "http://localhost:*", "https://localhost:*",
+                    "http://127.0.0.1:*", "https://127.0.0.1:*",
+                    "http://10.31.1.84:*", "https://10.31.1.84:*",
+                    "http://192.168.*", "https://192.168.*",
+                    "http://172.*", "https://172.*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

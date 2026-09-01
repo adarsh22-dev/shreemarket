@@ -3,6 +3,8 @@ package com.sreemarket.backend.repository;
 import com.sreemarket.backend.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,7 +21,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     List<Product> findByApprovalStatus(String approvalStatus);
 
-    List<Product> findByNameContainingIgnoreCaseOrSkuContainingIgnoreCaseAndApprovalStatus(String name, String sku, String approvalStatus);
+    @Query("SELECT p FROM Product p WHERE p.approvalStatus = :approvalStatus " +
+           "AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
+           "OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :term, '%')))")
+    List<Product> searchApprovedByNameOrSku(@Param("term") String term, @Param("approvalStatus") String approvalStatus);
 
     long countByApprovalStatus(String approvalStatus);
 

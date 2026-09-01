@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class WholesalerService {
@@ -20,8 +21,19 @@ public class WholesalerService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private FileStorageService fileStorageService;
+
     @Transactional
     public Wholesaler registerWholesaler(Wholesaler wholesaler) {
+        return registerWholesaler(wholesaler, null, null, null);
+    }
+
+    @Transactional
+    public Wholesaler registerWholesaler(Wholesaler wholesaler,
+                                          MultipartFile gstCertificate,
+                                          MultipartFile businessProof,
+                                          MultipartFile addressProof) {
         if (wholesalerRepository.existsByEmail(wholesaler.getEmail())) {
             throw new RuntimeException("Email already in use");
         }
@@ -38,6 +50,19 @@ public class WholesalerService {
         wholesaler.setStatus("Pending");
         wholesaler.setCreatedAt(System.currentTimeMillis());
         wholesaler.setUpdatedAt(System.currentTimeMillis());
+
+        if (gstCertificate != null && !gstCertificate.isEmpty()) {
+            String path = fileStorageService.storeFile(gstCertificate, "wholesaler-docs");
+            wholesaler.setGstCertificate(path);
+        }
+        if (businessProof != null && !businessProof.isEmpty()) {
+            String path = fileStorageService.storeFile(businessProof, "wholesaler-docs");
+            wholesaler.setBusinessProof(path);
+        }
+        if (addressProof != null && !addressProof.isEmpty()) {
+            String path = fileStorageService.storeFile(addressProof, "wholesaler-docs");
+            wholesaler.setAddressProof(path);
+        }
 
         Wholesaler saved = wholesalerRepository.save(wholesaler);
         return saved;

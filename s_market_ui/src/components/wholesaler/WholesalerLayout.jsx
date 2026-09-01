@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { LayoutDashboard, ShoppingCart, Package, FileText, Settings, LogOut, ChevronDown, ChevronRight, MessageSquare } from 'lucide-react';
 import { logoutUser } from '../../api/api';
@@ -14,17 +14,17 @@ const NAV = [
 const WholesalerLayout = () => {
     const location = useLocation();
     const p = location.pathname;
-    const [user, setUser] = useState(null);
-
-    useEffect(() => {
+    const [user] = useState(() => {
         try {
-            const stored = JSON.parse(localStorage.getItem('user'));
-            setUser(stored);
-        } catch {}
-    }, []);
+            const stored = localStorage.getItem('user');
+            return stored ? JSON.parse(stored) : null;
+        } catch {
+            return null;
+        }
+    });
 
     const handleLogout = async () => {
-        try { await logoutUser(); } catch {}
+        try { await logoutUser(); } catch { /* ignore */ }
         localStorage.removeItem('user');
         window.location.replace('/wholesaler/login');
     };

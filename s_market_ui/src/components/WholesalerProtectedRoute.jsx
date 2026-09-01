@@ -32,7 +32,7 @@ const WholesalerProtectedRoute = () => {
                 } else {
                     setStatus('pending');
                 }
-            } catch (err) {
+            } catch {
                 setStatus('no-auth');
             }
         };
