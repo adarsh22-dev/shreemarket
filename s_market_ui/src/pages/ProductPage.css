@@ -125,6 +125,7 @@
     grid-row: 1 / -1;
     min-width: 0;
     overflow: visible;
+    z-index: 5;
 }
 
 .product-page-body { display: contents; }
@@ -152,13 +153,11 @@
     width: 100%;
     border-radius: 20px;
     overflow: hidden;
-    background: #F5EDE6;
-    box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.06),
-        0 1px 3px rgba(0, 0, 0, 0.04);
+    background: #f5ede6;
+    box-shadow: 0 8px 32px #0000000f, 0 1px 3px #0000000a;
     position: relative;
-    max-height: 650px;
-    border: 1px solid rgba(232, 221, 212, 0.5);
+    max-height: 600px !important;
+    border: 1px solid rgba(232, 221, 212, .5);
 }
 
 .main-image-wrapper::before {
@@ -286,8 +285,8 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     border: none;
     background: rgba(255, 255, 255, 0.92);
@@ -304,8 +303,8 @@
 .gallery-nav:hover {
     background: #fff;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22);
-    width: 56px;
-    height: 56px;
+    width: 80px;
+    height: 80px;
 }
 
 .gallery-nav:active {
@@ -313,11 +312,11 @@
 }
 
 .gallery-nav-prev {
-    left: 12px;
+    left: 16px;
 }
 
 .gallery-nav-next {
-    right: 12px;
+    right: 16px;
 }
 
 /* Amazon-style zoom panel — appears to the right of the main image */
@@ -2983,10 +2982,10 @@
     .share-icon-btn { width: 40px; height: 40px; }
 
     /* Gallery Nav — smaller on mobile */
-    .gallery-nav { width: 36px; height: 36px; }
-    .gallery-nav:hover { width: 40px; height: 40px; }
-    .gallery-nav-prev { left: 8px; }
-    .gallery-nav-next { right: 8px; }
+    .gallery-nav { width: 48px; height: 48px; }
+    .gallery-nav:hover { width: 56px; height: 56px; }
+    .gallery-nav-prev { left: 10px; }
+    .gallery-nav-next { right: 10px; }
 
     /* Mobile Zoom Panel — appears below the image */
     .zoom-panel {

@@ -1120,7 +1120,7 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(220,38,38,0.12));
+  background: linear-gradient(135deg, #f9731600, #dc262600);
   display: flex;
   align-items: center;
   justify-content: center;

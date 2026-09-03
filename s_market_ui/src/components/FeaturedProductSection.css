@@ -29,7 +29,7 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(234,88,12,0.1));
+  background: linear-gradient(135deg, #f9731600, #ea580c00);
   display: flex;
   align-items: center;
   justify-content: center;
