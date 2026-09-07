@@ -668,7 +668,7 @@ export default function AdminInventoryAlerts() {
                                 )}
 
                                 {/* Add new category threshold */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px auto', gap: 8, alignItems: 'end' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '0fr 70px 70px 70px auto', gap: 8, alignItems: 'end' }}>
                                     <div>
                                         <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Category</label>
                                         <select className="vm-input" value={catThresholdForm.category} onChange={e => setCatThresholdForm(f => ({ ...f, category: e.target.value }))} style={{ padding: '8px 10px', fontSize: '0.8rem' }}>
