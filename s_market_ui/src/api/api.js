@@ -6,7 +6,11 @@ export const logError = (label, ...args) => {
     console.error(`[${label}]`, ...args);
 };
 
-export const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ? import.meta.env.VITE_API_BASE_URL : "http://localhost:8082/api";
+export const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+    ? import.meta.env.VITE_API_BASE_URL
+    : (typeof window !== 'undefined' && window.location && window.location.port === '5173')
+        ? 'http://localhost:8082/api'
+        : '/api';
 
 export const BACKEND_URL = API_BASE_URL.replace(/\/api$/, '');
 

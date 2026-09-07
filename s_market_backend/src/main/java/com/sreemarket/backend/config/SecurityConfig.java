@@ -124,7 +124,7 @@ public class SecurityConfig {
                 Arrays.asList(
                     "http://localhost:*", "https://localhost:*",
                     "http://127.0.0.1:*", "https://127.0.0.1:*",
-                    "http://10.31.1.84:*", "https://10.31.1.84:*",
+                    "http://10.31.*:*", "https://10.31.*:*",
                     "http://192.168.*", "https://192.168.*",
                     "http://172.*", "https://172.*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

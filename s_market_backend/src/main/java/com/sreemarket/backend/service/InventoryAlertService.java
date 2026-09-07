@@ -25,11 +25,24 @@ public class InventoryAlertService {
     @Autowired
     private VendorRepository vendorRepository;
 
-    // ── Configurable thresholds ──
+    // ── Global configurable thresholds ──
     private int criticalThreshold = 0;   // Out of stock
     private int warningThreshold = 5;    // Below 5 units
     private int lowThreshold = 15;       // Below 15 units
     private boolean autoScanEnabled = true;
+
+    // ── Category-specific thresholds: category -> [critical, warning, low] ──
+    // When a category has its own thresholds, they override the global ones.
+    private final Map<String, int[]> categoryThresholds = new LinkedHashMap<>();
+
+    {
+        // Default category thresholds
+        categoryThresholds.put("Electronics", new int[]{5, 15, 30});
+        categoryThresholds.put("Grocery", new int[]{10, 25, 50});
+        categoryThresholds.put("Fashion", new int[]{3, 10, 20});
+        categoryThresholds.put("Home & Kitchen", new int[]{5, 15, 30});
+        categoryThresholds.put("Health & Household", new int[]{5, 15, 25});
+    }
 
     public List<InventoryAlert> getAll() {
         return alertRepository.findAll();
@@ -110,7 +123,7 @@ public class InventoryAlertService {
             int stock = product.getInitialStock();
             scannedProductIds.add(product.getId());
 
-            String severity = determineSeverity(stock);
+            String severity = determineSeverity(stock, product.getCategory());
             InventoryAlert existing = activeAlertsByProduct.get(product.getId());
 
             if (severity != null) {
@@ -119,7 +132,7 @@ public class InventoryAlertService {
                     // Update existing alert if stock changed
                     if (!existing.getCurrentStock().equals(stock)) {
                         existing.setCurrentStock(stock);
-                        existing.setThreshold(getThresholdForSeverity(severity));
+                        existing.setThreshold(getThresholdForSeverity(severity, product.getCategory()));
                         existing.setSeverity(severity);
                         alertRepository.save(existing);
                     }
@@ -134,7 +147,7 @@ public class InventoryAlertService {
                     alert.setVendorId(product.getVendorId());
                     alert.setVendorName(vendorNames.getOrDefault(product.getVendorId(), "Unknown"));
                     alert.setCurrentStock(stock);
-                    alert.setThreshold(getThresholdForSeverity(severity));
+                    alert.setThreshold(getThresholdForSeverity(severity, product.getCategory()));
                     alert.setSeverity(severity);
                     alert.setStatus("ACTIVE");
                     alertRepository.save(alert);
@@ -166,6 +179,16 @@ public class InventoryAlertService {
         thresholds.put("warningThreshold", warningThreshold);
         thresholds.put("lowThreshold", lowThreshold);
         thresholds.put("autoScanEnabled", autoScanEnabled);
+        // Category-specific thresholds
+        Map<String, Object> catMap = new LinkedHashMap<>();
+        for (Map.Entry<String, int[]> e : categoryThresholds.entrySet()) {
+            Map<String, Integer> ct = new LinkedHashMap<>();
+            ct.put("critical", e.getValue()[0]);
+            ct.put("warning", e.getValue()[1]);
+            ct.put("low", e.getValue()[2]);
+            catMap.put(e.getKey(), ct);
+        }
+        thresholds.put("categoryThresholds", catMap);
         return thresholds;
     }
 
@@ -181,6 +204,28 @@ public class InventoryAlertService {
         }
         if (updates.containsKey("autoScanEnabled")) {
             autoScanEnabled = Boolean.TRUE.equals(updates.get("autoScanEnabled"));
+        }
+        // Category-specific thresholds
+        if (updates.containsKey("categoryThresholds")) {
+            Object catObj = updates.get("categoryThresholds");
+            if (catObj instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> catUpdates = (Map<String, Object>) catObj;
+                for (Map.Entry<String, Object> e : catUpdates.entrySet()) {
+                    String cat = e.getKey();
+                    Object val = e.getValue();
+                    if (val == null) {
+                        categoryThresholds.remove(cat);
+                    } else if (val instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Number> tv = (Map<String, Number>) val;
+                        int c = tv.containsKey("critical") ? tv.get("critical").intValue() : criticalThreshold;
+                        int w = tv.containsKey("warning") ? tv.get("warning").intValue() : warningThreshold;
+                        int l = tv.containsKey("low") ? tv.get("low").intValue() : lowThreshold;
+                        categoryThresholds.put(cat, new int[]{c, w, l});
+                    }
+                }
+            }
         }
         return getThresholds();
     }
@@ -231,7 +276,13 @@ public class InventoryAlertService {
 
         return allProducts.stream()
                 .filter(p -> p.getInitialStock() != null && !"draft".equals(p.getStatus()))
-                .filter(p -> p.getInitialStock() <= lowThreshold)
+                .filter(p -> {
+                    int effLow = lowThreshold;
+                    if (p.getCategory() != null && categoryThresholds.containsKey(p.getCategory())) {
+                        effLow = categoryThresholds.get(p.getCategory())[2];
+                    }
+                    return p.getInitialStock() <= effLow;
+                })
                 .sorted(Comparator.comparingInt(Product::getInitialStock))
                 .map(p -> {
                     Map<String, Object> item = new LinkedHashMap<>();
@@ -242,25 +293,39 @@ public class InventoryAlertService {
                     item.put("stock", p.getInitialStock());
                     item.put("vendorId", p.getVendorId());
                     item.put("vendorName", vendorNames.getOrDefault(p.getVendorId(), "Unknown"));
-                    item.put("severity", determineSeverity(p.getInitialStock()));
+                    item.put("severity", determineSeverity(p.getInitialStock(), p.getCategory()));
                     item.put("status", p.getStatus());
                     return item;
                 })
                 .collect(Collectors.toList());
     }
 
-    private String determineSeverity(int stock) {
-        if (stock <= criticalThreshold) return "CRITICAL";
-        if (stock <= warningThreshold) return "WARNING";
-        if (stock <= lowThreshold) return "LOW";
-        return null; // No alert needed
+    private String determineSeverity(int stock, String category) {
+        int crit = criticalThreshold;
+        int warn = warningThreshold;
+        int low = lowThreshold;
+        if (category != null && categoryThresholds.containsKey(category)) {
+            int[] t = categoryThresholds.get(category);
+            crit = t[0]; warn = t[1]; low = t[2];
+        }
+        if (stock <= crit) return "CRITICAL";
+        if (stock <= warn) return "WARNING";
+        if (stock <= low) return "LOW";
+        return null;
     }
 
-    private int getThresholdForSeverity(String severity) {
+    private int getThresholdForSeverity(String severity, String category) {
+        int crit = criticalThreshold;
+        int warn = warningThreshold;
+        int low = lowThreshold;
+        if (category != null && categoryThresholds.containsKey(category)) {
+            int[] t = categoryThresholds.get(category);
+            crit = t[0]; warn = t[1]; low = t[2];
+        }
         switch (severity) {
-            case "CRITICAL": return criticalThreshold;
-            case "WARNING": return warningThreshold;
-            case "LOW": return lowThreshold;
+            case "CRITICAL": return crit;
+            case "WARNING": return warn;
+            case "LOW": return low;
             default: return 0;
         }
     }

@@ -123,7 +123,7 @@ const LoyaltyPage = () => {
                         </div>
                         <div className="loyalty-stat-divider"></div>
                         <div className="loyalty-stat-item">
-                            <span className="loyalty-stat-value" style={{ color: '#059669' }}>₹{((loyalty?.points || 0) / 5).toFixed(0)}</span>
+                            <span className="loyalty-stat-value" style={{ color: '#059669' }}>₹{((loyalty?.points || 0) / 100).toFixed(0)}</span>
                             <span className="loyalty-stat-label">Value</span>
                         </div>
                     </div>
@@ -175,14 +175,14 @@ const LoyaltyPage = () => {
                             <div className="loyalty-info-icon earn-icon">+</div>
                             <div>
                                 <strong>Earn Points</strong>
-                                <p>Get 5% of your order total back as loyalty points on every delivered order.</p>
+                                <p>Get 10 points for every ₹1 spent on every delivered order.</p>
                             </div>
                         </div>
                         <div className="loyalty-info-item">
                             <div className="loyalty-info-icon redeem-icon">₹</div>
                             <div>
                                 <strong>Redeem at Checkout</strong>
-                                <p>5 points = ₹1 discount. Use your points to save on future orders.</p>
+                                <p>100 points = ₹1 discount. Use your points to save on next order.</p>
                             </div>
                         </div>
                         <div className="loyalty-info-item">

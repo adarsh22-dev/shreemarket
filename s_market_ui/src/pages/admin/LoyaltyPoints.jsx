@@ -4,10 +4,10 @@ import { Icon, initials, avatarBg, fmt, fmtDate } from './VendorShared';
 import { getLoyaltyCustomers, createLoyaltyCustomer } from '../../api/api';
 
 const TIERS = {
-  bronze:   { min:0,     max:999,      color:'#f97316', bg:'#fff7ed', border:'#fed7aa', perks:['5% cashback','Birthday bonus'] },
-  silver:   { min:1000,  max:4999,     color:'#64748b', bg:'#f8fafc', border:'#e2e8f0', perks:['8% cashback','Free shipping','Birthday bonus'] },
-  gold:     { min:5000,  max:19999,    color:'#d97706', bg:'#fef9c3', border:'#fde68a', perks:['12% cashback','Priority support','Free shipping','Early access'] },
-  platinum: { min:20000, max:Infinity, color:'#6d28d9', bg:'#ede9fe', border:'#c4b5fd', perks:['18% cashback','Dedicated manager','Free express','VIP events','Early access'] },
+  bronze:   { min:0,     max:999,      color:'#f97316', bg:'#fff7ed', border:'#fed7aa', perks:['10 pts/₹1 earned','Birthday bonus'] },
+  silver:   { min:1000,  max:4999,     color:'#64748b', bg:'#f8fafc', border:'#e2e8f0', perks:['10 pts/₹1 earned','Free shipping','Birthday bonus'] },
+  gold:     { min:5000,  max:19999,    color:'#d97706', bg:'#fef9c3', border:'#fde68a', perks:['10 pts/₹1 earned','Priority support','Free shipping','Early access'] },
+  platinum: { min:20000, max:Infinity, color:'#6d28d9', bg:'#ede9fe', border:'#c4b5fd', perks:['10 pts/₹1 earned','Dedicated manager','Free express','VIP events','Early access'] },
 };
 
 const TIER_ORDER = ['bronze','silver','gold','platinum'];
@@ -258,7 +258,7 @@ export default function LoyaltyPoints() {
       <div className="vm-hdr">
         <div>
           <h2 className="vm-hdr__title">Loyalty Points</h2>
-          <p className="vm-hdr__sub">Track and manage customer reward points, tiers and redemptions</p>
+          <p className="vm-hdr__sub">Earn 10 points per ₹1 spent · Redeem 100 points = ₹1 off next order</p>
         </div>
         <div className="vm-hdr__actions">
           <button className="vm-btn vm-btn--outline" onClick={handleExport}>
@@ -618,7 +618,8 @@ export default function LoyaltyPoints() {
             { l:'Points Balance', v: `${viewModal.points.toLocaleString()} pts` },
             { l:'Total Earned',   v: `${viewModal.earned.toLocaleString()} pts` },
             { l:'Total Redeemed', v: `${viewModal.redeemed.toLocaleString()} pts` },
-            { l:'Redemption Rate',v: `${((viewModal.redeemed/viewModal.earned)*100).toFixed(1)}%` },
+            { l:'Earn Rate',      v: '10 pts per ₹1 spent' },
+            { l:'Redemption Rate',v: `100 pts = ₹1 (${((viewModal.redeemed/viewModal.earned)*100).toFixed(1)}% used)` },
             { l:'Expires',        v: viewModal.expires },
             { l:'Last Activity',  v: viewModal.lastActivity },
           ].map((r, i) => (

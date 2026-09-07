@@ -7,6 +7,13 @@ import Toggle from '../../components/admin/Toggle';
 
 const API_BASE = API_BASE_URL;
 
+const CATEGORY_OPTIONS = [
+  'Electronics', 'Fashion', 'Home & Kitchen', 'Grocery', 'Sports',
+  'Beauty & Personal Care', 'Toys & Games', 'Automotive', 'Books',
+  'Health & Household', 'Jewelry', 'Shoes', 'Pet Supplies', 'Baby Products',
+  'Office Supplies', 'Tools & Home Improvement', 'Garden & Outdoor'
+];
+
 async function apiFetch(url, opts = {}) {
     const res = await fetch(url, {
         headers: { 'Content-Type': 'application/json' },
@@ -29,6 +36,7 @@ export default function AdminInventoryAlerts() {
     const [viewModal, setViewModal] = useState(null);
     const [thresholdModal, setThresholdModal] = useState(false);
     const [thresholdForm, setThresholdForm] = useState({});
+    const [catThresholdForm, setCatThresholdForm] = useState({ category: '', critical: 5, warning: 15, low: 30 });
     const [notesModal, setNotesModal] = useState(null);
     const [notesInput, setNotesInput] = useState('');
 
@@ -112,9 +120,13 @@ export default function AdminInventoryAlerts() {
 
     const saveThresholds = async () => {
         try {
+            const payload = { ...thresholdForm };
+            if (thresholdForm.categoryThresholds) {
+                payload.categoryThresholds = thresholdForm.categoryThresholds;
+            }
             const updated = await apiFetch(`${API_BASE}/admin/inventory-alerts/thresholds`, {
                 method: 'PUT',
-                body: JSON.stringify(thresholdForm),
+                body: JSON.stringify(payload),
             });
             setThresholds(updated);
             setThresholdModal(false);
@@ -122,6 +134,26 @@ export default function AdminInventoryAlerts() {
         } catch {
             toast.error('Failed to update thresholds');
         }
+    };
+
+    const addCategoryThreshold = () => {
+        if (!catThresholdForm.category) { toast.error('Select a category'); return; }
+        const catTs = { ...(thresholdForm.categoryThresholds || {}) };
+        catTs[catThresholdForm.category] = {
+            critical: Number(catThresholdForm.critical),
+            warning: Number(catThresholdForm.warning),
+            low: Number(catThresholdForm.low),
+        };
+        setThresholdForm(f => ({ ...f, categoryThresholds: catTs }));
+        setCatThresholdForm({ category: '', critical: 5, warning: 15, low: 30 });
+        toast.success(`Threshold set for ${catThresholdForm.category}`);
+    };
+
+    const removeCategoryThreshold = (cat) => {
+        const catTs = { ...(thresholdForm.categoryThresholds || {}) };
+        delete catTs[cat];
+        setThresholdForm(f => ({ ...f, categoryThresholds: catTs }));
+        toast.success(`Removed ${cat} — will use global thresholds`);
     };
 
     const saveNotes = async () => {
@@ -263,6 +295,26 @@ export default function AdminInventoryAlerts() {
                     <Icon name="Edit2" size={12} />Edit
                 </button>
             </div>
+
+            {/* Category Thresholds Bar */}
+            {thresholds.categoryThresholds && Object.keys(thresholds.categoryThresholds).length > 0 && (
+                <div className="inv-thresholds-bar" style={{ borderTop: '2px solid #6366f1' }}>
+                    <div className="inv-thresholds-bar__title">
+                        <Icon name="Tag" size={16} color="#6366f1" />
+                        <span>Category-wise Thresholds</span>
+                    </div>
+                    <div className="inv-thresholds-bar__items" style={{ flexWrap: 'wrap' }}>
+                        {Object.entries(thresholds.categoryThresholds).map(([cat, t]) => (
+                            <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 12px', fontSize: '0.75rem' }}>
+                                <span style={{ fontWeight: 700, color: '#0f172a' }}>{cat}</span>
+                                <span style={{ color: '#991b1b' }}>C:{t.critical}</span>
+                                <span style={{ color: '#92400e' }}>W:{t.warning}</span>
+                                <span style={{ color: '#1e40af' }}>L:{t.low}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Scan Result */}
             {scanResult && (
@@ -588,6 +640,60 @@ export default function AdminInventoryAlerts() {
                                     <span className="inv-threshold-form__hint">Automatically scan products for low stock periodically</span>
                                 </div>
                                 <Toggle on={thresholdForm.autoScanEnabled} onChange={v => setThresholdForm(f => ({ ...f, autoScanEnabled: v }))} size="sm" />
+                            </div>
+
+                            {/* Category-specific Thresholds */}
+                            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 16, marginTop: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                                    <Icon name="Tag" size={16} color="#475569" />
+                                    <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#0f172a' }}>Category-wise Thresholds</span>
+                                    <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginLeft: 4 }}>(Override global per category)</span>
+                                </div>
+
+                                {/* Existing category thresholds */}
+                                {thresholdForm.categoryThresholds && Object.keys(thresholdForm.categoryThresholds).length > 0 && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                                        {Object.entries(thresholdForm.categoryThresholds).map(([cat, t]) => (
+                                            <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px' }}>
+                                                <span style={{ fontWeight: 600, fontSize: '0.8rem', color: '#0f172a', minWidth: 140 }}>{cat}</span>
+                                                <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#fef2f2', color: '#991b1b', fontWeight: 600 }}>Crit: {t.critical}</span>
+                                                <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#fffbeb', color: '#92400e', fontWeight: 600 }}>Warn: {t.warning}</span>
+                                                <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#eff6ff', color: '#1e40af', fontWeight: 600 }}>Low: {t.low}</span>
+                                                <button onClick={() => removeCategoryThreshold(cat)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', padding: 4 }}>
+                                                    <Icon name="Trash2" size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Add new category threshold */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 70px 70px auto', gap: 8, alignItems: 'end' }}>
+                                    <div>
+                                        <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Category</label>
+                                        <select className="vm-input" value={catThresholdForm.category} onChange={e => setCatThresholdForm(f => ({ ...f, category: e.target.value }))} style={{ padding: '8px 10px', fontSize: '0.8rem' }}>
+                                            <option value="">Select category...</option>
+                                            {CATEGORY_OPTIONS.filter(c => !thresholdForm.categoryThresholds?.[c]).map(c => (
+                                                <option key={c} value={c}>{c}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Critical</label>
+                                        <input className="vm-input" type="number" min="0" value={catThresholdForm.critical} onChange={e => setCatThresholdForm(f => ({ ...f, critical: +e.target.value }))} style={{ padding: '8px 10px', fontSize: '0.8rem' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Warning</label>
+                                        <input className="vm-input" type="number" min="1" value={catThresholdForm.warning} onChange={e => setCatThresholdForm(f => ({ ...f, warning: +e.target.value }))} style={{ padding: '8px 10px', fontSize: '0.8rem' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Low</label>
+                                        <input className="vm-input" type="number" min="1" value={catThresholdForm.low} onChange={e => setCatThresholdForm(f => ({ ...f, low: +e.target.value }))} style={{ padding: '8px 10px', fontSize: '0.8rem' }} />
+                                    </div>
+                                    <button className="vm-btn vm-btn--primary vm-btn--sm" onClick={addCategoryThreshold} style={{ padding: '8px 12px' }}>
+                                        <Icon name="Plus" size={12} color="#fff" />Add
+                                    </button>
+                                </div>
                             </div>
                             <div className="vm-modal__acts">
                                 <button className="vm-btn vm-btn--outline" style={{ flex: 1 }} onClick={() => setThresholdModal(false)}>Cancel</button>

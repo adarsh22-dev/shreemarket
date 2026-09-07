@@ -311,7 +311,7 @@ public class OrderService {
                     updatedOrder = orderRepository.save(updatedOrder);
                 }
 
-                // Auto-earn loyalty points when order is delivered (5% of total as points)
+                // Auto-earn loyalty points when order is delivered (10 points per ₹1 spent)
                 if ("DELIVERED".equalsIgnoreCase(status) && updatedOrder.getUserId() != null) {
                     try {
                         LoyaltyCustomer loyalty = loyaltyCustomerRepository.findByUserId(updatedOrder.getUserId()).orElse(null);
@@ -327,7 +327,7 @@ public class OrderService {
                                 loyalty.setRedeemed(0);
                                 loyalty.setTier("bronze");
                             }
-                            int pointsEarned = (int) Math.floor(updatedOrder.getTotalAmount() * 0.05); // 5% back in points
+                            int pointsEarned = (int) Math.floor(updatedOrder.getTotalAmount() * 10); // 10 points per ₹1 spent
                             if (pointsEarned > 0) {
                                 loyalty.setPoints(loyalty.getPoints() + pointsEarned);
                                 loyalty.setEarned(loyalty.getEarned() + pointsEarned);
@@ -356,7 +356,7 @@ public class OrderService {
                                         Notification notif = new Notification();
                                         notif.setVendorId(updatedOrder.getVendorId());
                                         notif.setTitle("Loyalty Points Awarded");
-                                        notif.setMessage("Customer earned " + pointsEarned + " loyalty points from order " + updatedOrder.getOrderNumber() + ".");
+                                        notif.setMessage("Customer earned " + pointsEarned + " loyalty points (10 pts/₹1) from order " + updatedOrder.getOrderNumber() + ".");
                                         notif.setType("PLATFORM");
                                         notificationService.createNotification(notif);
                                     }

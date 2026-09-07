@@ -25,10 +25,10 @@ public class LoyaltyController {
 
     /** Tier definitions for customer-facing view */
     private static final Map<String, Map<String, Object>> TIERS = Map.of(
-        "bronze",   Map.of("min", 0, "max", 999, "color", "#f97316", "perks", List.of("5% cashback", "Birthday bonus")),
-        "silver",   Map.of("min", 1000, "max", 4999, "color", "#64748b", "perks", List.of("8% cashback", "Free shipping", "Birthday bonus")),
-        "gold",     Map.of("min", 5000, "max", 19999, "color", "#d97706", "perks", List.of("12% cashback", "Priority support", "Free shipping", "Early access")),
-        "platinum", Map.of("min", 20000, "max", Integer.MAX_VALUE, "color", "#6d28d9", "perks", List.of("18% cashback", "Dedicated manager", "Free express", "VIP events", "Early access"))
+        "bronze",   Map.of("min", 0, "max", 999, "color", "#f97316", "perks", List.of("10 pts/₹1 earned", "Birthday bonus")),
+        "silver",   Map.of("min", 1000, "max", 4999, "color", "#64748b", "perks", List.of("10 pts/₹1 earned", "Free shipping", "Birthday bonus")),
+        "gold",     Map.of("min", 5000, "max", 19999, "color", "#d97706", "perks", List.of("10 pts/₹1 earned", "Priority support", "Free shipping", "Early access")),
+        "platinum", Map.of("min", 20000, "max", Integer.MAX_VALUE, "color", "#6d28d9", "perks", List.of("10 pts/₹1 earned", "Dedicated manager", "Free express", "VIP events", "Early access"))
     );
 
     /** Derive tier from points */
@@ -124,8 +124,8 @@ public class LoyaltyController {
     /**
      * POST /api/loyalty/calculate-discount - Calculate discount for a given points amount.
      * Body: { "points": 500 }
-     * Returns: { "discountAmount": 100, "remainingPoints": ... }
-     * Rate: 5 points = 1 rupee
+     * Returns: { "discountAmount": 5, "remainingPoints": ... }
+     * Rate: 100 points = 1 rupee
      */
     @PostMapping("/calculate-discount")
     public ResponseEntity<?> calculateDiscount(@RequestBody Map<String, Object> body, HttpServletRequest request) {
@@ -148,15 +148,15 @@ public class LoyaltyController {
             return ResponseEntity.badRequest().body(Map.of("error", "Insufficient points"));
         }
 
-        // 5 points = 1 rupee discount
-        double discountAmount = pointsToRedeem / 5.0;
+        // 100 points = 1 rupee discount
+        double discountAmount = pointsToRedeem / 100.0;
         int remainingPoints = loyalty.getPoints() - pointsToRedeem;
 
         Map<String, Object> response = new HashMap<>();
         response.put("discountAmount", Math.round(discountAmount * 100.0) / 100.0);
         response.put("pointsUsed", pointsToRedeem);
         response.put("remainingPoints", remainingPoints);
-        response.put("rate", "5 points = ₹1");
+        response.put("rate", "100 points = ₹1");
 
         return ResponseEntity.ok(response);
     }
@@ -188,7 +188,7 @@ public class LoyaltyController {
             return ResponseEntity.badRequest().body(Map.of("error", "Insufficient points"));
         }
 
-        double discountAmount = pointsToRedeem / 5.0;
+        double discountAmount = pointsToRedeem / 100.0;
 
         // Update loyalty record
         loyalty.setPoints(loyalty.getPoints() - pointsToRedeem);
