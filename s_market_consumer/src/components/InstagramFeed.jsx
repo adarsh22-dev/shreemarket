@@ -225,6 +225,6 @@ const InstagramFeed = ({ products, maxPosts = 3, storyShape = 'circle' }) => {
       )}
     </div>
   );
-};
+}
 
 export default InstagramFeed;

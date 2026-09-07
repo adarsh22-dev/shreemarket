@@ -1072,7 +1072,9 @@
     width: 0;
     height: 1.5px;
     background: #C9A87C;
-    transition: width 0.3s;
+    transition: transform 0.3s;
+    transform: scaleX(0);
+    transform-origin: left;
   }
   
   .instafeed-view-link:hover {
@@ -1080,7 +1082,7 @@
   }
   
   .instafeed-view-link:hover::after {
-    width: 100%;
+    transform: scaleX(1);
   }
   
   .instafeed-grid {
