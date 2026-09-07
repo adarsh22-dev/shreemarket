@@ -4,6 +4,7 @@
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/model/ProductVariation.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/repository/PincodeServiceabilityRepository.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/model/RecentlyViewed.java
+/home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/controller/TrashController.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/repository/SavedPaymentMethodRepository.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/controller/WholesalerDashboardController.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/model/VendorStaff.java
@@ -232,6 +233,7 @@
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/controller/CompetitorPriceController.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/model/CustomerSegment.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/model/Faq.java
+/home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/service/TrashService.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/repository/SizeGuideRepository.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/repository/ShippingLabelRepository.java
 /home/adarshsingh/Pictures/s_market/s_market_updated/s_market_backend/src/main/java/com/sreemarket/backend/controller/VendorQRCodeController.java

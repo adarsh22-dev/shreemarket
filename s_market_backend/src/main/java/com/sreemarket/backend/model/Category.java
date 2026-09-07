@@ -25,6 +25,10 @@ public class Category {
 
     private String image;
 
+    private boolean deleted;
+
+    private Long deletedAt;
+
     private LocalDateTime createdAt;
 
     public Category() {}
@@ -61,6 +65,10 @@ public class Category {
     public String getImage() { return image; }
     public void setImage(String image) { this.image = image; }
 
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 

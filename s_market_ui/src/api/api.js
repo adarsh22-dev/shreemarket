@@ -179,6 +179,133 @@ export const resetPassword = async (token, newPassword) => {
     });
     return handleResponse(response);
 };
+
+/**
+ * Requests a password reset link for a vendor.
+ * @param {string} email
+ */
+export const vendorForgotPassword = async (email) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/vendor/forgot-password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Resets a vendor's password using a token.
+ * @param {string} token
+ * @param {string} newPassword
+ */
+export const vendorResetPassword = async (token, newPassword) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/vendor/reset-password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ token, password: newPassword }),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Requests a password reset link for a wholesaler.
+ * @param {string} email
+ */
+export const wholesalerForgotPassword = async (email) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/wholesaler/forgot-password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Resets a wholesaler's password using a token.
+ * @param {string} token
+ * @param {string} newPassword
+ */
+export const wholesalerResetPassword = async (token, newPassword) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/wholesaler/reset-password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ token, password: newPassword }),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Admin triggers password reset for a vendor.
+ * @param {number} vendorId
+ */
+export const adminResetVendorPassword = async (vendorId) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/vendors/${vendorId}/reset-password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Admin triggers password reset for a wholesaler.
+ * @param {number} wholesalerId
+ */
+export const adminResetWholesalerPassword = async (wholesalerId) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/wholesalers/${wholesalerId}/reset-password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Admin triggers password reset for a customer.
+ * @param {number} customerId
+ */
+export const adminResetCustomerPassword = async (customerId) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/customers/${customerId}/reset-password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Creates a new wholesaler (admin).
+ * @param {Object|FormData} wholesalerData - FormData with all fields including files, or plain object
+ */
+export const createAdminWholesaler = async (wholesalerData) => {
+    const isFormData = wholesalerData instanceof FormData;
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/wholesalers`, {
+        method: "POST",
+        headers: isFormData ? {} : { "Content-Type": "application/json" },
+        credentials: "include",
+        body: isFormData ? wholesalerData : JSON.stringify(wholesalerData),
+    });
+    return handleResponse(response);
+};
+
 /**
  * Logs out the user.
  */
@@ -1873,6 +2000,32 @@ export const updateCustomerStatus = async (customerId, status) => {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ status }),
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Fetches a single customer's details including addresses.
+ */
+export const getAdminCustomerDetails = async (customerId) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/customers/${customerId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
+    return handleResponse(response);
+};
+
+/**
+ * Creates a new customer (admin).
+ * @param {Object} customerData - { fullName, email, phone, password, streetAddress, city, state, zipCode, country, permStreetAddress, permCity, permState, permZipCode, permCountry }
+ */
+export const createAdminCustomer = async (customerData) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/customers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(customerData),
     });
     return handleResponse(response);
 };
@@ -5221,4 +5374,45 @@ export const getPublicCategories = async () => {
         console.warn("Failed to fetch categories, using empty array:", error);
         return [];
     }
+};
+
+// ── Trash API ──
+
+export const getTrashItems = async (params = {}) => {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, val]) => {
+        if (val !== null && val !== undefined && val !== '') searchParams.append(key, val);
+    });
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/trash?${searchParams.toString()}`, {
+        method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const getTrashStats = async () => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/trash/stats`, {
+        method: 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const restoreTrashItem = async (type, id) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/trash/${type}/${id}/restore`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const permanentDeleteTrashItem = async (type, id) => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/trash/${type}/${id}`, {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+    });
+    return handleResponse(response);
+};
+
+export const emptyTrash = async () => {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/admin/trash/empty`, {
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+    });
+    return handleResponse(response);
 };

@@ -134,7 +134,7 @@ const LoginPage = () => {
                             />
 
                             <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
-                                <Link to="/forgot-password" className="forgot-password" style={{ color: 'var(--primary-orange)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                <Link to={isVendorLogin ? "/forgot-password?type=vendor" : "/forgot-password"} className="forgot-password" style={{ color: 'var(--primary-orange)', fontSize: '0.875rem', fontWeight: '500' }}>
                                     Forgot password?
                                 </Link>
                             </div>

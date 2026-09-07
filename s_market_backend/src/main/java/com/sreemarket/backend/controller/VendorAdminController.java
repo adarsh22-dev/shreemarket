@@ -72,8 +72,22 @@ public class VendorAdminController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteVendor(@PathVariable Long id) {
         try {
-            vendorRepository.deleteById(id);
-            return ResponseEntity.ok(Map.of("message", "Vendor deleted successfully"));
+            Vendor vendor = vendorRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Vendor not found"));
+            vendor.setDeleted(true);
+            vendor.setDeletedAt(System.currentTimeMillis());
+            vendorRepository.save(vendor);
+            return ResponseEntity.ok(Map.of("message", "Vendor moved to trash"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/reset-password")
+    public ResponseEntity<?> adminTriggerVendorPasswordReset(@PathVariable Long id) {
+        try {
+            vendorService.adminTriggerPasswordReset(id);
+            return ResponseEntity.ok(Map.of("message", "Password reset email sent to vendor"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

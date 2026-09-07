@@ -24,6 +24,9 @@ public class WholesalerService {
     @Autowired
     private FileStorageService fileStorageService;
 
+    @Autowired
+    private EmailService emailService;
+
     @Transactional
     public Wholesaler registerWholesaler(Wholesaler wholesaler) {
         return registerWholesaler(wholesaler, null, null, null);
@@ -131,5 +134,45 @@ public class WholesalerService {
         if (updated.getMinMonthlyOrderValue() != null) wholesaler.setMinMonthlyOrderValue(updated.getMinMonthlyOrderValue());
         wholesaler.setUpdatedAt(System.currentTimeMillis());
         return wholesalerRepository.save(wholesaler);
+    }
+
+    public void generateResetToken(String email) {
+        Wholesaler wholesaler = wholesalerRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Wholesaler account not found with this email"));
+
+        String token = java.util.UUID.randomUUID().toString();
+        wholesaler.setResetToken(token);
+        wholesaler.setResetTokenExpiry(System.currentTimeMillis() + 3600000);
+        wholesalerRepository.save(wholesaler);
+
+        String name = wholesaler.getFullName() != null ? wholesaler.getFullName() : wholesaler.getEmail();
+        emailService.sendPasswordResetEmail(wholesaler.getEmail(), name, token, "wholesaler");
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        Wholesaler wholesaler = wholesalerRepository.findByResetToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+
+        if (wholesaler.getResetTokenExpiry() < System.currentTimeMillis()) {
+            throw new RuntimeException("Reset token has expired");
+        }
+
+        wholesaler.setPassword(passwordEncoder.encode(newPassword));
+        wholesaler.setResetToken(null);
+        wholesaler.setResetTokenExpiry(null);
+        wholesalerRepository.save(wholesaler);
+    }
+
+    public void adminTriggerPasswordReset(Long wholesalerId) {
+        Wholesaler wholesaler = wholesalerRepository.findById(wholesalerId)
+                .orElseThrow(() -> new RuntimeException("Wholesaler not found with id: " + wholesalerId));
+
+        String token = java.util.UUID.randomUUID().toString();
+        wholesaler.setResetToken(token);
+        wholesaler.setResetTokenExpiry(System.currentTimeMillis() + 3600000);
+        wholesalerRepository.save(wholesaler);
+
+        String name = wholesaler.getFullName() != null ? wholesaler.getFullName() : wholesaler.getEmail();
+        emailService.sendPasswordResetEmail(wholesaler.getEmail(), name, token, "wholesaler");
     }
 }

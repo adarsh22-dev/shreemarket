@@ -76,6 +76,10 @@ public class Product {
     @Column(name = "approval_status")
     private String approvalStatus = "Pending";
 
+    // Soft-delete
+    private Boolean deleted = false;
+    private Long deletedAt;
+
     // Timestamps
     private Long createdAt;
     private Long updatedAt;

@@ -8,6 +8,7 @@ import {
   Crown, Shield, Medal, Trash2
 } from 'lucide-react';
 import { getReferrers, createReferrer, deleteReferrer } from '../../api/api';
+import Toggle from '../../components/admin/Toggle';
 
 /* ── helpers ── */
 const fmt  = n => n >= 1e5 ? `₹${(n/1e5).toFixed(1)}L` : `₹${n.toLocaleString('en-IN')}`;
@@ -78,13 +79,6 @@ export default function ReferralProgram() {
   const [toggleModal,  setToggleModal]  = useState(null);  // referrer obj
 
   const showToast = (msg, type='success') => setToast({ msg, type });
-
-  /* ── Toggle component ── */
-  const Toggle = ({ on, onChange }) => (
-    <button className={`rp-toggle ${on?'rp-toggle--on':''}`} onClick={()=>onChange(!on)} type="button">
-      <span className="rp-toggle__knob"/>
-    </button>
-  );
 
   /* ── Copy code ── */
   const copyCode = code => {

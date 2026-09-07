@@ -7,7 +7,7 @@ import {
   Plus, Download, Star, TrendingUp, Clock, AlertCircle,
   CheckCircle, XCircle, Upload, Mail, Phone, MapPin,
   Package, Users, Percent, CreditCard, UserPlus, ArrowRight,
-  Smartphone, Globe, Building2, Save, RefreshCw, AlertTriangle,
+  Smartphone, Globe, Building2, Save, RefreshCw, AlertTriangle, KeyRound,
 } from 'lucide-react';
 import {
   getVendors, updateVendorStatus, deleteVendor, updateVendor,
@@ -17,6 +17,7 @@ import {
   getVendorPerformance, updateVendorPerformance,
   getVendorKyc, updateVendorKyc,
   registerVendor,
+  adminResetVendorPassword,
 } from '../../api/api';
 import './Vendormanagement.css';
 import { exportCSV } from './VendorShared';
@@ -1008,6 +1009,22 @@ const AllVendors = ({ onAddVendor, toast }) => {
     }
   });
 
+  const handleResetPassword = (v) => setConfirm({
+    msg: `Send a password reset link to ${v.email}? The vendor will receive an email with instructions to set a new password.`,
+    onConfirm: async () => {
+      setActionLoading(v.id);
+      try {
+        await adminResetVendorPassword(v.id);
+        toast(`Password reset email sent to ${v.name}`, 'success');
+      } catch (err) {
+        toast(err.message || 'Failed to send reset email', 'error');
+      } finally {
+        setActionLoading(null);
+        setConfirm(null);
+      }
+    }
+  });
+
   const handleToggleStatus = async (v) => {
     const newStatus = v.status === 'Active' ? 'Suspended' : 'Active';
     setActionLoading(v.id);
@@ -1101,6 +1118,7 @@ const AllVendors = ({ onAddVendor, toast }) => {
                         <div className="vm-tbl-actions">
                           <IconBtn icon={Eye} variant="view" title="View" onClick={() => setModal({ type: 'view', vendor: v })} />
                           <IconBtn icon={Edit2} variant="edit" title="Edit" onClick={() => setModal({ type: 'edit', vendor: v })} />
+                          <IconBtn icon={KeyRound} variant="edit" title="Reset Password" onClick={() => handleResetPassword(v)} />
                           <IconBtn icon={Trash2} variant="delete" title="Delete" onClick={() => handleDelete(v)} />
                         </div>
                       </td>
@@ -1771,6 +1789,7 @@ const KYCVerification = ({ onAddVendor, toast }) => {
                           <div className="vm-tbl-actions">
                             <IconBtn icon={Eye} variant="view" title="View Vendor" onClick={() => setVendorModal({ type: 'view', vendor: v })} />
                             <IconBtn icon={ShieldCheck} variant="view" title="Edit KYC" onClick={() => setKycModal({ ...k, vendorId: v.id, vendorName: v.name })} />
+                            <IconBtn icon={KeyRound} variant="edit" title="Reset Password" onClick={() => handleResetPassword(v)} />
                             <IconBtn icon={Trash2} variant="delete" title="Delete Vendor" onClick={() => handleDelete(v)} />
                           </div>
                         </td>

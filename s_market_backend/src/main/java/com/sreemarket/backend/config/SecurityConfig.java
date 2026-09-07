@@ -41,7 +41,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/register", "/api/register/vendor", "/api/register/wholesaler",
                                 "/api/login", "/api/login/wholesaler", "/api/google",
                                 "/api/forgot-password",
-                                "/api/reset-password", "/api/logout", "/api/settings", "/uploads/**",
+                                "/api/reset-password",
+                                "/api/vendor/forgot-password", "/api/vendor/reset-password",
+                                "/api/wholesaler/forgot-password", "/api/wholesaler/reset-password",
+                                "/api/logout", "/api/settings", "/uploads/**",
                                 "/api/contact", "/api/newsletter/subscribe")
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payment/create-order").authenticated()

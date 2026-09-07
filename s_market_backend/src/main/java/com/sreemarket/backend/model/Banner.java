@@ -20,6 +20,8 @@ public class Banner {
     private String url;
     private String gradient;
     private Integer sortOrder;
+    private Boolean deleted = false;
+    private Long deletedAt;
 
     public Banner() {}
 
@@ -51,4 +53,8 @@ public class Banner {
     public void setGradient(String gradient) { this.gradient = gradient; }
     public Integer getSortOrder() { return sortOrder; }
     public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
 }

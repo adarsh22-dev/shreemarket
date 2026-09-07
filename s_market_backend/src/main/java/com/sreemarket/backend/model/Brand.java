@@ -17,6 +17,8 @@ public class Brand {
     private Boolean featured;
     private Boolean verified;
     private String status;
+    private Boolean deleted = false;
+    private Long deletedAt;
 
     public Brand() {}
 
@@ -42,4 +44,8 @@ public class Brand {
     public void setVerified(Boolean verified) { this.verified = verified; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
 }

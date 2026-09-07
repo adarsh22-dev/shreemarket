@@ -4,9 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sreemarket.backend.model.CustomerSegment;
 import com.sreemarket.backend.model.Order;
+import com.sreemarket.backend.model.Product;
+import com.sreemarket.backend.model.RecentlyViewed;
 import com.sreemarket.backend.model.User;
 import com.sreemarket.backend.repository.CustomerSegmentRepository;
 import com.sreemarket.backend.repository.OrderRepository;
+import com.sreemarket.backend.repository.ProductRepository;
+import com.sreemarket.backend.repository.RecentlyViewedRepository;
 import com.sreemarket.backend.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +30,12 @@ public class CustomerSegmentService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private RecentlyViewedRepository recentlyViewedRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -127,10 +137,11 @@ public class CustomerSegmentService {
         CustomerSegment segment = getById(segmentId);
         List<User> allCustomers = userRepository.findByRoleId(2L);
         List<Order> allOrders = orderRepository.findAll();
+        List<Product> allProducts = productRepository.findAll();
         JsonNode criteria = parseCriteria(segment.getCriteria());
 
         return allCustomers.stream()
-            .filter(c -> matchesCriteria(c, allOrders, criteria))
+            .filter(c -> matchesCriteria(c, allOrders, allProducts, criteria))
             .map(c -> {
                 Map<String, Object> map = new HashMap<>();
                 map.put("id", c.getId());
@@ -160,13 +171,14 @@ public class CustomerSegmentService {
     private int countMatchingCustomers(String criteriaJson) {
         List<User> allCustomers = userRepository.findByRoleId(2L);
         List<Order> allOrders = orderRepository.findAll();
+        List<Product> allProducts = productRepository.findAll();
         JsonNode criteria = parseCriteria(criteriaJson);
         return (int) allCustomers.stream()
-            .filter(c -> matchesCriteria(c, allOrders, criteria))
+            .filter(c -> matchesCriteria(c, allOrders, allProducts, criteria))
             .count();
     }
 
-    private boolean matchesCriteria(User customer, List<Order> allOrders, JsonNode criteria) {
+    private boolean matchesCriteria(User customer, List<Order> allOrders, List<Product> allProducts, JsonNode criteria) {
         if (criteria == null) return false;
 
         // Get customer's orders
@@ -194,6 +206,57 @@ public class CustomerSegmentService {
             }
         }
 
+        // Build product ID to category map for category analysis
+        Map<Long, String> productCategoryMap = new HashMap<>();
+        Map<Long, String> productSubCategoryMap = new HashMap<>();
+        for (Product p : allProducts) {
+            if (p.getId() != null) {
+                if (p.getCategory() != null) productCategoryMap.put(p.getId(), p.getCategory());
+                if (p.getSubCategory() != null) productSubCategoryMap.put(p.getId(), p.getSubCategory());
+            }
+        }
+
+        // Collect purchased categories
+        Set<String> purchasedCategories = new HashSet<>();
+        Set<String> purchasedSubCategories = new HashSet<>();
+        Set<Long> purchasedProductIds = new HashSet<>();
+
+        for (Order order : customerOrders) {
+            if (order.getProductQuantities() != null) {
+                for (Map.Entry<Long, Integer> entry : order.getProductQuantities().entrySet()) {
+                    Long productId = entry.getKey();
+                    purchasedProductIds.add(productId);
+                    String cat = productCategoryMap.get(productId);
+                    String subCat = productSubCategoryMap.get(productId);
+                    if (cat != null) purchasedCategories.add(cat);
+                    if (subCat != null) purchasedSubCategories.add(subCat);
+                }
+            }
+        }
+
+        // Collect viewed categories (from recently viewed products)
+        Set<String> viewedCategories = new HashSet<>();
+        Set<String> viewedSubCategories = new HashSet<>();
+        List<RecentlyViewed> recentlyViewed = recentlyViewedRepository.findByUserIdOrderByViewedAtDesc(customer.getId());
+        for (RecentlyViewed rv : recentlyViewed) {
+            if (rv.getProductId() != null) {
+                String cat = productCategoryMap.get(rv.getProductId());
+                String subCat = productSubCategoryMap.get(rv.getProductId());
+                if (cat != null) viewedCategories.add(cat);
+                if (subCat != null) viewedSubCategories.add(subCat);
+            }
+        }
+
+        // Calculate purchase frequency (orders per month)
+        double ordersPerMonth = 0;
+        if (daysSinceJoin > 0 && orderCount > 0) {
+            double monthsSinceJoin = daysSinceJoin / 30.0;
+            ordersPerMonth = orderCount / Math.max(monthsSinceJoin, 1.0/30.0);
+        }
+
+        // Calculate average order value
+        double avgOrderValue = orderCount > 0 ? totalSpent / orderCount : 0;
+
         // Check each criterion
         if (criteria.has("minTotalSpent") && totalSpent < criteria.get("minTotalSpent").asDouble()) return false;
         if (criteria.has("maxTotalSpent") && totalSpent > criteria.get("maxTotalSpent").asDouble()) return false;
@@ -203,6 +266,82 @@ public class CustomerSegmentService {
         if (criteria.has("maxDaysSinceJoin") && daysSinceJoin > criteria.get("maxDaysSinceJoin").asLong()) return false;
         if (criteria.has("minDaysSinceLastOrder") && daysSinceLastOrder < criteria.get("minDaysSinceLastOrder").asLong()) return false;
         if (criteria.has("maxDaysSinceLastOrder") && daysSinceLastOrder > criteria.get("maxDaysSinceLastOrder").asLong()) return false;
+
+        // New criteria: Category-based filters
+        if (criteria.has("purchasedCategories")) {
+            JsonNode cats = criteria.get("purchasedCategories");
+            if (cats.isArray()) {
+                boolean hasAny = false;
+                for (JsonNode cat : cats) {
+                    if (purchasedCategories.contains(cat.asText())) { hasAny = true; break; }
+                }
+                if (!hasAny) return false;
+            }
+        }
+        if (criteria.has("purchasedSubCategories")) {
+            JsonNode cats = criteria.get("purchasedSubCategories");
+            if (cats.isArray()) {
+                boolean hasAny = false;
+                for (JsonNode cat : cats) {
+                    if (purchasedSubCategories.contains(cat.asText())) { hasAny = true; break; }
+                }
+                if (!hasAny) return false;
+            }
+        }
+        if (criteria.has("notPurchasedCategories")) {
+            JsonNode cats = criteria.get("notPurchasedCategories");
+            if (cats.isArray()) {
+                for (JsonNode cat : cats) {
+                    if (purchasedCategories.contains(cat.asText())) return false;
+                }
+            }
+        }
+
+        // New criteria: Viewed categories (products viewed but not necessarily purchased)
+        if (criteria.has("viewedCategories")) {
+            JsonNode cats = criteria.get("viewedCategories");
+            if (cats.isArray()) {
+                boolean hasAny = false;
+                for (JsonNode cat : cats) {
+                    if (viewedCategories.contains(cat.asText())) { hasAny = true; break; }
+                }
+                if (!hasAny) return false;
+            }
+        }
+        if (criteria.has("viewedSubCategories")) {
+            JsonNode cats = criteria.get("viewedSubCategories");
+            if (cats.isArray()) {
+                boolean hasAny = false;
+                for (JsonNode cat : cats) {
+                    if (viewedSubCategories.contains(cat.asText())) { hasAny = true; break; }
+                }
+                if (!hasAny) return false;
+            }
+        }
+        if (criteria.has("notViewedCategories")) {
+            JsonNode cats = criteria.get("notViewedCategories");
+            if (cats.isArray()) {
+                for (JsonNode cat : cats) {
+                    if (viewedCategories.contains(cat.asText())) return false;
+                }
+            }
+        }
+
+        // New criteria: Purchase frequency
+        if (criteria.has("minOrdersPerMonth") && ordersPerMonth < criteria.get("minOrdersPerMonth").asDouble()) return false;
+        if (criteria.has("maxOrdersPerMonth") && ordersPerMonth > criteria.get("maxOrdersPerMonth").asDouble()) return false;
+
+        // New criteria: Average order value
+        if (criteria.has("minAvgOrderValue") && avgOrderValue < criteria.get("minAvgOrderValue").asDouble()) return false;
+        if (criteria.has("maxAvgOrderValue") && avgOrderValue > criteria.get("maxAvgOrderValue").asDouble()) return false;
+
+        // New criteria: Category diversity (number of unique categories purchased)
+        if (criteria.has("minCategoryDiversity") && purchasedCategories.size() < criteria.get("minCategoryDiversity").asInt()) return false;
+        if (criteria.has("maxCategoryDiversity") && purchasedCategories.size() > criteria.get("maxCategoryDiversity").asInt()) return false;
+
+        // New criteria: Total unique products purchased
+        if (criteria.has("minUniqueProducts") && purchasedProductIds.size() < criteria.get("minUniqueProducts").asInt()) return false;
+        if (criteria.has("maxUniqueProducts") && purchasedProductIds.size() > criteria.get("maxUniqueProducts").asInt()) return false;
 
         return true;
     }

@@ -23,6 +23,9 @@ public class VendorService {
     @Autowired
     private VendorActivityService vendorActivityService;
 
+    @Autowired
+    private EmailService emailService;
+
     @Transactional(readOnly = true)
     public Vendor getVendorById(Long id) {
         Vendor vendor = vendorRepository.findById(id)
@@ -135,7 +138,9 @@ public class VendorService {
             throw new RuntimeException("Invalid password. Deletion denied.");
         }
 
-        vendorRepository.deleteById(id);
+        vendor.setDeleted(true);
+        vendor.setDeletedAt(System.currentTimeMillis());
+        vendorRepository.save(vendor);
     }
 
     @Transactional
@@ -223,6 +228,46 @@ public class VendorService {
         Vendor vendor = getVendorById(vendorId);
         vendor.setSettings(settingsJson);
         vendorRepository.save(vendor);
+    }
+
+    public void generateResetToken(String email) {
+        Vendor vendor = vendorRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Vendor account not found with this email"));
+
+        String token = java.util.UUID.randomUUID().toString();
+        vendor.setResetToken(token);
+        vendor.setResetTokenExpiry(System.currentTimeMillis() + 3600000);
+        vendorRepository.save(vendor);
+
+        String name = vendor.getFullName() != null ? vendor.getFullName() : vendor.getEmail();
+        emailService.sendPasswordResetEmail(vendor.getEmail(), name, token, "vendor");
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        Vendor vendor = vendorRepository.findByResetToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+
+        if (vendor.getResetTokenExpiry() < System.currentTimeMillis()) {
+            throw new RuntimeException("Reset token has expired");
+        }
+
+        vendor.setPassword(passwordEncoder.encode(newPassword));
+        vendor.setResetToken(null);
+        vendor.setResetTokenExpiry(null);
+        vendorRepository.save(vendor);
+    }
+
+    public void adminTriggerPasswordReset(Long vendorId) {
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new RuntimeException("Vendor not found with id: " + vendorId));
+
+        String token = java.util.UUID.randomUUID().toString();
+        vendor.setResetToken(token);
+        vendor.setResetTokenExpiry(System.currentTimeMillis() + 3600000);
+        vendorRepository.save(vendor);
+
+        String name = vendor.getFullName() != null ? vendor.getFullName() : vendor.getEmail();
+        emailService.sendPasswordResetEmail(vendor.getEmail(), name, token, "vendor");
     }
 
     /**

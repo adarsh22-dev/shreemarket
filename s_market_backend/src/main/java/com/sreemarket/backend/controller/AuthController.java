@@ -7,6 +7,7 @@ import com.sreemarket.backend.repository.VendorRepository;
 import com.sreemarket.backend.repository.VendorKYCRepository;
 import com.sreemarket.backend.service.UserService;
 import com.sreemarket.backend.service.VendorService;
+import com.sreemarket.backend.service.WholesalerService;
 import com.sreemarket.backend.service.UserDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,9 @@ public class AuthController {
 
     @Autowired
     private UserDeviceService userDeviceService;
+
+    @Autowired
+    private WholesalerService wholesalerService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
@@ -368,6 +372,52 @@ public class AuthController {
             String token = payload.get("token");
             String newPassword = payload.get("password");
             userService.resetPassword(token, newPassword);
+            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/vendor/forgot-password")
+    public ResponseEntity<?> vendorForgotPassword(@RequestBody Map<String, String> payload) {
+        try {
+            String email = payload.get("email");
+            vendorService.generateResetToken(email);
+            return ResponseEntity.ok(Map.of("message", "Reset link sent to your email"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/vendor/reset-password")
+    public ResponseEntity<?> vendorResetPassword(@RequestBody Map<String, String> payload) {
+        try {
+            String token = payload.get("token");
+            String newPassword = payload.get("password");
+            vendorService.resetPassword(token, newPassword);
+            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/wholesaler/forgot-password")
+    public ResponseEntity<?> wholesalerForgotPassword(@RequestBody Map<String, String> payload) {
+        try {
+            String email = payload.get("email");
+            wholesalerService.generateResetToken(email);
+            return ResponseEntity.ok(Map.of("message", "Reset link sent to your email"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/wholesaler/reset-password")
+    public ResponseEntity<?> wholesalerResetPassword(@RequestBody Map<String, String> payload) {
+        try {
+            String token = payload.get("token");
+            String newPassword = payload.get("password");
+            wholesalerService.resetPassword(token, newPassword);
             return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

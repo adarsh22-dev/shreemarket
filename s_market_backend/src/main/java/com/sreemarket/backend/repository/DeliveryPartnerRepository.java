@@ -9,4 +9,10 @@ import java.util.List;
 @Repository
 public interface DeliveryPartnerRepository extends JpaRepository<DeliveryPartner, Long> {
     List<DeliveryPartner> findByStatus(String status);
+
+    // Soft-delete queries
+    List<DeliveryPartner> findByDeletedTrue();
+    List<DeliveryPartner> findByDeletedTrueAndNameContainingIgnoreCase(String name);
+    long countByDeletedTrue();
+    List<DeliveryPartner> findAllByDeletedTrueAndDeletedAtLessThan(Long deletedAt);
 }

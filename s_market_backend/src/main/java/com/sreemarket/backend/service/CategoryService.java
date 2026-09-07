@@ -81,10 +81,16 @@ public class CategoryService {
     @Transactional
     public void deleteCategory(Long id) {
         Category category = getCategoryById(id);
-        // Delete associated subcategories first
+        // Soft-delete associated subcategories
         List<SubCategory> subs = subCategoryRepository.findByCategoryId(id);
-        subCategoryRepository.deleteAll(subs);
-        categoryRepository.delete(category);
+        for (SubCategory sub : subs) {
+            sub.setDeleted(true);
+            sub.setDeletedAt(System.currentTimeMillis());
+            subCategoryRepository.save(sub);
+        }
+        category.setDeleted(true);
+        category.setDeletedAt(System.currentTimeMillis());
+        categoryRepository.save(category);
     }
 
     // ── Sub-categories ──

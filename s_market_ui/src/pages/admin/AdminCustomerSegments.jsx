@@ -48,6 +48,31 @@ const blankForm = () => ({
   criteria: '{"minTotalSpent":10000}', isActive: true,
 });
 
+// Category options for the criteria builder
+const CATEGORY_OPTIONS = [
+  'Electronics', 'Fashion', 'Home & Kitchen', 'Grocery', 'Sports',
+  'Beauty & Personal Care', 'Toys & Games', 'Automotive', 'Books',
+  'Health & Household', 'Jewelry', 'Shoes', 'Pet Supplies', 'Baby Products',
+  'Office Supplies', 'Tools & Home Improvement', 'Garden & Outdoor'
+];
+
+const SUBCATEGORY_OPTIONS = [
+  'Mobile Phones', 'Laptops', 'Headphones', 'Cameras', 'Smart Watches',
+  'Men\'s Clothing', 'Women\'s Clothing', 'Kids\' Clothing', 'Footwear', 'Accessories',
+  'Furniture', 'Decor', 'Kitchen Appliances', 'Bedding', 'Storage',
+  'Snacks', 'Beverages', 'Staples', 'Dairy', 'Frozen Foods',
+  'Fitness Equipment', 'Outdoor Gear', 'Team Sports', 'Yoga', 'Cycling',
+  'Skincare', 'Hair Care', 'Makeup', 'Fragrances', 'Oral Care',
+  'Action Figures', 'Board Games', 'Puzzles', 'Dolls', 'Building Sets',
+  'Car Accessories', 'Car Electronics', 'Motorcycle Gear', 'Tools',
+  'Fiction', 'Non-Fiction', 'Children\'s Books', 'Textbooks', 'Comics',
+  'Vitamins', 'First Aid', 'Medical Supplies', 'Health Monitors',
+  'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Watches',
+  'Sneakers', 'Formal Shoes', 'Sandals', 'Boots', 'Slippers',
+  'Dog Food', 'Cat Food', 'Pet Toys', 'Pet Accessories', 'Grooming',
+  'Diapers', 'Baby Wipes', 'Baby Food', 'Strollers', 'Car Seats'
+];
+
 const parseCriteriaForDisplay = (criteria) => {
   if (!criteria) return [];
   try {
@@ -62,8 +87,22 @@ const parseCriteriaForDisplay = (criteria) => {
         maxDaysSinceJoin: 'Joined Within (days)',
         minDaysSinceLastOrder: 'Inactive After (days)',
         maxDaysSinceLastOrder: 'Active Within (days)',
+        minAvgOrderValue: 'Min Avg Order Value',
+        maxAvgOrderValue: 'Max Avg Order Value',
+        minOrdersPerMonth: 'Min Orders/Month',
+        maxOrdersPerMonth: 'Max Orders/Month',
+        purchasedCategories: 'Purchased Categories',
+        purchasedSubCategories: 'Purchased Sub-Categories',
+        notPurchasedCategories: 'Excluded Purchased Categories',
+        viewedCategories: 'Viewed Categories',
+        viewedSubCategories: 'Viewed Sub-Categories',
+        notViewedCategories: 'Excluded Viewed Categories',
+        minCategoryDiversity: 'Min Category Diversity',
+        maxCategoryDiversity: 'Max Category Diversity',
+        minUniqueProducts: 'Min Unique Products',
+        maxUniqueProducts: 'Max Unique Products',
       };
-      return { label: labels[key] || key, value: key.includes('Spent') ? `₹${Number(val).toLocaleString()}` : val };
+      return { label: labels[key] || key, value: key.includes('Spent') || key.includes('Avg') ? `₹${Number(val).toLocaleString()}` : Array.isArray(val) ? val.join(', ') : val };
     });
   } catch { return []; }
 };
@@ -97,6 +136,39 @@ export default function AdminCustomerSegments() {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  // Helper to parse criteria JSON from editForm
+  const parseCriteria = () => {
+    try {
+      return JSON.parse(editForm.criteria || '{}');
+    } catch {
+      return {};
+    }
+  };
+
+  // Update a single criteria value
+  const updateCriteria = (key, value) => {
+    const criteria = parseCriteria();
+    if (value === null || value === '' || value === undefined) {
+      delete criteria[key];
+    } else {
+      criteria[key] = value;
+    }
+    setEditForm(prev => ({ ...prev, criteria: JSON.stringify(criteria) }));
+  };
+
+  // Toggle array criteria (for categories)
+  const toggleCriteriaArray = (key, item, checked) => {
+    const criteria = parseCriteria();
+    const arr = criteria[key] || [];
+    const idx = arr.indexOf(item);
+    if (checked && idx === -1) {
+      criteria[key] = [...arr, item];
+    } else if (!checked && idx !== -1) {
+      criteria[key] = arr.filter(i => i !== item);
+    }
+    setEditForm(prev => ({ ...prev, criteria: JSON.stringify(criteria) }));
+  };
 
   const list = filter === 'All' ? segments : segments.filter(s => filter === 'Active' ? s.isActive : !s.isActive);
   const activeSegments = segments.filter(s => s.isActive);
@@ -381,14 +453,183 @@ export default function AdminCustomerSegments() {
               </select>
             </label>
           </div>
-          <label className="seg-fld">
-            <span>Criteria (JSON) <span className="seg-req">*</span></span>
-            <textarea value={editForm.criteria} onChange={e => handleEditChange('criteria', e.target.value)}
-              placeholder='{"minTotalSpent":10000}' rows={3} className="seg-json-input"/>
-            <span className="seg-fld-hint">
-              Supported keys: minTotalSpent, maxTotalSpent, minOrders, maxOrders, exactOrders, maxDaysSinceJoin, minDaysSinceLastOrder, maxDaysSinceLastOrder
-            </span>
-          </label>
+          
+          <div className="seg-criteria-builder">
+            <h3 style={{margin:'0 0 16px',fontSize:'0.9rem',fontWeight:600,color:'#1e293b'}}>Segmentation Criteria</h3>
+            
+            {/* Purchase Behavior */}
+            <div className="seg-criteria-section">
+              <h4 style={{margin:'0 0 12px',fontSize:'0.8rem',fontWeight:600,color:'#64748b',textTransform:'uppercase',letterSpacing:'0.05em'}}>Purchase Behavior</h4>
+              <div className="seg-criteria-grid">
+                <label className="seg-fld">
+                  <span>Min Total Spent (₹)</span>
+                  <input type="number" min="0" step="100" value={parseCriteria().minTotalSpent || ''} onChange={e => updateCriteria('minTotalSpent', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 10000"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Max Total Spent (₹)</span>
+                  <input type="number" min="0" step="100" value={parseCriteria().maxTotalSpent || ''} onChange={e => updateCriteria('maxTotalSpent', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 50000"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Min Orders</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().minOrders || ''} onChange={e => updateCriteria('minOrders', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 5"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Max Orders</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().maxOrders || ''} onChange={e => updateCriteria('maxOrders', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 20"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Exact Orders</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().exactOrders || ''} onChange={e => updateCriteria('exactOrders', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 1"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Min Avg Order Value (₹)</span>
+                  <input type="number" min="0" step="100" value={parseCriteria().minAvgOrderValue || ''} onChange={e => updateCriteria('minAvgOrderValue', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 500"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Max Avg Order Value (₹)</span>
+                  <input type="number" min="0" step="100" value={parseCriteria().maxAvgOrderValue || ''} onChange={e => updateCriteria('maxAvgOrderValue', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 5000"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Min Orders/Month</span>
+                  <input type="number" min="0" step="0.1" value={parseCriteria().minOrdersPerMonth || ''} onChange={e => updateCriteria('minOrdersPerMonth', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 1"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Max Orders/Month</span>
+                  <input type="number" min="0" step="0.1" value={parseCriteria().maxOrdersPerMonth || ''} onChange={e => updateCriteria('maxOrdersPerMonth', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 4"/>
+                </label>
+              </div>
+            </div>
+
+            {/* Time-based Filters */}
+            <div className="seg-criteria-section">
+              <h4 style={{margin:'0 0 12px',fontSize:'0.8rem',fontWeight:600,color:'#64748b',textTransform:'uppercase',letterSpacing:'0.05em'}}>Time-based Filters</h4>
+              <div className="seg-criteria-grid">
+                <label className="seg-fld">
+                  <span>Joined Within (days)</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().maxDaysSinceJoin || ''} onChange={e => updateCriteria('maxDaysSinceJoin', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 30"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Inactive After (days)</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().minDaysSinceLastOrder || ''} onChange={e => updateCriteria('minDaysSinceLastOrder', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 60"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Active Within (days)</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().maxDaysSinceLastOrder || ''} onChange={e => updateCriteria('maxDaysSinceLastOrder', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 30"/>
+                </label>
+              </div>
+            </div>
+
+            {/* Category-based Filters */}
+            <div className="seg-criteria-section">
+              <h4 style={{margin:'0 0 12px',fontSize:'0.8rem',fontWeight:600,color:'#64748b',textTransform:'uppercase',letterSpacing:'0.05em'}}>Category-based Filters</h4>
+              <div className="seg-criteria-grid">
+                <label className="seg-fld" style={{gridColumn:'1/-1'}}>
+                  <span>Purchased Categories (any of)</span>
+                  <select multiple value={parseCriteria().purchasedCategories || []} onChange={e => {
+                    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+                    updateCriteria('purchasedCategories', selected.length ? selected : null);
+                  }} style={{minHeight:100,padding:'8px',fontSize:'0.8rem'}}>
+                    {CATEGORY_OPTIONS.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <span className="seg-fld-hint">Hold Ctrl/Cmd to select multiple</span>
+                </label>
+                <label className="seg-fld" style={{gridColumn:'1/-1'}}>
+                  <span>Purchased Sub-Categories (any of)</span>
+                  <select multiple value={parseCriteria().purchasedSubCategories || []} onChange={e => {
+                    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+                    updateCriteria('purchasedSubCategories', selected.length ? selected : null);
+                  }} style={{minHeight:100,padding:'8px',fontSize:'0.8rem'}}>
+                    {SUBCATEGORY_OPTIONS.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <span className="seg-fld-hint">Hold Ctrl/Cmd to select multiple</span>
+                </label>
+                <label className="seg-fld" style={{gridColumn:'1/-1'}}>
+                  <span>NOT Purchased Categories (exclude)</span>
+                  <select multiple value={parseCriteria().notPurchasedCategories || []} onChange={e => {
+                    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+                    updateCriteria('notPurchasedCategories', selected.length ? selected : null);
+                  }} style={{minHeight:100,padding:'8px',fontSize:'0.8rem'}}>
+                    {CATEGORY_OPTIONS.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <span className="seg-fld-hint">Hold Ctrl/Cmd to select multiple</span>
+                </label>
+                <label className="seg-fld" style={{gridColumn:'1/-1'}}>
+                  <span>Viewed Categories (any of)</span>
+                  <select multiple value={parseCriteria().viewedCategories || []} onChange={e => {
+                    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+                    updateCriteria('viewedCategories', selected.length ? selected : null);
+                  }} style={{minHeight:100,padding:'8px',fontSize:'0.8rem'}}>
+                    {CATEGORY_OPTIONS.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <span className="seg-fld-hint">Hold Ctrl/Cmd to select multiple. Products viewed but not purchased.</span>
+                </label>
+                <label className="seg-fld" style={{gridColumn:'1/-1'}}>
+                  <span>Viewed Sub-Categories (any of)</span>
+                  <select multiple value={parseCriteria().viewedSubCategories || []} onChange={e => {
+                    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+                    updateCriteria('viewedSubCategories', selected.length ? selected : null);
+                  }} style={{minHeight:100,padding:'8px',fontSize:'0.8rem'}}>
+                    {SUBCATEGORY_OPTIONS.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <span className="seg-fld-hint">Hold Ctrl/Cmd to select multiple. Products viewed but not purchased.</span>
+                </label>
+                <label className="seg-fld" style={{gridColumn:'1/-1'}}>
+                  <span>NOT Viewed Categories (exclude)</span>
+                  <select multiple value={parseCriteria().notViewedCategories || []} onChange={e => {
+                    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+                    updateCriteria('notViewedCategories', selected.length ? selected : null);
+                  }} style={{minHeight:100,padding:'8px',fontSize:'0.8rem'}}>
+                    {CATEGORY_OPTIONS.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <span className="seg-fld-hint">Hold Ctrl/Cmd to select multiple</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Diversity & Volume */}
+            <div className="seg-criteria-section">
+              <h4 style={{margin:'0 0 12px',fontSize:'0.8rem',fontWeight:600,color:'#64748b',textTransform:'uppercase',letterSpacing:'0.05em'}}>Diversity & Volume</h4>
+              <div className="seg-criteria-grid">
+                <label className="seg-fld">
+                  <span>Min Category Diversity</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().minCategoryDiversity || ''} onChange={e => updateCriteria('minCategoryDiversity', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 3"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Max Category Diversity</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().maxCategoryDiversity || ''} onChange={e => updateCriteria('maxCategoryDiversity', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 10"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Min Unique Products</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().minUniqueProducts || ''} onChange={e => updateCriteria('minUniqueProducts', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 5"/>
+                </label>
+                <label className="seg-fld">
+                  <span>Max Unique Products</span>
+                  <input type="number" min="0" step="1" value={parseCriteria().maxUniqueProducts || ''} onChange={e => updateCriteria('maxUniqueProducts', e.target.value ? Number(e.target.value) : null)} placeholder="e.g. 50"/>
+                </label>
+              </div>
+            </div>
+
+            {/* JSON Preview (for advanced users) */}
+            <label className="seg-fld">
+              <span>Raw JSON (Advanced)</span>
+              <textarea value={editForm.criteria} onChange={e => handleEditChange('criteria', e.target.value)}
+                placeholder='{"minTotalSpent":10000}' rows={3} className="seg-json-input"/>
+              <span className="seg-fld-hint">Auto-generated from criteria above. Edit manually for advanced conditions.</span>
+            </label>
+          </div>
+
           <div className="seg-modal-actions">
             <button className="seg-btn seg-btn--sec" onClick={() => setEditModal(null)}>Cancel</button>
             <button className="seg-btn seg-btn--pri" onClick={handleEditSave} disabled={!editForm.name.trim()}>

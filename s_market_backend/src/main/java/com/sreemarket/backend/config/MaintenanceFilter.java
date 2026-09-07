@@ -40,7 +40,7 @@ public class MaintenanceFilter implements Filter {
 
         String path = request.getRequestURI();
 
-        if (maintenanceMode && !bypassPaths.contains(path) && !path.startsWith("/uploads/")) {
+        if (maintenanceMode && !bypassPaths.contains(path) && !path.startsWith("/uploads/") && !path.startsWith("/api/admin/maintenance")) {
             response.setStatus(503);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\": \"Platform is under maintenance. Please try again later.\", \"maintenance\": true}");

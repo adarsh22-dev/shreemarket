@@ -3,6 +3,7 @@ import './AdminInventoryAlerts.css';
 import { Icon, fmt } from './VendorShared';
 import { API_BASE_URL } from '../../api/api';
 import toast from 'react-hot-toast';
+import Toggle from '../../components/admin/Toggle';
 
 const API_BASE = API_BASE_URL;
 
@@ -586,10 +587,7 @@ export default function AdminInventoryAlerts() {
                                     <span className="inv-threshold-form__label">Auto Scan</span>
                                     <span className="inv-threshold-form__hint">Automatically scan products for low stock periodically</span>
                                 </div>
-                                <button className={`cr-toggle ${thresholdForm.autoScanEnabled ? 'cr-toggle--on' : 'cr-toggle--off'}`}
-                                    onClick={() => setThresholdForm(f => ({ ...f, autoScanEnabled: !f.autoScanEnabled }))}>
-                                    <span className="cr-toggle__knob" />
-                                </button>
+                                <Toggle on={thresholdForm.autoScanEnabled} onChange={v => setThresholdForm(f => ({ ...f, autoScanEnabled: v }))} size="sm" />
                             </div>
                             <div className="vm-modal__acts">
                                 <button className="vm-btn vm-btn--outline" style={{ flex: 1 }} onClick={() => setThresholdModal(false)}>Cancel</button>

@@ -45,4 +45,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<User> searchCustomersByStatus(@Param("search") String search,
             @Param("status") String status, Pageable pageable);
+
+    // Soft-delete queries
+    List<User> findByDeletedTrue();
+    List<User> findByDeletedTrueAndFullNameContainingIgnoreCase(String name);
+    long countByDeletedTrue();
+    List<User> findAllByDeletedTrueAndDeletedAtLessThan(Long deletedAt);
 }

@@ -3,6 +3,7 @@ import './AdminCommissionRules.css';
 import { Icon, fmt, exportCSV } from './VendorShared';
 import { getCommissionCategories, saveCommissionCategory, updateCommissionCategory, deleteCommissionCategory } from '../../api/api';
 import toast from 'react-hot-toast';
+import Toggle from '../../components/admin/Toggle';
 
 const CATS   = ['All','Electronics','Fashion','Books','Grocery','Beauty','Furniture','Sports'];
 const EMPTY  = { name:'', category:'Electronics', type:'percentage', value:10, minOrder:0, maxCap:null, gst:true, flatFee:0, active:true, priority:99, appliedTo:'All vendors', revenue:0 };
@@ -215,9 +216,7 @@ export default function CommissionRules() {
                     </div>
                   </td>
                   <td>
-                    <button className={`cr-toggle ${r.active ? 'cr-toggle--on' : 'cr-toggle--off'}`} onClick={() => toggle(r.id)}>
-                      <span className="cr-toggle__knob"/>
-                    </button>
+                    <Toggle on={r.active} onChange={() => toggle(r.id)} size="sm" />
                   </td>
                   <td className="vm-td-r">
                     <div className="vm-acts">
@@ -304,15 +303,11 @@ export default function CommissionRules() {
               </div>
               <div className="cr-form-row cr-checkrow">
                 <label className="cr-label">Apply GST on Commission (18%)</label>
-                <button className={`cr-toggle ${form.gst?'cr-toggle--on':'cr-toggle--off'}`} onClick={()=>setForm(f=>({...f,gst:!f.gst}))}>
-                  <span className="cr-toggle__knob"/>
-                </button>
+                <Toggle on={form.gst} onChange={v => setForm(f => ({ ...f, gst: v }))} size="sm" />
               </div>
               <div className="cr-form-row cr-checkrow">
                 <label className="cr-label">Rule Active</label>
-                <button className={`cr-toggle ${form.active?'cr-toggle--on':'cr-toggle--off'}`} onClick={()=>setForm(f=>({...f,active:!f.active}))}>
-                  <span className="cr-toggle__knob"/>
-                </button>
+                <Toggle on={form.active} onChange={v => setForm(f => ({ ...f, active: v }))} size="sm" />
               </div>
               <div className="vm-modal__acts">
                 <button className="vm-btn vm-btn--outline" style={{flex:1}} onClick={()=>{ if (!saving) setModal(null); }} disabled={saving}>Cancel</button>

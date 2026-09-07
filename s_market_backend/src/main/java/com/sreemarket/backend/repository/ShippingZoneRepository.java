@@ -7,4 +7,10 @@ import java.util.List;
 public interface ShippingZoneRepository extends JpaRepository<ShippingZone, Long> {
     List<ShippingZone> findByIsActiveTrue();
     List<ShippingZone> findByDeliveryType(String deliveryType);
+
+    // Soft-delete queries
+    List<ShippingZone> findByDeletedTrue();
+    List<ShippingZone> findByDeletedTrueAndNameContainingIgnoreCase(String name);
+    long countByDeletedTrue();
+    List<ShippingZone> findAllByDeletedTrueAndDeletedAtLessThan(Long deletedAt);
 }

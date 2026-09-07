@@ -39,7 +39,12 @@ public class AdminCmsService {
         existing.setSlug(p.getSlug()); existing.setMetaTitle(p.getMetaTitle()); existing.setMetaDesc(p.getMetaDesc());
         return blogPostRepository.save(existing);
     }
-    public void deleteBlogPost(Long id) { blogPostRepository.deleteById(id); }
+    public void deleteBlogPost(Long id) {
+        BlogPost bp = blogPostRepository.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
+        bp.setDeleted(true);
+        bp.setDeletedAt(System.currentTimeMillis());
+        blogPostRepository.save(bp);
+    }
 
     // CMS Pages
     public List<CmsPage> getAllCmsPages() { return cmsPageRepository.findAll(); }
@@ -62,7 +67,12 @@ public class AdminCmsService {
         e.setStatus(f.getStatus()); e.setSortOrder(f.getSortOrder()); e.setViews(f.getViews());
         return faqRepository.save(e);
     }
-    public void deleteFaq(Long id) { faqRepository.deleteById(id); }
+    public void deleteFaq(Long id) {
+        Faq f = faqRepository.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
+        f.setDeleted(true);
+        f.setDeletedAt(System.currentTimeMillis());
+        faqRepository.save(f);
+    }
 
     // Coupons
     public List<Coupon> getAllCoupons() { return couponRepository.findAll(); }
@@ -74,17 +84,32 @@ public class AdminCmsService {
         e.setCategories(c.getCategories()); e.setStatus(c.getStatus()); e.setRevenue(c.getRevenue()); e.setOrders(c.getOrders());
         return couponRepository.save(e);
     }
-    public void deleteCoupon(Long id) { couponRepository.deleteById(id); }
+    public void deleteCoupon(Long id) {
+        Coupon c = couponRepository.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
+        c.setDeleted(true);
+        c.setDeletedAt(System.currentTimeMillis());
+        couponRepository.save(c);
+    }
 
     // Flash Sales
     public List<FlashSale> getAllFlashSales() { return flashSaleRepository.findAll(); }
     public FlashSale saveFlashSale(FlashSale f) { return flashSaleRepository.save(f); }
-    public void deleteFlashSale(Long id) { flashSaleRepository.deleteById(id); }
+    public void deleteFlashSale(Long id) {
+        FlashSale f = flashSaleRepository.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
+        f.setDeleted(true);
+        f.setDeletedAt(System.currentTimeMillis());
+        flashSaleRepository.save(f);
+    }
 
     // Banners
     public List<Banner> getAllBanners() { return bannerRepository.findAll(); }
     public Banner saveBanner(Banner b) { return bannerRepository.save(b); }
-    public void deleteBanner(Long id) { bannerRepository.deleteById(id); }
+    public void deleteBanner(Long id) {
+        Banner b = bannerRepository.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
+        b.setDeleted(true);
+        b.setDeletedAt(System.currentTimeMillis());
+        bannerRepository.save(b);
+    }
 
     // Push Notifications
     public List<PushNotification> getAllPushNotifications() { return pushNotificationRepository.findAll(); }

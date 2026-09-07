@@ -31,10 +31,28 @@ export const metadata = {
   },
 };
 
+function SuppressWebVitalsError() {
+  return (
+    <script dangerouslySetInnerHTML={{ __html: `
+      const originalErrorHandler = window.onerror;
+      window.onerror = function(msg, src, line, col, err) {
+        if (typeof msg === 'string' && msg.includes('startTime')) return true;
+        if (originalErrorHandler) return originalErrorHandler(msg, src, line, col, err);
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        if (e.reason && e.reason.message && e.reason.message.includes('startTime')) {
+          e.preventDefault();
+        }
+      });
+    `}} />
+  );
+}
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={inter.variable}>
       <body className={inter.className}>
+        <SuppressWebVitalsError />
         <Providers>
           {children}
         </Providers>

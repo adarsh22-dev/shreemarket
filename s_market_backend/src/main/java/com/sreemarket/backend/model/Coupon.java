@@ -21,6 +21,8 @@ public class Coupon {
     private String status;
     private Double revenue;
     private Integer orders;
+    private Boolean deleted = false;
+    private Long deletedAt;
 
     public Coupon() {}
 
@@ -52,4 +54,8 @@ public class Coupon {
     public void setRevenue(Double revenue) { this.revenue = revenue; }
     public Integer getOrders() { return orders; }
     public void setOrders(Integer orders) { this.orders = orders; }
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
 }

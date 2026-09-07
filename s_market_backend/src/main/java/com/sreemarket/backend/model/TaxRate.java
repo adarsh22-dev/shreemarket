@@ -37,6 +37,10 @@ public class TaxRate {
 
     private String status;
 
+    private Boolean deleted = false;
+
+    private Long deletedAt;
+
     private Boolean isDefault;
 
     private Long effectiveFrom;

@@ -7,6 +7,7 @@ import {
 } from '../../api/api';
 import toast from 'react-hot-toast';
 import { exportCSV } from './VendorShared';
+import Toggle from '../../components/admin/Toggle';
 
 // Category images
 import GroceryImg from '../../assets/Grocery_&_Gourmet_Food.svg';
@@ -300,12 +301,7 @@ const Modal = ({ mode, type, item, parents, onClose, onSave }) => {
             {!isSub && (
               <div className="cs-field" style={{flex:1}}>
                 <label className="cs-field__lbl">Featured</label>
-                <div className="cs-toggle" onClick={()=>setFeatured(!featured)}>
-                  <div className={`cs-toggle__track${featured?' cs-toggle__track--on':''}`}>
-                    <div className="cs-toggle__thumb"/>
-                  </div>
-                  <span>{featured?'Yes':'No'}</span>
-                </div>
+                <Toggle on={featured} onChange={() => setFeatured(!featured)} size="sm" />
               </div>
             )}
           </div>

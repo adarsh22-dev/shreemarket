@@ -4,19 +4,26 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import toast from 'react-hot-toast';
-import { resetPassword } from '../api/api';
+import { resetPassword, vendorResetPassword, wholesalerResetPassword } from '../api/api';
 import './ForgotPasswordPage.css'; // Reuse existing styles
 
 const ResetPasswordPage = () => {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
+    const type = searchParams.get('type') || 'customer';
     const navigate = useNavigate();
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-
+    const getLoginLink = () => {
+        switch (type) {
+            case 'vendor': return '/';
+            case 'wholesaler': return '/wholesaler/login';
+            default: return '/';
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -28,10 +35,19 @@ const ResetPasswordPage = () => {
 
         const loadingToast = toast.loading('Resetting password...');
         try {
-            await resetPassword(token, password);
+            switch (type) {
+                case 'vendor':
+                    await vendorResetPassword(token, password);
+                    break;
+                case 'wholesaler':
+                    await wholesalerResetPassword(token, password);
+                    break;
+                default:
+                    await resetPassword(token, password);
+            }
             toast.dismiss(loadingToast);
             toast.success("Password reset successful! Please login.");
-            navigate('/');
+            navigate(getLoginLink());
         } catch (error) {
             toast.dismiss(loadingToast);
             console.error("Error resetting password:", error);
@@ -48,7 +64,7 @@ const ResetPasswordPage = () => {
                             <h2>Invalid Link</h2>
                             <p>No reset token provided.</p>
                             <div className="back-to-login">
-                                <Link to="/" className="back-link">Back to Login</Link>
+                                <Link to={getLoginLink()} className="back-link">Back to Login</Link>
                             </div>
                         </div>
                     </div>

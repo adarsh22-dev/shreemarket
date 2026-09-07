@@ -100,10 +100,10 @@ public class TaxRateService {
     }
 
     public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Tax rate not found with id: " + id);
-        }
-        repository.deleteById(id);
+        TaxRate taxRate = getById(id);
+        taxRate.setDeleted(true);
+        taxRate.setDeletedAt(System.currentTimeMillis());
+        repository.save(taxRate);
     }
 
     private void splitGst(TaxRate tr) {

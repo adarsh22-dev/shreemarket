@@ -19,6 +19,8 @@ public interface WholesalerRepository extends JpaRepository<Wholesaler, Long> {
 
     Optional<Wholesaler> findByEmail(String email);
 
+    Optional<Wholesaler> findByResetToken(String resetToken);
+
     Page<Wholesaler> findByStatus(String status, Pageable pageable);
 
     @Query("SELECT w FROM Wholesaler w WHERE " +

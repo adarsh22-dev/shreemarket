@@ -27,6 +27,8 @@ public class DeliveryPartner {
     private Double avgDays;
     private String cost;
     private String status;
+    private Boolean deleted = false;
+    private Long deletedAt;
     private String color;
     private String joined;
 

@@ -63,6 +63,8 @@ import AdminCustomerSegments from './pages/admin/AdminCustomerSegments';
 import AdminAbandonedCarts from './pages/admin/AdminAbandonedCarts';
 import AdminMarketplaceFees from './pages/admin/AdminMarketplaceFees';
 import AdminInventoryAlerts from './pages/admin/AdminInventoryAlerts';
+import AdminTrash from './pages/admin/AdminTrash';
+import AdminCustomerDetail from './pages/admin/AdminCustomerDetail';
 
 import CustomerManagement from './pages/admin/AdminCustomermanagement';
 import LoyaltyPoints from './pages/admin/LoyaltyPoints';
@@ -350,6 +352,12 @@ function App() {
 
                   {/* Settings */}
                   <Route path="settings" element={<AdminSettings />} />
+
+                  {/* Trash */}
+                  <Route path="trash" element={<AdminTrash />} />
+
+                  {/* Customer Detail */}
+                  <Route path="customers/:id" element={<AdminCustomerDetail />} />
 
                   {/* Tax Reports */}
                   <Route path="tax-reports" element={<AdminTaxReports />} />

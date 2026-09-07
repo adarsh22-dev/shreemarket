@@ -55,6 +55,20 @@ const RegisterPage = () => {
         password: '',
         confirmPassword: '',
 
+        // Shipping Address
+        streetAddress: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: 'India',
+
+        // Permanent Address
+        permStreetAddress: '',
+        permCity: '',
+        permState: '',
+        permZipCode: '',
+        permCountry: 'India',
+
         // Step 2: Store Details (Branches)
         stores: [
             {
@@ -466,6 +480,32 @@ const RegisterPage = () => {
                                         <Input id="confirmPassword" label="Confirm Password" type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" icon={showConfirmPassword ? EyeOff : Eye} onIconClick={() => setShowConfirmPassword(!showConfirmPassword)} value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} />
                                     </div>
                                     <div className="password-requirements">Must be at least 8 characters.</div>
+                                    
+                                    <div style={{gridColumn:'1/-1',borderTop:'1px solid #e5e7eb',paddingTop:'1.5rem',marginTop:'1rem'}}>
+                                      <h3 style={{margin:'0 0 1rem',fontSize:'1rem',fontWeight:600,color:'#111827'}}>Shipping Address</h3>
+                                    </div>
+                                    <div className="form-row">
+                                        <Input id="streetAddress" label="Street Address" placeholder="123 Main Street, Apt 4B" icon={MapPin} value={formData.streetAddress} onChange={handleChange} />
+                                        <Input id="city" label="City" placeholder="Mumbai" icon={Map} value={formData.city} onChange={handleChange} />
+                                    </div>
+                                    <div className="form-row">
+                                        <Input id="state" label="State" placeholder="Maharashtra" value={formData.state} onChange={handleChange} />
+                                        <Input id="zipCode" label="ZIP Code" placeholder="400001" icon={Hash} value={formData.zipCode} onChange={handleChange} />
+                                    </div>
+                                    <Input id="country" label="Country" placeholder="India" icon={Globe} value={formData.country} onChange={handleChange} />
+                                    
+                                    <div style={{gridColumn:'1/-1',borderTop:'1px solid #e5e7eb',paddingTop:'1.5rem',marginTop:'1rem'}}>
+                                      <h3 style={{margin:'0 0 1rem',fontSize:'1rem',fontWeight:600,color:'#111827'}}>Permanent Address</h3>
+                                    </div>
+                                    <div className="form-row">
+                                        <Input id="permStreetAddress" label="Street Address" placeholder="123 Main Street, Apt 4B" icon={MapPin} value={formData.permStreetAddress} onChange={handleChange} />
+                                        <Input id="permCity" label="City" placeholder="Mumbai" icon={Map} value={formData.permCity} onChange={handleChange} />
+                                    </div>
+                                    <div className="form-row">
+                                        <Input id="permState" label="State" placeholder="Maharashtra" value={formData.permState} onChange={handleChange} />
+                                        <Input id="permZipCode" label="ZIP Code" placeholder="400001" icon={Hash} value={formData.permZipCode} onChange={handleChange} />
+                                    </div>
+                                    <Input id="permCountry" label="Country" placeholder="India" icon={Globe} value={formData.permCountry} onChange={handleChange} />
                                 </div>
                                 <Button type="submit" fullWidth className="mt-8 orange-btn">Create Account</Button>
 

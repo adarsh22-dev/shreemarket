@@ -3,6 +3,7 @@ import './AdminPayoutScheduler.css';
 import { Icon, initials, avatarBg, fmt } from './VendorShared';
 import { getPayoutSchedules, createPayoutSchedule, updatePayoutSchedule, deletePayoutSchedule, runScheduleNow, executeScheduledPayouts } from '../../api/api';
 import toast from 'react-hot-toast';
+import Toggle from '../../components/admin/Toggle';
 
 const freqColor = f => f==='weekly'?'#16a34a': f==='biweekly'?'#2563eb': f==='monthly'?'#d97706':'#94a3b8';
 const freqBg    = f => f==='weekly'?'#dcfce7': f==='biweekly'?'#dbeafe': f==='monthly'?'#fef3c7':'#f1f5f9';
@@ -260,12 +261,9 @@ export default function PayoutScheduler() {
                         {r.autoApprove ? 'Yes' : 'No'}
                       </span>
                     </td>
-                    <td>
-                      <button className={`cr-toggle ${r.status === 'active' ? 'cr-toggle--on' : 'cr-toggle--off'}`}
-                        onClick={() => toggle(r.id)}>
-                        <span className="cr-toggle__knob"/>
-                      </button>
-                    </td>
+                      <td>
+                        <Toggle on={r.status === 'active'} onChange={() => toggle(r.id)} size="sm" />
+                      </td>
                     <td className="vm-td-r">
                       <div className="vm-acts">
                         <button className="vm-ib vm-ib--edit" onClick={() => openModal(r)}><Icon name="Edit2" size={13}/></button>
@@ -377,13 +375,7 @@ export default function PayoutScheduler() {
                   <span className="cr-label">Auto-Approve Payouts</span>
                   <p className="cr-label-sub">Skip manual review for this vendor</p>
                 </div>
-                <button
-                  className={`cr-toggle ${form.autoApprove ? 'cr-toggle--on' : 'cr-toggle--off'}`}
-                  onClick={() => handleChange('autoApprove', !form.autoApprove)}
-                  type="button"
-                >
-                  <span className="cr-toggle__knob"/>
-                </button>
+                <Toggle on={form.autoApprove} onChange={v => handleChange('autoApprove', v)} size="sm" />
               </div>
 
               {/* Footer buttons */}

@@ -1,10 +1,12 @@
 package com.sreemarket.backend.service;
 
+import com.sreemarket.backend.model.Address;
 import com.sreemarket.backend.model.Order;
 import com.sreemarket.backend.model.Payout;
 import com.sreemarket.backend.model.Product;
 import com.sreemarket.backend.model.Review;
 import com.sreemarket.backend.model.User;
+import com.sreemarket.backend.repository.AddressRepository;
 import com.sreemarket.backend.repository.OrderRepository;
 import com.sreemarket.backend.repository.PayoutRepository;
 import com.sreemarket.backend.repository.ProductRepository;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -44,6 +47,9 @@ public class AdminService {
     private VendorRepository vendorRepository;
 
     @Autowired
+    private AddressRepository addressRepository;
+
+    @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
@@ -54,6 +60,9 @@ public class AdminService {
 
     @Autowired
     private PayoutRepository payoutRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // ── Dashboard Stats ──
     public Map<String, Object> getDashboardStats() {
@@ -334,6 +343,12 @@ public class AdminService {
         return userRepository.save(user);
     }
 
+    // ── Get Customer by ID ──
+    public User getCustomerById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + id));
+    }
+
     // ── All Products (paginated for admin) ──
     public Page<Product> getAllProducts(String search, String category, String status,
             int page, int size, String sortBy, String sortDir) {
@@ -418,5 +433,73 @@ public class AdminService {
             throw new RuntimeException("Review not found");
         }
         reviewRepository.deleteById(id);
+    }
+
+    // ── Create Customer ──
+    public User createCustomer(String fullName, String email, String phone, String password,
+                                String streetAddress, String city, String state, String zipCode, String country,
+                                String permStreetAddress, String permCity, String permState, String permZipCode, String permCountry) {
+        if (userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Email already in use");
+        }
+        if (phone != null && userRepository.existsByPhone(phone)) {
+            throw new RuntimeException("Phone number already in use");
+        }
+
+        User customer = new User();
+        customer.setFullName(fullName);
+        customer.setEmail(email);
+        customer.setPhone(phone);
+        customer.setPassword(passwordEncoder.encode(password));
+        customer.setRoleId(2L);
+        customer.setStatus("Active");
+        customer.setCreatedAt(System.currentTimeMillis());
+        customer.setUpdatedAt(System.currentTimeMillis());
+
+        User saved = userRepository.save(customer);
+
+        // Create shipping address if provided
+        if (streetAddress != null && !streetAddress.trim().isEmpty() &&
+            city != null && !city.trim().isEmpty() &&
+            state != null && !state.trim().isEmpty() &&
+            zipCode != null && !zipCode.trim().isEmpty() &&
+            country != null && !country.trim().isEmpty()) {
+            Address address = new Address();
+            address.setUserId(saved.getId());
+            address.setRoleId(2L);
+            address.setTitle("Home");
+            address.setFullName(fullName);
+            address.setPhoneNumber(phone);
+            address.setStreetAddress(streetAddress);
+            address.setCity(city);
+            address.setState(state);
+            address.setZipCode(zipCode);
+            address.setCountry(country);
+            address.setDefaultAddress(true);
+            addressRepository.save(address);
+        }
+
+        // Create permanent address if provided
+        if (permStreetAddress != null && !permStreetAddress.trim().isEmpty() &&
+            permCity != null && !permCity.trim().isEmpty() &&
+            permState != null && !permState.trim().isEmpty() &&
+            permZipCode != null && !permZipCode.trim().isEmpty() &&
+            permCountry != null && !permCountry.trim().isEmpty()) {
+            Address permAddress = new Address();
+            permAddress.setUserId(saved.getId());
+            permAddress.setRoleId(2L);
+            permAddress.setTitle("Permanent");
+            permAddress.setFullName(fullName);
+            permAddress.setPhoneNumber(phone);
+            permAddress.setStreetAddress(permStreetAddress);
+            permAddress.setCity(permCity);
+            permAddress.setState(permState);
+            permAddress.setZipCode(permZipCode);
+            permAddress.setCountry(permCountry);
+            permAddress.setDefaultAddress(false);
+            addressRepository.save(permAddress);
+        }
+
+        return saved;
     }
 }

@@ -36,6 +36,9 @@ public class User {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long resetTokenExpiry;
 
+    private Boolean deleted = false;
+    private Long deletedAt;
+
     private Long createdAt;
 
     private Long updatedAt;

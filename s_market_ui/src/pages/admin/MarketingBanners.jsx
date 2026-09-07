@@ -9,6 +9,7 @@ import {
   Link, Layers
 } from 'lucide-react';
 import { getBanners, createBanner, deleteBanner, getPushNotifications, createPushNotification, deletePushNotification } from '../../api/api';
+import Toggle from '../../components/admin/Toggle';
 
 /* ── helpers ── */
 const fmt  = n => n >= 1e5 ? `₹${(n/1e5).toFixed(1)}L` : `₹${n.toLocaleString('en-IN')}`;
@@ -26,12 +27,6 @@ const Toast = ({ msg, type, onDone }) => {
     </div>
   );
 };
-
-const Toggle = ({ on, onChange }) => (
-  <button className={`bn-toggle ${on ? 'bn-toggle--on' : ''}`} onClick={() => onChange(!on)} type="button">
-    <span className="bn-toggle__knob" />
-  </button>
-);
 
 /* ── Modal shell ── */
 const Modal = ({ title, onClose, children, footer, maxW=520 }) => (

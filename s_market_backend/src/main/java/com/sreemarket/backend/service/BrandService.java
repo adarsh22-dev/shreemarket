@@ -41,6 +41,9 @@ public class BrandService {
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        Brand brand = getById(id);
+        brand.setDeleted(true);
+        brand.setDeletedAt(System.currentTimeMillis());
+        repository.save(brand);
     }
 }

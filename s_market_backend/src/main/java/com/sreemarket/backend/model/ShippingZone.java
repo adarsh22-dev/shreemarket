@@ -34,6 +34,10 @@ public class ShippingZone {
 
     private Boolean isActive = true;
 
+    private Boolean deleted = false;
+
+    private Long deletedAt;
+
     private Long createdAt = System.currentTimeMillis();
 
     private Long updatedAt = System.currentTimeMillis();

@@ -84,7 +84,15 @@ public class EmailService {
      * Sends a password reset email with a reset link.
      */
     public void sendPasswordResetEmail(String toEmail, String toName, String resetToken) {
-        String resetLink = appBaseUrl + "/reset-password?token=" + resetToken;
+        sendPasswordResetEmail(toEmail, toName, resetToken, "customer");
+    }
+
+    /**
+     * Sends a password reset email with a reset link for a specific user type.
+     * @param type "customer", "vendor", or "wholesaler"
+     */
+    public void sendPasswordResetEmail(String toEmail, String toName, String resetToken, String type) {
+        String resetLink = appBaseUrl + "/reset-password?token=" + resetToken + "&type=" + type;
 
         String subject = "Reset Your SreeMarket Password";
         String htmlBody = buildPasswordResetHtml(toName, resetLink);

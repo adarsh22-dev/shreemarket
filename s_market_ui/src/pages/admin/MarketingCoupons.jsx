@@ -10,16 +10,11 @@ import {
 import { getCoupons, createCoupon, updateCoupon, deleteCoupon, getFlashSales, createFlashSale, deleteFlashSale } from '../../api/api';
 import { exportCSV } from './VendorShared';
 import toast from 'react-hot-toast';
+import Toggle from '../../components/admin/Toggle';
 
 /* ── helpers ── */
 const fmt  = n => n >= 1e7 ? `₹${(n/1e7).toFixed(1)}Cr` : n >= 1e5 ? `₹${(n/1e5).toFixed(1)}L` : `₹${n.toLocaleString('en-IN')}`;
 const fmtN = n => n >= 1e3 ? `${(n/1e3).toFixed(1)}k` : n;
-
-const Toggle = ({ on, onChange }) => (
-  <button className={`mk-toggle ${on ? 'mk-toggle--on' : ''}`} onClick={() => onChange(!on)} type="button">
-    <span className="mk-toggle__knob" />
-  </button>
-);
 
 const EMPTY_COUPON = { code:'', type:'percentage', value:10, minOrder:0, maxDisc:'', maxUses:'', expiry:'', categories:['All'], status:'active' };
 const CAT_OPTS = ['All','Electronics','Fashion','Grocery','Beauty','Books','Sports','Furniture'];

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { getAdminCustomers, updateCustomerStatus, getLoyaltyCustomers, createLoyaltyCustomer, getRefunds, createRefund, deleteRefund } from '../../api/api';
+import { getAdminCustomers, updateCustomerStatus, getLoyaltyCustomers, createLoyaltyCustomer, getRefunds, createRefund, deleteRefund, adminResetCustomerPassword, createAdminCustomer } from '../../api/api';
 import './AdminCustomermanagement.css';
 
 const PALETTE = ['#E03E1A','#2563eb','#16a34a','#7c3aed','#d97706','#0d9488','#db2777','#64748b'];
@@ -36,6 +36,7 @@ const P = {
   x:        'M18 6 6 18M6 6l12 12',
   info:     ['M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z','M12 16v-4','M12 8h.01'],
   plus:     'M12 5v14M5 12h14',
+  key:      ['M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4'],
 };
 
 const PER_PAGE = 8;
@@ -171,8 +172,11 @@ const AllCustomers = ({ showToast }) => {
   const [viewModal,   setViewModal]   = useState(null);
   const [editModal,   setEditModal]   = useState(null);
   const [deleteModal, setDeleteModal] = useState(null);
+  const [addModal,    setAddModal]    = useState(false);
+  const [addForm,     setAddForm]     = useState({ fullName: '', email: '', phone: '', password: '', streetAddress: '', city: '', state: '', zipCode: '', country: 'India', permStreetAddress: '', permCity: '', permState: '', permZipCode: '', permCountry: 'India' });
   const [editForm,    setEditForm]    = useState({});
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [addLoading, setAddLoading] = useState(false);
 
   const STATUS_OPTS = ['All','Active','Inactive','Blocked'];
 
@@ -216,7 +220,92 @@ const AllCustomers = ({ showToast }) => {
     else     setChecked(p=>{const n={...p};slice.forEach(c=>n[c.id]=true);return n;});
   };
 
-  const openEdit = c => { setEditModal(c); setEditForm({...c}); };
+  const openEdit = async (c) => {
+    setEditModal(c);
+    setEditForm({...c});
+    try {
+      const details = await getAdminCustomerDetails(c.id);
+      if (details && details.addresses) {
+        const shippingAddr = details.addresses.find(a => a.title === 'Home' || a.defaultAddress) || details.addresses[0];
+        const permAddr = details.addresses.find(a => a.title === 'Permanent') || details.addresses[1];
+        if (shippingAddr) {
+          setEditForm(f => ({
+            ...f,
+            streetAddress: shippingAddr.streetAddress || '',
+            city: shippingAddr.city || '',
+            state: shippingAddr.state || '',
+            zipCode: shippingAddr.zipCode || '',
+            country: shippingAddr.country || 'India'
+          }));
+        }
+        if (permAddr) {
+          setEditForm(f => ({
+            ...f,
+            permStreetAddress: permAddr.streetAddress || '',
+            permCity: permAddr.city || '',
+            permState: permAddr.state || '',
+            permZipCode: permAddr.zipCode || '',
+            permCountry: permAddr.country || 'India'
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load customer details:', err);
+    }
+  };
+
+  const handleResetPassword = async (c) => {
+    if (!window.confirm(`Send a password reset link to ${c.email}?`)) return;
+    try {
+      await adminResetCustomerPassword(c.id);
+      toast.success(`Password reset email sent to ${c.name}`);
+    } catch (err) {
+      toast.error(err.message || 'Failed to send reset email');
+    }
+  };
+
+  const handleAddCustomer = async () => {
+    if (!addForm.fullName.trim() || !addForm.email.trim() || !addForm.password.trim()) {
+      toast.error('Full name, email, and password are required');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addForm.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    if (addForm.password.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+    setAddLoading(true);
+    try {
+      const newCustomer = await createAdminCustomer({
+        fullName: addForm.fullName.trim(),
+        email: addForm.email.trim(),
+        phone: addForm.phone.trim(),
+        password: addForm.password,
+        streetAddress: addForm.streetAddress.trim(),
+        city: addForm.city.trim(),
+        state: addForm.state.trim(),
+        zipCode: addForm.zipCode.trim(),
+        country: addForm.country.trim() || 'India',
+        permStreetAddress: addForm.permStreetAddress.trim(),
+        permCity: addForm.permCity.trim(),
+        permState: addForm.permState.trim(),
+        permZipCode: addForm.permZipCode.trim(),
+        permCountry: addForm.permCountry.trim() || 'India',
+      });
+      toast.success(`Customer "${newCustomer.fullName}" created successfully`);
+      setAddModal(false);
+      setAddForm({ fullName: '', email: '', phone: '', password: '', streetAddress: '', city: '', state: '', zipCode: '', country: 'India', permStreetAddress: '', permCity: '', permState: '', permZipCode: '', permCountry: 'India' });
+      fetchCustomers();
+    } catch (err) {
+      toast.error(err.message || 'Failed to create customer');
+    } finally {
+      setAddLoading(false);
+    }
+  };
+
   const saveEdit = async () => {
     if (editForm.status !== editModal.status) {
       setStatusUpdating(true);
@@ -282,6 +371,9 @@ const AllCustomers = ({ showToast }) => {
             <button className="cm-btn cm-btn--out" onClick={handleExport}>
               <I d={P.download} size={13} color="#475569"/>Export
             </button>
+            <button className="cm-btn cm-btn--pri" onClick={()=>setAddModal(true)}>
+              <I d={P.plus} size={13} color="#fff"/>Add Customer
+            </button>
           </div>
         </div>
 
@@ -318,6 +410,7 @@ const AllCustomers = ({ showToast }) => {
                     <div className="cm-acts">
                       <button className="cm-act cm-act--view" title="View" onClick={()=>setViewModal(c)}><I d={P.eye} size={13}/></button>
                       <button className="cm-act cm-act--edit" title="Edit" onClick={()=>openEdit(c)}><I d={P.edit} size={13}/></button>
+                      <button className="cm-act cm-act--edit" title="Reset Password" onClick={()=>handleResetPassword(c)}><I d={P.key} size={13}/></button>
                       <button
                         className={`cm-act ${c.status==='Blocked'?'cm-act--approve':'cm-act--trash'}`}
                         title={c.status==='Blocked'?'Activate':'Block'}
@@ -368,6 +461,22 @@ const AllCustomers = ({ showToast }) => {
             <Field label="Email"><Inp type="email" value={editForm.email} disabled/></Field>
             <Field label="Phone"><Inp value={editForm.phone} disabled/></Field>
             <Field label="Status"><Sel value={editForm.status} onChange={e=>setEditForm(f=>({...f,status:e.target.value}))} options={['Active','Inactive','Blocked']}/></Field>
+            <div style={{gridColumn:'1/-1',borderTop:'1px solid #e2e8f0',paddingTop:16,marginTop:8}}>
+              <h4 style={{margin:'0 0 12px',fontSize:'0.85rem',fontWeight:600,color:'#1e293b'}}>Shipping Address</h4>
+            </div>
+            <Field label="Street Address" span2><Inp value={editForm.streetAddress||''} onChange={e=>setEditForm(f=>({...f, streetAddress: e.target.value}))} placeholder="123 Main Street, Apt 4B"/></Field>
+            <Field label="City"><Inp value={editForm.city||''} onChange={e=>setEditForm(f=>({...f, city: e.target.value}))} placeholder="Mumbai"/></Field>
+            <Field label="State"><Inp value={editForm.state||''} onChange={e=>setEditForm(f=>({...f, state: e.target.value}))} placeholder="Maharashtra"/></Field>
+            <Field label="ZIP Code"><Inp value={editForm.zipCode||''} onChange={e=>setEditForm(f=>({...f, zipCode: e.target.value}))} placeholder="400001"/></Field>
+            <Field label="Country"><Inp value={editForm.country||'India'} onChange={e=>setEditForm(f=>({...f, country: e.target.value}))} placeholder="India"/></Field>
+            <div style={{gridColumn:'1/-1',borderTop:'1px solid #e2e8f0',paddingTop:16,marginTop:8}}>
+              <h4 style={{margin:'0 0 12px',fontSize:'0.85rem',fontWeight:600,color:'#1e293b'}}>Permanent Address</h4>
+            </div>
+            <Field label="Street Address" span2><Inp value={editForm.permStreetAddress||''} onChange={e=>setEditForm(f=>({...f, permStreetAddress: e.target.value}))} placeholder="123 Main Street, Apt 4B"/></Field>
+            <Field label="City"><Inp value={editForm.permCity||''} onChange={e=>setEditForm(f=>({...f, permCity: e.target.value}))} placeholder="Mumbai"/></Field>
+            <Field label="State"><Inp value={editForm.permState||''} onChange={e=>setEditForm(f=>({...f, permState: e.target.value}))} placeholder="Maharashtra"/></Field>
+            <Field label="ZIP Code"><Inp value={editForm.permZipCode||''} onChange={e=>setEditForm(f=>({...f, permZipCode: e.target.value}))} placeholder="400001"/></Field>
+            <Field label="Country"><Inp value={editForm.permCountry||'India'} onChange={e=>setEditForm(f=>({...f, permCountry: e.target.value}))} placeholder="India"/></Field>
           </div>
         </Modal>
       )}
@@ -382,6 +491,40 @@ const AllCustomers = ({ showToast }) => {
           <div className="cm-alert cm-alert--danger">
             <I d={P.info} size={16} color="#dc2626"/>
             Are you sure you want to delete <strong>{deleteModal.name}</strong>? This action cannot be undone.
+          </div>
+        </Modal>
+      )}
+
+      {/* Add Customer Modal */}
+      {addModal && (
+        <Modal title="Add New Customer" onClose={()=>{setAddModal(false); setAddForm({ fullName: '', email: '', phone: '', password: '', streetAddress: '', city: '', state: '', zipCode: '', country: 'India', permStreetAddress: '', permCity: '', permState: '', permZipCode: '', permCountry: 'India' });}}
+          footer={<>
+            <button className="cm-btn cm-btn--out" onClick={()=>{setAddModal(false); setAddForm({ fullName: '', email: '', phone: '', password: '', streetAddress: '', city: '', state: '', zipCode: '', country: 'India', permStreetAddress: '', permCity: '', permState: '', permZipCode: '', permCountry: 'India' });}}>Cancel</button>
+            <button className="cm-btn cm-btn--pri" disabled={addLoading} onClick={handleAddCustomer}>
+              <I d={P.check} size={13} color="#fff"/>{addLoading ? 'Creating...' : 'Create Customer'}
+            </button>
+          </>}>
+          <div className="cm-form-grid">
+            <Field label="Full Name" span2><Inp value={addForm.fullName} onChange={e=>setAddForm(f=>({...f, fullName: e.target.value}))} placeholder="John Doe" autoFocus/></Field>
+            <Field label="Email"><Inp type="email" value={addForm.email} onChange={e=>setAddForm(f=>({...f, email: e.target.value}))} placeholder="john@example.com"/></Field>
+            <Field label="Phone"><Inp value={addForm.phone} onChange={e=>setAddForm(f=>({...f, phone: e.target.value}))} placeholder="9876543210"/></Field>
+            <Field label="Password"><Inp type="password" value={addForm.password} onChange={e=>setAddForm(f=>({...f, password: e.target.value}))} placeholder="Min 8 characters"/></Field>
+            <div style={{gridColumn:'1/-1',borderTop:'1px solid #e2e8f0',paddingTop:16,marginTop:8}}>
+              <h4 style={{margin:'0 0 12px',fontSize:'0.85rem',fontWeight:600,color:'#1e293b'}}>Shipping Address</h4>
+            </div>
+            <Field label="Street Address" span2><Inp value={addForm.streetAddress} onChange={e=>setAddForm(f=>({...f, streetAddress: e.target.value}))} placeholder="123 Main Street, Apt 4B"/></Field>
+            <Field label="City"><Inp value={addForm.city} onChange={e=>setAddForm(f=>({...f, city: e.target.value}))} placeholder="Mumbai"/></Field>
+            <Field label="State"><Inp value={addForm.state} onChange={e=>setAddForm(f=>({...f, state: e.target.value}))} placeholder="Maharashtra"/></Field>
+            <Field label="ZIP Code"><Inp value={addForm.zipCode} onChange={e=>setAddForm(f=>({...f, zipCode: e.target.value}))} placeholder="400001"/></Field>
+            <Field label="Country"><Inp value={addForm.country} onChange={e=>setAddForm(f=>({...f, country: e.target.value}))} placeholder="India"/></Field>
+            <div style={{gridColumn:'1/-1',borderTop:'1px solid #e2e8f0',paddingTop:16,marginTop:8}}>
+              <h4 style={{margin:'0 0 12px',fontSize:'0.85rem',fontWeight:600,color:'#1e293b'}}>Permanent Address</h4>
+            </div>
+            <Field label="Street Address" span2><Inp value={addForm.permStreetAddress} onChange={e=>setAddForm(f=>({...f, permStreetAddress: e.target.value}))} placeholder="123 Main Street, Apt 4B"/></Field>
+            <Field label="City"><Inp value={addForm.permCity} onChange={e=>setAddForm(f=>({...f, permCity: e.target.value}))} placeholder="Mumbai"/></Field>
+            <Field label="State"><Inp value={addForm.permState} onChange={e=>setAddForm(f=>({...f, permState: e.target.value}))} placeholder="Maharashtra"/></Field>
+            <Field label="ZIP Code"><Inp value={addForm.permZipCode} onChange={e=>setAddForm(f=>({...f, permZipCode: e.target.value}))} placeholder="400001"/></Field>
+            <Field label="Country"><Inp value={addForm.permCountry} onChange={e=>setAddForm(f=>({...f, permCountry: e.target.value}))} placeholder="India"/></Field>
           </div>
         </Modal>
       )}

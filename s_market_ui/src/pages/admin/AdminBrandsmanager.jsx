@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getBrands, createBrand, updateBrand, deleteBrand } from '../../api/api';
 import { exportCSV } from './VendorShared';
 import './AdminBrandsmanager.css';
+import Toggle from '../../components/admin/Toggle';
 
 /* ================================================================
    BrandsManager — Table + Add/Edit Modal
@@ -168,21 +169,11 @@ const Modal = ({ mode, item, onClose, onSave }) => {
             </div>
             <div className="br-field" style={{flex:1}}>
               <label className="br-field__lbl">Featured</label>
-              <div className="br-toggle" onClick={()=>setFeatured(!featured)}>
-                <div className={`br-toggle__track${featured?' br-toggle__track--on':''}`}>
-                  <div className="br-toggle__thumb"/>
-                </div>
-                <span>{featured?'Yes':'No'}</span>
-              </div>
+              <Toggle on={featured} onChange={() => setFeatured(!featured)} size="sm" />
             </div>
             <div className="br-field" style={{flex:1}}>
               <label className="br-field__lbl">Verified</label>
-              <div className="br-toggle" onClick={()=>setVerified(!verified)}>
-                <div className={`br-toggle__track${verified?' br-toggle__track--on br-toggle__track--blue':''}`}>
-                  <div className="br-toggle__thumb"/>
-                </div>
-                <span>{verified?'Yes':'No'}</span>
-              </div>
+              <Toggle on={verified} onChange={() => setVerified(!verified)} size="sm" />
             </div>
           </div>
         </div>

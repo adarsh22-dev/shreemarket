@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,6 +19,8 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
     boolean existsByPhone(String phone);
 
     Optional<Vendor> findByEmail(String email);
+
+    Optional<Vendor> findByResetToken(String resetToken);
 
     Page<Vendor> findByStatus(String status, Pageable pageable);
 
@@ -38,4 +41,10 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
             "LOWER(s.storeName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(s.city) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Vendor> searchVendors(@Param("search") String search, Pageable pageable);
+
+    // Soft-delete queries
+    List<Vendor> findByDeletedTrue();
+    List<Vendor> findByDeletedTrueAndFullNameContainingIgnoreCase(String name);
+    long countByDeletedTrue();
+    List<Vendor> findAllByDeletedTrueAndDeletedAtLessThan(Long deletedAt);
 }

@@ -7,6 +7,7 @@ import {
   Download, Upload, RefreshCw
 } from 'lucide-react';
 import { getCustomSnippets, createCustomSnippet, updateCustomSnippet, deleteCustomSnippet } from '../../api/api';
+import Toggle from '../../components/admin/Toggle';
 
 const LOCATIONS = [
   { key: 'head',          label: 'Head',           icon: FileCode,  desc: 'Injected inside <head> — ideal for meta tags, CSS links, fonts',       color: '#7c3aed', bg: '#ede9fe' },
@@ -131,10 +132,7 @@ function SnippetModal({ snippet, onSave, onClose }) {
               <div className="cc-label" style={{ margin: 0 }}>Active</div>
               <div className="cc-hint" style={{ margin: 0 }}>Inactive snippets are saved but not injected</div>
             </div>
-            <button className={`cc-toggle ${form.active ? 'cc-toggle--on' : 'cc-toggle--off'}`}
-              onClick={() => set('active', !form.active)} type="button">
-              <span className="cc-toggle__knob" />
-            </button>
+            <Toggle on={form.active} onChange={v => set('active', v)} size="sm" />
           </div>
 
           <div className="cc-alert cc-alert--warn">
@@ -187,9 +185,7 @@ function SnippetCard({ s, onEdit, onDelete, onToggle }) {
         <div className="cc-card__actions">
           <button className="cc-ib cc-ib--sm" title={s.active ? 'Deactivate' : 'Activate'}
             onClick={() => onToggle(s.id)}>
-            {s.active
-              ? <ToggleRight size={16} color="#16a34a" />
-              : <ToggleLeft size={16} color="#94a3b8" />}
+            <Toggle on={s.active} onChange={() => onToggle(s.id)} size="sm" />
           </button>
           <button className="cc-ib cc-ib--sm" title="Edit" onClick={() => onEdit(s)}>
             <Code2 size={13} />
@@ -470,7 +466,7 @@ export default function CmsCustomCode() {
                         <td>
                           <div style={{display:'flex', gap:4, justifyContent:'flex-end'}}>
                             <button className="cc-ib cc-ib--sm" title="Toggle" onClick={() => handleToggle(s.id)}>
-                              {s.active ? <ToggleRight size={16} color="#16a34a" /> : <ToggleLeft size={16} color="#94a3b8" />}
+                              <Toggle on={s.active} onChange={() => handleToggle(s.id)} size="sm" />
                             </button>
                             <button className="cc-ib cc-ib--sm" title="Edit" onClick={() => openEdit(s)}>
                               <Code2 size={13} />

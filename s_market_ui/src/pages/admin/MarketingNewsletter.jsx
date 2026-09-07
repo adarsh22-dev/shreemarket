@@ -8,6 +8,7 @@ import {
   Award, Repeat, DollarSign, Link, Zap, Globe
 } from 'lucide-react';
 import { getNewsletterCampaigns, createNewsletterCampaign, deleteNewsletterCampaign, getSubscriberLists, createSubscriberList, getReferrers, createReferrer, deleteReferrer } from '../../api/api';
+import Toggle from '../../components/admin/Toggle';
 
 /* ── helpers ── */
 const fmt  = n => n >= 1e5 ? `₹${(n/1e5).toFixed(1)}L` : `₹${n.toLocaleString('en-IN')}`;
@@ -25,12 +26,6 @@ const Toast = ({ msg, type, onDone }) => {
     </div>
   );
 };
-
-const Toggle = ({ on, onChange }) => (
-  <button className={`nl-toggle ${on?'nl-toggle--on':''}`} onClick={()=>onChange(!on)} type="button">
-    <span className="nl-toggle__knob"/>
-  </button>
-);
 
 /* ── Modal shell ── */
 const Modal = ({ title, onClose, children, footer, maxW=500 }) => (

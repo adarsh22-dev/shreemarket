@@ -5,7 +5,7 @@ import {
     LayoutDashboard, BarChart2, Store, Package, ShoppingCart,
     Users, DollarSign, Megaphone, Star, FileText, Settings,
     LogOut, ChevronDown, ChevronRight,
-    Ticket, Shield, Bot, Receipt, Warehouse,
+    Ticket, Shield, Bot, Receipt, Warehouse, Trash2,
 } from 'lucide-react';
 import smarketLogo from '../../assets/smarketlogo.svg';
 
@@ -172,6 +172,7 @@ const NAV = [
         ],
     },
     { label: 'Settings', icon: Settings, path: '/admin/settings' },
+    { label: 'Trash', icon: Trash2, path: '/admin/trash' },
 ];
 
 const AdminLayout = () => {

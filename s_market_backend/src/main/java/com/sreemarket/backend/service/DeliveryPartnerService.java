@@ -49,9 +49,10 @@ public class DeliveryPartnerService {
     }
 
     public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Delivery partner not found with id: " + id);
-        }
-        repository.deleteById(id);
+        DeliveryPartner partner = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Delivery partner not found with id: " + id));
+        partner.setDeleted(true);
+        partner.setDeletedAt(System.currentTimeMillis());
+        repository.save(partner);
     }
 }

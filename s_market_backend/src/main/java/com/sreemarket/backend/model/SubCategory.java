@@ -26,6 +26,10 @@ public class SubCategory {
 
     private Integer sortOrder;
 
+    private boolean deleted;
+
+    private Long deletedAt;
+
     private LocalDateTime createdAt;
 
     public SubCategory() {}
@@ -58,6 +62,10 @@ public class SubCategory {
     public Integer getSortOrder() { return sortOrder; }
     public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
 
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 

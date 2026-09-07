@@ -41,6 +41,16 @@ public class AdminWholesalerController {
         }
     }
 
+    @PostMapping("/wholesalers")
+    public ResponseEntity<?> createWholesaler(@RequestBody Wholesaler wholesaler) {
+        try {
+            Wholesaler created = wholesalerService.registerWholesaler(wholesaler);
+            return ResponseEntity.ok(created);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/wholesalers/{id}/approve")
     public ResponseEntity<?> approveWholesaler(@PathVariable Long id) {
         try {
@@ -66,6 +76,16 @@ public class AdminWholesalerController {
         try {
             Wholesaler updated = wholesalerService.updateWholesalerStatus(id, "Suspended");
             return ResponseEntity.ok(Map.of("message", "Wholesaler suspended", "wholesalerId", updated.getId()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/wholesalers/{id}/reset-password")
+    public ResponseEntity<?> adminTriggerWholesalerPasswordReset(@PathVariable Long id) {
+        try {
+            wholesalerService.adminTriggerPasswordReset(id);
+            return ResponseEntity.ok(Map.of("message", "Password reset email sent to wholesaler"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

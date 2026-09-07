@@ -20,6 +20,8 @@ public class FlashSale {
     private String banner;
     private String category;
     private String description;
+    private Boolean deleted = false;
+    private Long deletedAt;
 
     public FlashSale() {}
 
@@ -51,4 +53,8 @@ public class FlashSale {
     public void setCategory(String category) { this.category = category; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
 }

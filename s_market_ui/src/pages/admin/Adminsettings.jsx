@@ -10,14 +10,7 @@ import {
 } from 'lucide-react';
 import { getPlatformSettings, updatePlatformSettings, getAuditLogs } from '../../api/api.js';
 import { exportCSV } from './VendorShared';
-
-/* ── Toggle (checkbox) ── */
-const Toggle = ({ on, onChange }) => (
-  <label className="as-toggle">
-    <input type="checkbox" checked={on} onChange={e => onChange(e.target.checked)} />
-    <span className="as-toggle__knob" />
-  </label>
-);
+import Toggle from '../../components/admin/Toggle';
 
 /* ── Section wrapper ── */
 const Section = ({ title, desc, children }) => (

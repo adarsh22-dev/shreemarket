@@ -51,9 +51,10 @@ public class TestimonialService {
     }
 
     public void deleteTestimonial(Long id) {
-        if (!testimonialRepository.existsById(id)) {
-            throw new RuntimeException("Testimonial not found");
-        }
-        testimonialRepository.deleteById(id);
+        Testimonial testimonial = testimonialRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Testimonial not found"));
+        testimonial.setDeleted(true);
+        testimonial.setDeletedAt(System.currentTimeMillis());
+        testimonialRepository.save(testimonial);
     }
 }

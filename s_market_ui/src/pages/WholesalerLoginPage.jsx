@@ -51,6 +51,11 @@ const WholesalerLoginPage = () => {
                         <div className="form-group">
                             <label htmlFor="password" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: 'var(--text-primary)' }}>Password</label>
                             <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} icon={showPassword ? EyeOff : Eye} onIconClick={() => setShowPassword(!showPassword)} required />
+                            <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+                                <Link to="/forgot-password?type=wholesaler" className="forgot-password" style={{ color: 'var(--primary-orange)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                    Forgot password?
+                                </Link>
+                            </div>
                         </div>
                         <Button type="submit" fullWidth>Sign in</Button>
                     </form>

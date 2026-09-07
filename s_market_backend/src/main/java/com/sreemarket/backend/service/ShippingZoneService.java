@@ -50,6 +50,10 @@ public class ShippingZoneService {
     }
 
     public void deleteZone(Long id) {
-        repository.deleteById(id);
+        ShippingZone zone = repository.findById(id).orElse(null);
+        if (zone == null) throw new RuntimeException("Shipping zone not found");
+        zone.setDeleted(true);
+        zone.setDeletedAt(System.currentTimeMillis());
+        repository.save(zone);
     }
 }

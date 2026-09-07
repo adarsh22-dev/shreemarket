@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Check, X, AlertTriangle, Eye, ChevronLeft, ChevronRight, Building2, Mail, Phone, MapPin, Calendar, FileText, Hash } from 'lucide-react';
+import { Search, Check, X, AlertTriangle, Eye, ChevronLeft, ChevronRight, Building2, Mail, Phone, MapPin, Calendar, FileText, Hash, KeyRound, Plus } from 'lucide-react';
+import { createAdminWholesaler } from '../../api/api';
 import './AdminWholesalers.css';
 
 const API = window.API_BASE_URL || 'http://localhost:8082/api';
@@ -68,6 +69,15 @@ const AdminWholesalers = () => {
   const [confirm, setConfirm] = useState(null);
   const [selected, setSelected] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  const [addModal, setAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({
+    fullName: '', email: '', phone: '', password: '',
+    businessName: '', businessType: '', gstNumber: '',
+    businessAddress: '', businessPhone: '',
+    agreeTerms: false, agreePolicies: false,
+    gstCertificate: null, businessProof: null, addressProof: null
+  });
+  const [addLoading, setAddLoading] = useState(false);
 
   const fetchWholesalers = async () => {
     setLoading(true);
@@ -115,6 +125,86 @@ const AdminWholesalers = () => {
     }
   };
 
+  const handleResetPassword = (w) => {
+    setConfirm({
+      msg: `Send a password reset link to ${w.email}? They will receive an email to set a new password.`,
+      onConfirm: async () => {
+        setActionLoading(w.id);
+        try {
+          const res = await fetch(`${API}/admin/wholesalers/${w.id}/reset-password`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to send reset email');
+          show(`Password reset email sent to ${w.fullName}`, 'success');
+          setConfirm(null);
+        } catch (err) {
+          show(err.message, 'error');
+        } finally {
+          setActionLoading(null);
+        }
+      }
+    });
+  };
+
+  const handleAddWholesaler = async () => {
+    const required = ['fullName', 'email', 'phone', 'password', 'businessName', 'businessType', 'businessAddress', 'businessPhone'];
+    const missing = required.filter(field => !addForm[field]?.toString().trim());
+    if (missing.length > 0) {
+      show(`Please fill in all required fields: ${missing.join(', ')}`, 'error');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addForm.email)) {
+      show('Please enter a valid email address', 'error');
+      return;
+    }
+    if (addForm.password.length < 8) {
+      show('Password must be at least 8 characters', 'error');
+      return;
+    }
+    if (!addForm.agreeTerms || !addForm.agreePolicies) {
+      show('You must agree to Terms & Conditions and Marketplace Policies', 'error');
+      return;
+    }
+    setAddLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('fullName', addForm.fullName.trim());
+      formData.append('email', addForm.email.trim());
+      formData.append('phone', addForm.phone.trim());
+      formData.append('password', addForm.password);
+      formData.append('businessName', addForm.businessName.trim());
+      formData.append('businessType', addForm.businessType.trim());
+      formData.append('gstNumber', addForm.gstNumber?.trim() || '');
+      formData.append('businessAddress', addForm.businessAddress.trim());
+      formData.append('businessPhone', addForm.businessPhone.trim());
+      formData.append('agreeTerms', addForm.agreeTerms);
+      formData.append('agreePolicies', addForm.agreePolicies);
+      if (addForm.minMonthlyOrderValue) {
+        formData.append('minMonthlyOrderValue', addForm.minMonthlyOrderValue);
+      }
+      if (addForm.gstCertificate) {
+        formData.append('gstCertificate', addForm.gstCertificate);
+      }
+      if (addForm.businessProof) {
+        formData.append('businessProof', addForm.businessProof);
+      }
+      if (addForm.addressProof) {
+        formData.append('addressProof', addForm.addressProof);
+      }
+      
+      const newWholesaler = await createAdminWholesaler(formData);
+      show(`Wholesaler "${newWholesaler.fullName}" created successfully`, 'success');
+      setAddModal(false);
+      setAddForm({ fullName: '', email: '', phone: '', password: '', businessName: '', businessType: '', gstNumber: '', businessAddress: '', businessPhone: '', agreeTerms: false, agreePolicies: false, minMonthlyOrderValue: '', gstCertificate: null, businessProof: null, addressProof: null });
+      fetchWholesalers();
+    } catch (err) {
+      show(err.message || 'Failed to create wholesaler', 'error');
+    } finally {
+      setAddLoading(false);
+    }
+  };
+
   const handleViewDetail = async (id) => {
     try {
       const res = await fetch(`${API}/admin/wholesalers/${id}`, {
@@ -138,6 +228,9 @@ const AdminWholesalers = () => {
           <p className="aw-hdr__sub">Manage wholesaler registrations, approvals, and account status</p>
         </div>
         <div className="aw-hdr__actions">
+          <button className="aw-btn aw-btn--primary" onClick={() => setAddModal(true)} style={{ marginRight: 12 }}>
+            <Plus size={14} style={{ marginRight: 6 }} /> Add Wholesaler
+          </button>
           <span style={{ padding: '6px 16px', borderRadius: 999, background: '#f1f5f9', color: '#475569', fontSize: '0.8rem', fontWeight: 600 }}>
             {totalElements} wholesalers
           </span>
@@ -218,6 +311,9 @@ const AdminWholesalers = () => {
                       <div className="aw-actions">
                         <button className="aw-btn aw-btn--ghost aw-btn--xs" onClick={() => handleViewDetail(w.id)} title="View details">
                           <Eye size={14} /> View
+                        </button>
+                        <button className="aw-btn aw-btn--ghost aw-btn--xs" onClick={() => handleResetPassword(w)} disabled={actionLoading === w.id} title="Send password reset link">
+                          <KeyRound size={14} /> Reset Password
                         </button>
                         {w.status === 'Pending' && (
                           <>
@@ -340,6 +436,7 @@ const AdminWholesalers = () => {
             </div>
             <div className="aw-modal-actions">
               <button className="aw-btn aw-btn--ghost" onClick={() => setSelected(null)}>Close</button>
+              <button className="aw-btn aw-btn--ghost" onClick={() => { setSelected(null); handleResetPassword(selected); }}><KeyRound size={14} /> Reset Password</button>
               {selected.status === 'Pending' && (
                 <>
                   <button className="aw-btn aw-btn--success" onClick={() => { setSelected(null); setConfirm({ msg: `Approve ${selected.fullName} as a wholesaler?`, onConfirm: () => handleAction(selected.id, 'approve') }); }}>Approve</button>
@@ -358,6 +455,132 @@ const AdminWholesalers = () => {
       )}
 
       <style>{`@keyframes awSpin { to { transform: rotate(360deg) } }`}</style>
+
+      {/* Add Wholesaler Modal */}
+      {addModal && (
+        <div className="aw-modal-overlay" onClick={e => e.target === e.currentTarget && setAddModal(false)}>
+          <div className="aw-modal">
+            <div className="aw-modal-hdr">
+              <h2><Building2 size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#E03E1A' }} />Add New Wholesaler</h2>
+              <button className="aw-modal-close" onClick={() => { setAddModal(false); setAddForm({ fullName: '', email: '', phone: '', password: '', businessName: '', businessType: '', gstNumber: '', businessAddress: '', businessPhone: '', agreeTerms: false, agreePolicies: false, minMonthlyOrderValue: '', gstCertificate: null, businessProof: null, addressProof: null }); }}>✕</button>
+            </div>
+            <div className="aw-modal-body" style={{ padding: 24 }}>
+              {/* Personal Information */}
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111', marginBottom: 16, paddingBottom: 8, borderBottom: '1px solid #e5e5e5' }}>PERSONAL INFORMATION</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Full Name *</label>
+                    <input type="text" value={addForm.fullName} onChange={e => setAddForm(f => ({ ...f, fullName: e.target.value }))} placeholder="John Doe" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: '0.84rem', boxSizing: 'border-box' }} autoFocus />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Email Address *</label>
+                    <input type="email" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} placeholder="business@example.com" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: '0.84rem', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Phone Number *</label>
+                    <input type="text" value={addForm.phone} onChange={e => setAddForm(f => ({ ...f, phone: e.target.value }))} placeholder="+91 9876543210" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: '0.84rem', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Password *</label>
+                    <input type="password" value={addForm.password} onChange={e => setAddForm(f => ({ ...f, password: e.target.value }))} placeholder="Min 8 characters" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: '0.84rem', boxSizing: 'border-box' }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Details */}
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111', marginBottom: 16, paddingBottom: 8, borderBottom: '1px solid #e5e5e5' }}>BUSINESS DETAILS</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Business Name *</label>
+                    <input type="text" value={addForm.businessName} onChange={e => setAddForm(f => ({ ...f, businessName: e.target.value }))} placeholder="My Business Pvt Ltd" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: '0.84rem', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>GST Number</label>
+                    <input type="text" value={addForm.gstNumber} onChange={e => setAddForm(f => ({ ...f, gstNumber: e.target.value }))} placeholder="22AAAAA0000A1Z5" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: '0.84rem', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Business Phone *</label>
+                    <input type="text" value={addForm.businessPhone} onChange={e => setAddForm(f => ({ ...f, businessPhone: e.target.value }))} placeholder="+91 9876543210" style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: '0.84rem', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Business Type *</label>
+                    <select value={addForm.businessType} onChange={e => setAddForm(f => ({ ...f, businessType: e.target.value }))} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: '0.84rem', boxSizing: 'border-box', background: '#fff' }}>
+                      <option value="">Select Business Type</option>
+                      <option value="Manufacturer">Manufacturer</option>
+                      <option value="Distributor">Distributor</option>
+                      <option value="Retailer">Retailer</option>
+                      <option value="Wholesaler">Wholesaler</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Business Address *</label>
+                    <textarea value={addForm.businessAddress} onChange={e => setAddForm(f => ({ ...f, businessAddress: e.target.value }))} placeholder="123, Main Street, City" rows={3} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #e5e5e5', fontSize: '0.84rem', boxSizing: 'border-box', resize: 'vertical' }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Document Verification */}
+              <div style={{ marginBottom: 24 }}>
+                <h3 style={{ fontSize: '0.85rem', fontWeight: 700, color: '#111', marginBottom: 16, paddingBottom: 8, borderBottom: '1px solid #e5e5e5' }}>DOCUMENT VERIFICATION (Optional)</h3>
+                <p style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: 16 }}>Upload documents for KYC verification</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>GST Certificate</label>
+                    <div style={{ position: 'relative', border: '2px dashed #ddd', borderRadius: 8, padding: '16px 12px', textAlign: 'center', cursor: 'pointer', background: '#fafafa', transition: 'all 0.2s' }}>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setAddForm(f => ({ ...f, gstCertificate: e.target.files[0] }))} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
+                      <span style={{ fontSize: '0.8rem', color: addForm.gstCertificate ? '#16a34a' : '#94a3b8' }}>
+                        {addForm.gstCertificate ? `✓ ${addForm.gstCertificate.name}` : 'Click to upload'}
+                      </span>
+                      <p style={{ margin: '8px 0 0', fontSize: '0.65rem', color: '#aaa' }}>JPG, PNG or PDF</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Business Proof</label>
+                    <div style={{ position: 'relative', border: '2px dashed #ddd', borderRadius: 8, padding: '16px 12px', textAlign: 'center', cursor: 'pointer', background: '#fafafa', transition: 'all 0.2s' }}>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setAddForm(f => ({ ...f, businessProof: e.target.files[0] }))} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
+                      <span style={{ fontSize: '0.8rem', color: addForm.businessProof ? '#16a34a' : '#94a3b8' }}>
+                        {addForm.businessProof ? `✓ ${addForm.businessProof.name}` : 'Click to upload'}
+                      </span>
+                      <p style={{ margin: '8px 0 0', fontSize: '0.65rem', color: '#aaa' }}>JPG, PNG or PDF</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 6 }}>Address Proof</label>
+                    <div style={{ position: 'relative', border: '2px dashed #ddd', borderRadius: 8, padding: '16px 12px', textAlign: 'center', cursor: 'pointer', background: '#fafafa', transition: 'all 0.2s' }}>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setAddForm(f => ({ ...f, addressProof: e.target.files[0] }))} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
+                      <span style={{ fontSize: '0.8rem', color: addForm.addressProof ? '#16a34a' : '#94a3b8' }}>
+                        {addForm.addressProof ? `✓ ${addForm.addressProof.name}` : 'Click to upload'}
+                      </span>
+                      <p style={{ margin: '8px 0 0', fontSize: '0.65rem', color: '#aaa' }}>JPG, PNG or PDF</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Agreements */}
+              <div style={{ marginBottom: 24, padding: 16, background: '#f8fafc', borderRadius: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={addForm.agreeTerms} onChange={e => setAddForm(f => ({ ...f, agreeTerms: e.target.checked }))} style={{ marginTop: 2, accentColor: '#E03E1A' }} />
+                  <span style={{ fontSize: '0.78rem', color: '#475569' }}>I agree to the <strong>Terms & Conditions</strong> *</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', marginTop: 10 }}>
+                  <input type="checkbox" checked={addForm.agreePolicies} onChange={e => setAddForm(f => ({ ...f, agreePolicies: e.target.checked }))} style={{ marginTop: 2, accentColor: '#E03E1A' }} />
+                  <span style={{ fontSize: '0.78rem', color: '#475569' }}>I agree to the <strong>Marketplace Policies</strong> *</span>
+                </label>
+              </div>
+            </div>
+            <div className="aw-modal-actions">
+              <button className="aw-btn aw-btn--ghost" onClick={() => { setAddModal(false); setAddForm({ fullName: '', email: '', phone: '', password: '', businessName: '', businessType: '', gstNumber: '', businessAddress: '', businessPhone: '', agreeTerms: false, agreePolicies: false, gstCertificate: null, businessProof: null, addressProof: null }); }}>Cancel</button>
+              <button className="aw-btn aw-btn--primary" disabled={addLoading} onClick={handleAddWholesaler}>
+                {addLoading ? 'Creating...' : 'Create Wholesaler'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

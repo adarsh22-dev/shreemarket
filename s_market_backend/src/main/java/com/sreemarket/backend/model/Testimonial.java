@@ -38,6 +38,10 @@ public class Testimonial {
 
     private Long createdAt;
 
+    private Boolean deleted = false;
+
+    private Long deletedAt;
+
     public Testimonial() {
     }
 
@@ -99,4 +103,8 @@ public class Testimonial {
 
     public Long getCreatedAt() { return createdAt; }
     public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
 }

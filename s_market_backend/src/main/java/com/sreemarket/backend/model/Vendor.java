@@ -47,6 +47,12 @@ public class Vendor {
     @Column(name = "status")
     private String status;
 
+    @Column(name = "deleted")
+    private Boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private Long deletedAt;
+
     @Column(name = "payment_method")
     private String paymentMethod;
     @Column(name = "payment_email")
@@ -91,6 +97,12 @@ public class Vendor {
 
     @Column(columnDefinition = "TEXT")
     private String settings;
+
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
+    private String resetToken;
+
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
+    private Long resetTokenExpiry;
 
     private Long createdAt;
     private Long updatedAt;

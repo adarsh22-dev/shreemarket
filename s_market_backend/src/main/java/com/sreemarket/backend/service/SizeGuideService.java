@@ -42,10 +42,11 @@ public class SizeGuideService {
     }
 
     public void delete(Long id) {
-        if (!sizeGuideRepository.existsById(id)) {
-            throw new RuntimeException("Size guide not found with id: " + id);
-        }
-        sizeGuideRepository.deleteById(id);
+        SizeGuide sizeGuide = sizeGuideRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Size guide not found with id: " + id));
+        sizeGuide.setDeleted(true);
+        sizeGuide.setDeletedAt(System.currentTimeMillis());
+        sizeGuideRepository.save(sizeGuide);
     }
 
     public List<SizeGuide> searchByCategory(String category) {

@@ -173,7 +173,9 @@ public class UserService {
             throw new RuntimeException("Invalid password. Deletion denied.");
         }
 
-        userRepository.deleteById(id);
+        user.setDeleted(true);
+        user.setDeletedAt(System.currentTimeMillis());
+        userRepository.save(user);
     }
 
 }

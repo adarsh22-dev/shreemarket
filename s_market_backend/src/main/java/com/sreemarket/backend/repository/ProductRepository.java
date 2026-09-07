@@ -39,4 +39,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     List<Product> findByCategoryAndApprovalStatus(String category, String approvalStatus);
 
     List<Product> findBySupportsWholesaleTrueAndApprovalStatus(String approvalStatus);
+
+    // Soft-delete queries
+    List<Product> findByDeletedTrue();
+    List<Product> findByDeletedTrueAndNameContainingIgnoreCase(String name);
+    long countByDeletedTrue();
+    List<Product> findAllByDeletedTrueAndDeletedAtLessThan(Long deletedAt);
 }

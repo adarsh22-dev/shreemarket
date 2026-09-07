@@ -134,6 +134,7 @@ com/sreemarket/backend/repository/BulkPricingTierRepository.class
 com/sreemarket/backend/model/StockMovement.class
 com/sreemarket/backend/repository/VendorRepository.class
 com/sreemarket/backend/service/CategoryService.class
+com/sreemarket/backend/controller/TrashController.class
 com/sreemarket/backend/service/TaxRateService$GSTSlab.class
 com/sreemarket/backend/model/NewsletterCampaign.class
 com/sreemarket/backend/repository/VendorShippingRuleRepository.class
@@ -240,6 +241,7 @@ com/sreemarket/backend/controller/MaintenanceController.class
 com/sreemarket/backend/model/OnboardingStep.class
 com/sreemarket/backend/repository/wooai/QuickActionRepository.class
 com/sreemarket/backend/service/WishlistService.class
+com/sreemarket/backend/service/TrashService.class
 com/sreemarket/backend/model/SeoPage.class
 com/sreemarket/backend/model/CartItem.class
 com/sreemarket/backend/repository/RefundRepository.class

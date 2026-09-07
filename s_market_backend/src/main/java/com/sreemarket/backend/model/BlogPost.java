@@ -19,6 +19,8 @@ public class BlogPost {
     private String slug;
     private String metaTitle;
     private String metaDesc;
+    private Boolean deleted = false;
+    private Long deletedAt;
 
     public BlogPost() {}
 
@@ -48,4 +50,8 @@ public class BlogPost {
     public void setMetaTitle(String metaTitle) { this.metaTitle = metaTitle; }
     public String getMetaDesc() { return metaDesc; }
     public void setMetaDesc(String metaDesc) { this.metaDesc = metaDesc; }
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
 }

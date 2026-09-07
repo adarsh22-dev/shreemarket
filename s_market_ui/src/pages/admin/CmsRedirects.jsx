@@ -6,6 +6,7 @@ import {
   RefreshCw, ExternalLink, Info
 } from 'lucide-react';
 import { getUrlRedirects, createUrlRedirect, updateUrlRedirect, deleteUrlRedirect } from '../../api/api';
+import Toggle from '../../components/admin/Toggle';
 
 const REDIRECT_TYPES = ['301 Permanent','302 Temporary'];
 const PER = 8;
@@ -80,9 +81,7 @@ function RedirectModal({ redirect, onSave, onClose }) {
               <div className="cr-label" style={{margin:0}}>Active</div>
               <div className="cr-hint" style={{margin:0}}>Inactive redirects are saved but not applied</div>
             </div>
-            <button className={`cr-toggle${f.active?' cr-toggle--on':' cr-toggle--off'}`} onClick={()=>set('active',!f.active)}>
-              <span className="cr-toggle-knob"/>
-            </button>
+            <Toggle on={f.active} onChange={v => set('active', v)} size="sm" />
           </div>
         </div>
         <div className="cr-modal-footer">

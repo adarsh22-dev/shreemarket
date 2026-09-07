@@ -58,9 +58,10 @@ public class BlogPostService {
     }
 
     public void delete(Long id) {
-        if (!blogPostRepository.existsById(id)) {
-            throw new RuntimeException("Blog post not found with id: " + id);
-        }
-        blogPostRepository.deleteById(id);
+        BlogPost blogPost = blogPostRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Blog post not found with id: " + id));
+        blogPost.setDeleted(true);
+        blogPost.setDeletedAt(System.currentTimeMillis());
+        blogPostRepository.save(blogPost);
     }
 }

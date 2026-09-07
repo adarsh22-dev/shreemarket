@@ -1,26 +1,57 @@
 import React, { useState } from 'react';
 import { Mail, ArrowLeft, ArrowRight, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { forgotPassword } from '../api/api';
+import { forgotPassword, vendorForgotPassword, wholesalerForgotPassword } from '../api/api';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import './ForgotPasswordPage.css';
 
 const ForgotPasswordPage = () => {
+    const [searchParams] = useSearchParams();
+    const type = searchParams.get('type') || 'customer';
     const [email, setEmail] = useState('');
 
+    const getTitle = () => {
+        switch (type) {
+            case 'vendor': return 'Vendor Password Reset';
+            case 'wholesaler': return 'Wholesaler Password Reset';
+            default: return 'Reset Your Password';
+        }
+    };
 
+    const getDescription = () => {
+        switch (type) {
+            case 'vendor': return 'Enter the email address associated with your vendor account and we\'ll send you a link to reset your password.';
+            case 'wholesaler': return 'Enter the email address associated with your wholesaler account and we\'ll send you a link to reset your password.';
+            default: return 'Enter the email address associated with your account and we\'ll send you a link to reset your password.';
+        }
+    };
 
-
+    const getBackLink = () => {
+        switch (type) {
+            case 'vendor': return '/';
+            case 'wholesaler': return '/wholesaler/login';
+            default: return '/';
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const loadingToast = toast.loading('Sending reset link...');
         try {
-            await forgotPassword(email);
+            switch (type) {
+                case 'vendor':
+                    await vendorForgotPassword(email);
+                    break;
+                case 'wholesaler':
+                    await wholesalerForgotPassword(email);
+                    break;
+                default:
+                    await forgotPassword(email);
+            }
             toast.dismiss(loadingToast);
-            toast.success("Reset link sent! Check the backend console.");
+            toast.success("Reset link sent! Check your email.");
         } catch (error) {
             toast.dismiss(loadingToast);
             console.error("Error sending reset link:", error);
@@ -42,8 +73,8 @@ const ForgotPasswordPage = () => {
                     </div>
 
                     <div className="form-header">
-                        <h2>Reset Your Password</h2>
-                        <p>Enter the email address associated with your account and we'll send you a link to reset your password.</p>
+                        <h2>{getTitle()}</h2>
+                        <p>{getDescription()}</p>
                     </div>
 
                     <form onSubmit={handleSubmit}>
@@ -66,7 +97,7 @@ const ForgotPasswordPage = () => {
                     </form>
 
                     <div className="back-to-login">
-                        <Link to="/" className="back-link">
+                        <Link to={getBackLink()} className="back-link">
                             <ArrowLeft size={16} />
                             Back to Login
                         </Link>

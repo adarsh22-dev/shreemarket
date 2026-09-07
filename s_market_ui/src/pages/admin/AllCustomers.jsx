@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './AllCustomers.css';
 import { Icon, initials, avatarBg, fmt, fmtDate, exportCSV } from './VendorShared';
-import { getAdminCustomers, updateCustomerStatus } from '../../api/api';
+import { getAdminCustomers, updateCustomerStatus, adminResetCustomerPassword } from '../../api/api';
 import toast from 'react-hot-toast';
 
 const PER = 6;
@@ -56,6 +56,17 @@ export default function AllCustomers() {
       fetchCustomers();
     } catch (err) {
       toast.error(err?.message || 'Failed to update status');
+    }
+  };
+
+  const handleResetPassword = async (e, c) => {
+    e.stopPropagation();
+    if (!window.confirm(`Send a password reset link to ${c.email}?`)) return;
+    try {
+      await adminResetCustomerPassword(c.id);
+      toast.success(`Password reset email sent to ${c.name}`);
+    } catch (err) {
+      toast.error(err.message || 'Failed to send reset email');
     }
   };
 
@@ -182,6 +193,10 @@ export default function AllCustomers() {
                     <td>
                       <div style={{display:'flex',gap:4}}>
                         <button className="vm-btn vm-btn--outline vm-btn--sm" onClick={e=>{e.stopPropagation();}}><Icon name="Eye" size={12} color="#475569"/></button>
+                        <button className="vm-btn vm-btn--outline vm-btn--sm" title="Reset Password"
+                          onClick={e => handleResetPassword(e, c)}>
+                          <Icon name="Lock" size={12} color="#475569"/>
+                        </button>
                         {c.status !== 'active' && (
                           <button className="vm-btn vm-btn--outline vm-btn--sm" title="Activate"
                             onClick={e => handleStatusUpdate(e, c.id, 'active')}>

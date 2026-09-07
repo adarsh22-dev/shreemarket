@@ -41,6 +41,12 @@ public class Wholesaler {
     private String businessProof;
     private String addressProof;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String resetToken;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private Long resetTokenExpiry;
+
     private Long createdAt;
     private Long updatedAt;
 }

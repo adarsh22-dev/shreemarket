@@ -22,6 +22,8 @@ public class SizeGuide {
     private String fitTips;
 
     private Boolean active;
+    private Boolean deleted = false;
+    private Long deletedAt;
     private Long createdAt;
 
     public SizeGuide() {}
@@ -49,6 +51,11 @@ public class SizeGuide {
 
     public Long getCreatedAt() { return createdAt; }
     public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
+
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
 
     @PrePersist
     protected void onCreate() {

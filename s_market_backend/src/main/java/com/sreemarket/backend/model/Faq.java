@@ -14,6 +14,8 @@ public class Faq {
     private String status;
     private Integer sortOrder;
     private Integer views;
+    private Boolean deleted = false;
+    private Long deletedAt;
 
     public Faq() {}
 
@@ -31,4 +33,8 @@ public class Faq {
     public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
     public Integer getViews() { return views; }
     public void setViews(Integer views) { this.views = views; }
+    public Boolean getDeleted() { return deleted; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+    public Long getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Long deletedAt) { this.deletedAt = deletedAt; }
 }

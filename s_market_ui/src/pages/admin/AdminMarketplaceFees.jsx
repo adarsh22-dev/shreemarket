@@ -3,6 +3,7 @@ import './AdminMarketplaceFees.css';
 import { Icon, fmt } from './VendorShared';
 import { API_BASE_URL } from '../../api/api';
 import toast from 'react-hot-toast';
+import Toggle from '../../components/admin/Toggle';
 
 const CATEGORIES = ['All', 'Electronics', 'Fashion', 'Books', 'Grocery', 'Beauty', 'Furniture', 'Sports'];
 
@@ -283,9 +284,7 @@ export default function AdminMarketplaceFees() {
                                         </div>
                                     </td>
                                     <td>
-                                        <button className={`cr-toggle ${f.active ? 'cr-toggle--on' : 'cr-toggle--off'}`} onClick={() => toggle(f.id)}>
-                                            <span className="cr-toggle__knob" />
-                                        </button>
+                                        <Toggle on={f.active} onChange={() => toggle(f.id)} size="sm" />
                                     </td>
                                     <td className="vm-td-r">
                                         <div className="vm-acts">
@@ -466,18 +465,12 @@ export default function AdminMarketplaceFees() {
 
                             <div className="mpf-form-row mpf-checkrow">
                                 <label className="mpf-label">Apply GST on Fee (18%)</label>
-                                <button className={`cr-toggle ${form.gstOnFee ? 'cr-toggle--on' : 'cr-toggle--off'}`}
-                                    onClick={() => setForm(f => ({ ...f, gstOnFee: !f.gstOnFee }))}>
-                                    <span className="cr-toggle__knob" />
-                                </button>
+                                <Toggle on={form.gstOnFee} onChange={v => setForm(f => ({ ...f, gstOnFee: v }))} size="sm" />
                             </div>
 
                             <div className="mpf-form-row mpf-checkrow">
                                 <label className="mpf-label">Fee Active</label>
-                                <button className={`cr-toggle ${form.active ? 'cr-toggle--on' : 'cr-toggle--off'}`}
-                                    onClick={() => setForm(f => ({ ...f, active: !f.active }))}>
-                                    <span className="cr-toggle__knob" />
-                                </button>
+                                <Toggle on={form.active} onChange={v => setForm(f => ({ ...f, active: v }))} size="sm" />
                             </div>
 
                             <div className="vm-modal__acts">

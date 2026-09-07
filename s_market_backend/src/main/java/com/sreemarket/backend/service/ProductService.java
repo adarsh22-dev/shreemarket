@@ -395,13 +395,11 @@ public class ProductService {
     private ProductMediaRepository productMediaRepository;
 
     public void deleteProduct(Long id) {
-        if (productRepository.existsById(id)) {
-            // Note: In a production environment, you might also want to delete the physical
-            // files from the getProductUploadDir()
-            productRepository.deleteById(id);
-        } else {
-            throw new RuntimeException("Product not found with id: " + id);
-        }
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        product.setDeleted(true);
+        product.setDeletedAt(System.currentTimeMillis());
+        productRepository.save(product);
     }
 
     @Transactional

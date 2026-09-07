@@ -11,4 +11,10 @@ public interface SizeGuideRepository extends JpaRepository<SizeGuide, Long> {
     List<SizeGuide> findByActiveTrue();
     List<SizeGuide> findByCategoryContainingIgnoreCase(String category);
     List<SizeGuide> findByNameContainingIgnoreCase(String name);
+
+    // Soft-delete queries
+    List<SizeGuide> findByDeletedTrue();
+    List<SizeGuide> findByDeletedTrueAndNameContainingIgnoreCase(String name);
+    long countByDeletedTrue();
+    List<SizeGuide> findAllByDeletedTrueAndDeletedAtLessThan(Long deletedAt);
 }
