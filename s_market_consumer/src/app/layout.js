@@ -1,11 +1,11 @@
-import { Inter } from 'next/font/google';
+import Inter from 'next/font/local';
 import '@/styles/globals.css';
 import Providers from '@/components/Providers';
 
 const inter = Inter({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
+  src: '../../public/fonts/Inter-Variable.woff2',
   variable: '--font-inter',
+  display: 'swap',
 });
 
 export const viewport = {
