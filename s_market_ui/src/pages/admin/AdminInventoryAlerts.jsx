@@ -671,7 +671,7 @@ export default function AdminInventoryAlerts() {
                                 <div style={{ display: 'grid', gridTemplateColumns: '0fr 70px 70px 70px auto', gap: 8, alignItems: 'end' }}>
                                     <div>
                                         <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Category</label>
-                                        <select className="vm-input" value={catThresholdForm.category} onChange={e => setCatThresholdForm(f => ({ ...f, category: e.target.value }))} style={{ padding: '8px 10px', fontSize: '0.8rem' }}>
+                                        <select className="vm-input" value={catThresholdForm.category} onChange={e => setCatThresholdForm(f => ({ ...f, category: e.target.value }))}>
                                             <option value="">Select category...</option>
                                             {CATEGORY_OPTIONS.filter(c => !thresholdForm.categoryThresholds?.[c]).map(c => (
                                                 <option key={c} value={c}>{c}</option>
@@ -680,15 +680,15 @@ export default function AdminInventoryAlerts() {
                                     </div>
                                     <div>
                                         <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Critical</label>
-                                        <input className="vm-input" type="number" min="0" value={catThresholdForm.critical} onChange={e => setCatThresholdForm(f => ({ ...f, critical: +e.target.value }))} style={{ padding: '8px 10px', fontSize: '0.8rem' }} />
+                                        <input className="vm-input" type="number" min="0" value={catThresholdForm.critical} onChange={e => setCatThresholdForm(f => ({ ...f, critical: +e.target.value }))} />
                                     </div>
                                     <div>
                                         <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Warning</label>
-                                        <input className="vm-input" type="number" min="1" value={catThresholdForm.warning} onChange={e => setCatThresholdForm(f => ({ ...f, warning: +e.target.value }))} style={{ padding: '8px 10px', fontSize: '0.8rem' }} />
+                                        <input className="vm-input" type="number" min="1" value={catThresholdForm.warning} onChange={e => setCatThresholdForm(f => ({ ...f, warning: +e.target.value }))} />
                                     </div>
                                     <div>
                                         <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: 4 }}>Low</label>
-                                        <input className="vm-input" type="number" min="1" value={catThresholdForm.low} onChange={e => setCatThresholdForm(f => ({ ...f, low: +e.target.value }))} style={{ padding: '8px 10px', fontSize: '0.8rem' }} />
+                                        <input className="vm-input" type="number" min="1" value={catThresholdForm.low} onChange={e => setCatThresholdForm(f => ({ ...f, low: +e.target.value }))} />
                                     </div>
                                     <button className="vm-btn vm-btn--primary vm-btn--sm" onClick={addCategoryThreshold} style={{ padding: '8px 12px' }}>
                                         <Icon name="Plus" size={12} color="#fff" />Add
