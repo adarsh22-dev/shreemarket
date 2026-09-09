@@ -7,8 +7,11 @@ import com.sreemarket.backend.model.*;
 import com.sreemarket.backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -31,6 +34,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class PincodeValidationService {
+
+    private static final Logger log = LoggerFactory.getLogger(PincodeValidationService.class);
 
     @Autowired
     private PincodeCoverageRepository pincodeCoverageRepository;
@@ -381,11 +386,12 @@ public class PincodeValidationService {
      * Auto-purge expired cache entries every hour.
      * Enabled by @EnableScheduling on the application class.
      */
+    @Transactional
     @Scheduled(fixedRate = 3600000)
     public void scheduledPurgeExpired() {
         int purged = purgeExpiredCache();
         if (purged > 0) {
-            System.out.println("Purged " + purged + " expired pincode cache entries.");
+            log.info("Purged {} expired pincode cache entries", purged);
         }
     }
 
@@ -765,8 +771,7 @@ public class PincodeValidationService {
         try {
             pincodeServiceabilityRepository.save(cache);
         } catch (Exception e) {
-            // Cache failure is non-critical; log and continue
-            System.err.println("Failed to cache pincode validation: " + e.getMessage());
+            log.warn("Failed to cache pincode validation for {} -> {}: {}", originPincode, destinationPincode, e.getMessage());
         }
     }
 

@@ -6,6 +6,8 @@ import com.sreemarket.backend.repository.BulkPricingTierRepository;
 import com.sreemarket.backend.repository.OrderRepository;
 import com.sreemarket.backend.repository.ProductMediaRepository;
 import com.sreemarket.backend.repository.ProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class ProductService {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
     @Autowired
     private ProductRepository productRepository;
@@ -294,7 +298,7 @@ public class ProductService {
                     "product_created",
                     "Created product: " + finalProduct.getName(),
                     null);
-        } catch (Exception ignored) {}
+        } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
 
         return finalProduct;
     }
@@ -476,7 +480,7 @@ public class ProductService {
                             movementType, Math.abs(diff),
                             oldStock, newStock,
                             "Manual bulk update", "Vendor", "Bulk stock update to " + newStock);
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
 
                     if (newStock == 0) {
                         Notification notification = new Notification();
@@ -537,7 +541,7 @@ public class ProductService {
                             movementType, Math.abs(diff),
                             oldStock, newStock,
                             "Bulk edit", "Vendor", "Bulk edit stock change");
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
 
                     if (newStock == 0) {
                         Notification notification = new Notification();
@@ -958,7 +962,7 @@ public class ProductService {
                     movementType, Math.abs(diff),
                     oldStock, newStock,
                     "Product update", "Vendor", "Stock changed during product update");
-            } catch (Exception ignored) {}
+            } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
 
             if (newStock == 0) {
                 Notification notification = new Notification();
@@ -1117,7 +1121,7 @@ public class ProductService {
                     "product_updated",
                     "Updated product: " + saved.getName(),
                     null);
-        } catch (Exception ignored) {}
+        } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
 
         return saved;
     }

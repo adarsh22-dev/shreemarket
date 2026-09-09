@@ -11,7 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/marketplace-fees")
-@CrossOrigin(origins = "http://localhost:5173")
 public class MarketplaceFeeController {
 
     @Autowired

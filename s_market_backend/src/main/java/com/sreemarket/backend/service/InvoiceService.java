@@ -7,6 +7,8 @@ import com.sreemarket.backend.model.Vendor;
 import com.sreemarket.backend.repository.OrderRepository;
 import com.sreemarket.backend.repository.ProductRepository;
 import com.sreemarket.backend.repository.VendorRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,8 @@ import java.util.List;
 
 @Service
 public class InvoiceService {
+
+    private static final Logger log = LoggerFactory.getLogger(InvoiceService.class);
 
     @Autowired
     private OrderRepository orderRepository;
@@ -90,7 +94,7 @@ public class InvoiceService {
                         productName = p.getName() != null ? p.getName() : productName;
                         price = p.getDiscountPrice() != null ? p.getDiscountPrice() : (p.getRegularPrice() != null ? p.getRegularPrice() : 0);
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
                 double total = price * qty;
                 html.append("<tr><td>").append(escapeHtml(productName)).append("</td>");
                 html.append("<td>").append(qty).append("</td>");
@@ -231,7 +235,7 @@ public class InvoiceService {
                         productName = p.getName() != null ? p.getName() : productName;
                         price = p.getDiscountPrice() != null ? p.getDiscountPrice() : (p.getRegularPrice() != null ? p.getRegularPrice() : 0);
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
                 double total = price * qty;
                 html.append("<tr><td>").append(escapeHtml(productName)).append("</td>");
                 html.append("<td>").append(qty).append("</td>");

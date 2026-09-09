@@ -10,7 +10,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/upload")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class UploadController {
 
     @Autowired

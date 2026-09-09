@@ -12,7 +12,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/addresses")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true") // Allow local React frontend
 public class AddressController {
 
     @Autowired

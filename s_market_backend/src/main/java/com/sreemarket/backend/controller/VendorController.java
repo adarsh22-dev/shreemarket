@@ -16,7 +16,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vendor")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VendorController {
 
     @Autowired

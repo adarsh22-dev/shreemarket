@@ -5,6 +5,8 @@ import com.sreemarket.backend.model.Review;
 import com.sreemarket.backend.service.ReviewService;
 import com.sreemarket.backend.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
+
+    private static final Logger log = LoggerFactory.getLogger(ReviewController.class);
 
     @Autowired
     private ReviewService reviewService;
@@ -60,7 +64,7 @@ public class ReviewController {
             Page<Review> reviews = reviewService.getVendorReviews(vendorId, rating, status, search, pageable);
             return ResponseEntity.ok(reviews);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to get vendor reviews for vendor {}: {}", vendorId, e.getMessage(), e);
             return ResponseEntity.status(500).body(java.util.Map.of(
                     "error", "Internal Server Error",
                     "message", e.getMessage()));
@@ -101,7 +105,6 @@ public class ReviewController {
     }
 
     @PostMapping(consumes = { "multipart/form-data" })
-    @CrossOrigin
     public ResponseEntity<?> submitReview(
             @RequestParam("review") String reviewJson,
             @RequestParam(value = "images", required = false) List<MultipartFile> images,

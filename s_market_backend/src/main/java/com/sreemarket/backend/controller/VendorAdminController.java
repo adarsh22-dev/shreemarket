@@ -2,6 +2,8 @@ package com.sreemarket.backend.controller;
 
 import com.sreemarket.backend.model.*;
 import com.sreemarket.backend.repository.*;
+import com.sreemarket.backend.service.PayoutService;
+import com.sreemarket.backend.service.StoreService;
 import com.sreemarket.backend.service.VendorActivityService;
 import com.sreemarket.backend.service.VendorAdminService;
 import com.sreemarket.backend.service.VendorService;
@@ -20,15 +22,13 @@ import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/admin/vendors")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VendorAdminController {
 
     @Autowired private VendorAdminService vendorAdminService;
     @Autowired private VendorActivityService vendorActivityService;
     @Autowired private VendorService vendorService;
-    @Autowired private VendorRepository vendorRepository;
-    @Autowired private StoreRepository storeRepository;
-    @Autowired private PayoutRepository payoutRepository;
+    @Autowired private StoreService storeService;
+    @Autowired private PayoutService payoutService;
 
     // ── Basic Vendor CRUD ──
     @GetMapping
@@ -72,11 +72,8 @@ public class VendorAdminController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteVendor(@PathVariable Long id) {
         try {
-            Vendor vendor = vendorRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Vendor not found"));
-            vendor.setDeleted(true);
-            vendor.setDeletedAt(System.currentTimeMillis());
-            vendorRepository.save(vendor);
+            Vendor vendor = vendorService.getVendorById(id);
+            vendorService.softDeleteVendor(id);
             return ResponseEntity.ok(Map.of("message", "Vendor moved to trash"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -142,7 +139,7 @@ public class VendorAdminController {
     @GetMapping("/{vendorId}/stores")
     public ResponseEntity<?> getVendorStores(@PathVariable Long vendorId) {
         try {
-            List<Store> stores = storeRepository.findByVendorId(vendorId);
+            List<Store> stores = storeService.getStoresByVendorId(vendorId);
             return ResponseEntity.ok(stores);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -152,10 +149,7 @@ public class VendorAdminController {
     @PostMapping("/{vendorId}/stores")
     public ResponseEntity<?> createVendorStore(@PathVariable Long vendorId, @RequestBody Store store) {
         try {
-            Vendor vendor = vendorRepository.findById(vendorId)
-                    .orElseThrow(() -> new RuntimeException("Vendor not found"));
-            store.setVendor(vendor);
-            Store saved = storeRepository.save(store);
+            Store saved = storeService.createStore(vendorId, store);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -166,22 +160,7 @@ public class VendorAdminController {
     public ResponseEntity<?> updateVendorStore(@PathVariable Long vendorId, @PathVariable Long storeId,
                                                 @RequestBody Store update) {
         try {
-            Store existing = storeRepository.findById(storeId)
-                    .orElseThrow(() -> new RuntimeException("Store not found"));
-            if (!existing.getVendor().getId().equals(vendorId)) {
-                return ResponseEntity.status(403).body(Map.of("error", "Store does not belong to this vendor"));
-            }
-            if (update.getStoreName() != null) existing.setStoreName(update.getStoreName());
-            if (update.getDescription() != null) existing.setDescription(update.getDescription());
-            if (update.getCity() != null) existing.setCity(update.getCity());
-            if (update.getState() != null) existing.setState(update.getState());
-            if (update.getCountry() != null) existing.setCountry(update.getCountry());
-            if (update.getPincode() != null) existing.setPincode(update.getPincode());
-            if (update.getPhoneNumber() != null) existing.setPhoneNumber(update.getPhoneNumber());
-            if (update.getEmailAddress() != null) existing.setEmailAddress(update.getEmailAddress());
-            if (update.getFullAddress() != null) existing.setFullAddress(update.getFullAddress());
-            if (update.getStoreLogo() != null) existing.setStoreLogo(update.getStoreLogo());
-            Store saved = storeRepository.save(existing);
+            Store saved = storeService.updateStore(vendorId, storeId, update);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -191,12 +170,7 @@ public class VendorAdminController {
     @DeleteMapping("/{vendorId}/stores/{storeId}")
     public ResponseEntity<?> deleteVendorStore(@PathVariable Long vendorId, @PathVariable Long storeId) {
         try {
-            Store existing = storeRepository.findById(storeId)
-                    .orElseThrow(() -> new RuntimeException("Store not found"));
-            if (!existing.getVendor().getId().equals(vendorId)) {
-                return ResponseEntity.status(403).body(Map.of("error", "Store does not belong to this vendor"));
-            }
-            storeRepository.deleteById(storeId);
+            storeService.deleteStore(vendorId, storeId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -401,7 +375,7 @@ public class VendorAdminController {
 
             Payout payout = new Payout();
             String datePart = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
-            payout.setPayoutId("PAY-" + datePart + "-" + String.format("%04d", payoutRepository.count() + 1));
+            payout.setPayoutId("PAY-" + datePart + "-" + String.format("%04d", payoutService.getCount() + 1));
             payout.setVendorId(vendorId);
             payout.setVendorName(vendorName);
             payout.setGrossAmount(grossAmount);
@@ -410,7 +384,7 @@ public class VendorAdminController {
             payout.setDate(java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             payout.setPeriod(period);
 
-            Payout saved = payoutRepository.save(payout);
+            Payout saved = payoutService.savePayout(payout);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -421,8 +395,7 @@ public class VendorAdminController {
     public ResponseEntity<?> updatePayout(@RequestBody Map<String, Object> request) {
         try {
             Long id = Long.valueOf(request.get("id").toString());
-            Payout payout = payoutRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Payout not found"));
+            Payout payout = payoutService.getPayoutById(id);
 
             if (request.containsKey("status")) {
                 payout.setStatus(request.get("status").toString());
@@ -431,7 +404,7 @@ public class VendorAdminController {
                 payout.setNotes(request.get("notes").toString());
             }
 
-            return ResponseEntity.ok(payoutRepository.save(payout));
+            return ResponseEntity.ok(payoutService.savePayout(payout));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

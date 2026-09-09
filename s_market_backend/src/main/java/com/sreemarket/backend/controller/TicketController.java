@@ -11,7 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/tickets")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class TicketController {
 
     @Autowired

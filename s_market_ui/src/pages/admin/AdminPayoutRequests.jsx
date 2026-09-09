@@ -17,6 +17,7 @@ export default function PayoutRequests() {
   const [batchModal, setBatchModal] = useState(false);
   const [batchMethod, setBatchMethod] = useState('NEFT');
   const [batchProcessing, setBatchProcessing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fetchRequests = useCallback(async (statusFilter, searchTerm) => {
     setLoading(true);

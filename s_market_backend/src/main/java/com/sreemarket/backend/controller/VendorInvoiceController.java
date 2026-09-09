@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/vendor")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VendorInvoiceController {
 
     @Autowired

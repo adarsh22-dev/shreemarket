@@ -12,7 +12,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vendor/product-schedules")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VendorProductScheduleController {
 
     @Autowired

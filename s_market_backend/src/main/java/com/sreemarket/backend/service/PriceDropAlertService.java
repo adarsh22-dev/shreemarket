@@ -4,11 +4,15 @@ import com.sreemarket.backend.model.PriceDropAlert;
 import com.sreemarket.backend.model.Product;
 import com.sreemarket.backend.repository.PriceDropAlertRepository;
 import com.sreemarket.backend.repository.ProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
 public class PriceDropAlertService {
+
+    private static final Logger log = LoggerFactory.getLogger(PriceDropAlertService.class);
 
     private final PriceDropAlertRepository repository;
     private final ProductRepository productRepository;
@@ -60,7 +64,7 @@ public class PriceDropAlertService {
                 try {
                     emailService.sendPriceDropNotification(alert.getEmail(), product.getName(), currentPrice, alert.getTargetPrice());
                 } catch (Exception e) {
-                    // Log error
+                    log.error("Failed to send price-drop notification to {}: {}", alert.getEmail(), e.getMessage());
                 }
                 alert.setStatus("TRIGGERED");
                 alert.setTriggeredAt(System.currentTimeMillis());

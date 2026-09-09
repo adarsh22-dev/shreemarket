@@ -5,6 +5,7 @@ import com.sreemarket.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -21,6 +22,7 @@ public class UserService {
     @Value("${google.client.id}")
     private String googleClientId;
 
+    @Transactional
     public User registerUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Email already in use");
@@ -59,6 +61,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    @Transactional
     public User updateUser(Long id, User updatedUser) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -138,6 +141,7 @@ public class UserService {
         emailService.sendPasswordResetEmail(user.getEmail(), name, token);
     }
 
+    @Transactional
     public void resetPassword(String token, String newPassword) {
         User user = userRepository.findByResetToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
@@ -153,6 +157,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void changePassword(Long userId, String currentPassword, String newPassword) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -165,6 +170,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUser(Long id, String password) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));

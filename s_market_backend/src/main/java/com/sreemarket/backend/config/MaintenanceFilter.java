@@ -14,7 +14,7 @@ import java.util.Set;
 @Order(1)
 public class MaintenanceFilter implements Filter {
 
-    private static boolean maintenanceMode = false;
+    private static volatile boolean maintenanceMode = false;
     private static final Set<String> bypassPaths = new HashSet<>();
 
     static {

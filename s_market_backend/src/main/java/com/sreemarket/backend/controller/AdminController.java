@@ -21,7 +21,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AdminController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminController.class);

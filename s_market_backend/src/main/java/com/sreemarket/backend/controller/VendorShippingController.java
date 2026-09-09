@@ -23,7 +23,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/vendor/shipping")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VendorShippingController {
 
     @Autowired
@@ -46,7 +45,15 @@ public class VendorShippingController {
         }
 
         try {
-            List<VendorShipment> shipments = vendorShipmentRepository.findAll();
+            // Get order numbers belonging to this vendor
+            List<Order> vendorOrders = orderRepository.findByVendorIdOrderByDatePlacedDesc(vendorId);
+            List<String> orderNumbers = vendorOrders.stream()
+                    .map(o -> o.getOrderNumber())
+                    .filter(n -> n != null)
+                    .toList();
+            List<VendorShipment> shipments = orderNumbers.isEmpty()
+                    ? java.util.Collections.emptyList()
+                    : vendorShipmentRepository.findByOrderIdIn(orderNumbers);
             // Filter by orders belonging to this vendor
             List<Map<String, Object>> result = new ArrayList<>();
             for (VendorShipment s : shipments) {

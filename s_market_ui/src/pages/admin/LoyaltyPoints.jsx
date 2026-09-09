@@ -91,6 +91,7 @@ const Inp = (props) => (
     outline:'none', fontFamily:"'Plus Jakarta Sans',sans-serif",
     transition:'border-color .15s, box-shadow .15s'
   }} {...props}
+  value={props.value ?? ''}
   onFocus={e => { e.target.style.borderColor='#E03E1A'; e.target.style.boxShadow='0 0 0 3px rgba(224,62,26,.08)'; }}
   onBlur={e  => { e.target.style.borderColor='#e2e8f0'; e.target.style.boxShadow='none'; }}
   />
@@ -128,7 +129,12 @@ const Btn = ({ children, onClick, variant='outline', size='md', style={} }) => {
 
 export default function LoyaltyPoints() {
   const [loyalty,  setLoyalty]  = useState([]);
-  useEffect(() => { getLoyaltyCustomers().then(setLoyalty).catch(() => {}); }, []);
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      getLoyaltyCustomers().then(setLoyalty).catch(() => {});
+    }
+  }, []);
   const [filter,   setFilter]   = useState('All');
   const [search,   setSearch]   = useState('');
   const [page,     setPage]     = useState(0);

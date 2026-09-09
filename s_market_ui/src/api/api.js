@@ -73,7 +73,15 @@ const fetchWithTimeout = (url, options = {}, timeout = 30000) => {
 const handleResponse = async (response) => {
     if (response.status === 401 || response.status === 403) {
         const url = response.url || 'unknown';
-        logError('AUTH_REDIRECT', `${response.status} on ${url}`, { status: response.status, url });
+        const isLoginPage = window.location.pathname === '/login' || window.location.pathname === '/vendor/login' || window.location.pathname === '/wholesaler/login';
+        const isPublicPage = window.location.pathname === '/' || window.location.pathname.startsWith('/shop') || window.location.pathname.startsWith('/product');
+
+        // Only redirect if not already on a login/public page and user thinks they're logged in
+        if (!isLoginPage && !isPublicPage && localStorage.getItem('user')) {
+            logError('AUTH_REDIRECT', `${response.status} on ${url}`, { status: response.status, url });
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
         throw new Error("Session expired or unauthorized");
     }
 

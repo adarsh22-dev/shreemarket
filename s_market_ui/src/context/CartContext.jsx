@@ -90,7 +90,9 @@ export const CartProvider = ({ children }) => {
                 processBackendCart(cart.items);
             }
         } catch (err) {
-            console.error("Failed to load central cart", err);
+            if (!err.message?.includes('Session expired')) {
+                console.error("Failed to load central cart", err);
+            }
         }
     }, []);
 
@@ -128,7 +130,9 @@ export const CartProvider = ({ children }) => {
                         if (cart && cart.items) processBackendCart(cart.items);
                     })
                     .catch(err => {
-                        console.error("Failed to merge cart. Falling back to fetch.", err);
+                        if (!err.message?.includes('Session expired')) {
+                            console.error("Failed to merge cart. Falling back to fetch.", err);
+                        }
                         loadCentralCart(userId);
                     });
             } else {
@@ -197,7 +201,7 @@ export const CartProvider = ({ children }) => {
                     processBackendCart(updatedCart.items);
                 }
                 if (openCartOnAdd) setIsCartOpen(true);
-            } catch (e) { console.error("Failed to add to backend cart", e); }
+            } catch (e) { if (!e.message?.includes("Session expired")) console.error("Failed to add to backend cart", e); }
         } else {
             setCartItems(prevItems => {
                 const existingItemIndex = prevItems.findIndex(item =>
@@ -237,7 +241,7 @@ export const CartProvider = ({ children }) => {
                 try {
                     const updatedCart = await removeUserCartItem(userId, item.cartItemId);
                     if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
-                } catch (e) { console.error("Failed to remove from backend cart", e); }
+                } catch (e) { if (!e.message?.includes("Session expired")) console.error("Failed to remove from backend cart", e); }
             }
         } else {
             setCartItems(prevItems => prevItems.filter(item =>
@@ -257,7 +261,7 @@ export const CartProvider = ({ children }) => {
                 try {
                     const updatedCart = await updateUserCartItem(userId, item.cartItemId, newQuantity);
                     if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
-                } catch (e) { console.error("Failed to update backend cart quantity", e); }
+                } catch (e) { if (!e.message?.includes("Session expired")) console.error("Failed to update backend cart quantity", e); }
             }
         } else {
             const updateList = (list) => list.map(item =>
@@ -281,7 +285,7 @@ export const CartProvider = ({ children }) => {
                 try {
                     const updatedCart = await moveToSavedAPI(userId, item.cartItemId);
                     if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
-                } catch (e) { console.error("Failed to move to saved in backend", e); }
+                } catch (e) { if (!e.message?.includes("Session expired")) console.error("Failed to move to saved in backend", e); }
             }
         } else {
             const itemToSave = cartItems.find(item => item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant));
@@ -302,7 +306,7 @@ export const CartProvider = ({ children }) => {
                 try {
                     const updatedCart = await moveToCartFromSavedAPI(userId, item.cartItemId);
                     if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
-                } catch (e) { console.error("Failed to move back to cart in backend", e); }
+                } catch (e) { if (!e.message?.includes("Session expired")) console.error("Failed to move back to cart in backend", e); }
             }
         } else {
             const itemToMove = savedItems.find(item => item.id === id && JSON.stringify(item.variant) === JSON.stringify(variant));
@@ -323,7 +327,7 @@ export const CartProvider = ({ children }) => {
                 try {
                     const updatedCart = await removeUserCartItem(userId, item.cartItemId);
                     if (updatedCart && updatedCart.items) processBackendCart(updatedCart.items);
-                } catch (e) { console.error("Failed to remove saved item in backend", e); }
+                } catch (e) { if (!e.message?.includes("Session expired")) console.error("Failed to remove saved item in backend", e); }
             }
         } else {
             setSavedItems(prev => prev.filter(item =>
@@ -347,7 +351,7 @@ export const CartProvider = ({ children }) => {
             try {
                 await clearUserCart(userId);
                 processBackendCart([]);
-            } catch (e) { console.error("Failed to clear backend cart", e); }
+            } catch (e) { if (!e.message?.includes("Session expired")) console.error("Failed to clear backend cart", e); }
         } else {
             setCartItems([]);
         }

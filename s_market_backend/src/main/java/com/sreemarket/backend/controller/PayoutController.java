@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin/payout-processing")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class PayoutController {
 
     @Autowired

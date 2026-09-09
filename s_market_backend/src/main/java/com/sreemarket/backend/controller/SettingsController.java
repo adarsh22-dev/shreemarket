@@ -5,6 +5,8 @@ import com.sreemarket.backend.model.User;
 import com.sreemarket.backend.repository.UserRepository;
 import com.sreemarket.backend.service.AuditLogService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,6 +28,8 @@ import org.springframework.beans.factory.annotation.Value;
 @RestController
 @RequestMapping("/api")
 public class SettingsController {
+
+    private static final Logger log = LoggerFactory.getLogger(SettingsController.class);
 
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
@@ -80,6 +84,15 @@ public class SettingsController {
     @PutMapping("/admin/settings")
     public ResponseEntity<?> updateSettings(@RequestBody Map<String, Object> body, HttpServletRequest request) {
         try {
+            if (body == null || body.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Request body cannot be empty"));
+            }
+
+            // Validate that the body doesn't contain suspicious keys
+            if (body.containsKey("password") || body.containsKey("secret") || body.containsKey("token")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Settings cannot contain sensitive fields"));
+            }
+
             File f = getSettingsFile();
             f.getParentFile().mkdirs();
             mapper.writerWithDefaultPrettyPrinter().writeValue(f, body);
@@ -101,10 +114,13 @@ public class SettingsController {
                     auditLogService.logActivity(adminId, adminName, "Updated platform settings",
                             "Settings", ip, "low", "Settings were updated via the admin panel");
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                log.warn("Failed to log settings update audit: {}", e.getMessage());
+            }
 
             return ResponseEntity.ok(Map.of("message", "Settings saved"));
         } catch (Exception e) {
+            log.error("Failed to update settings: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

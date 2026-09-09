@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { getAdminCustomers, updateCustomerStatus, getLoyaltyCustomers, createLoyaltyCustomer, getRefunds, createRefund, deleteRefund, adminResetCustomerPassword, createAdminCustomer } from '../../api/api';
+import { getAdminCustomers, getAdminCustomerDetails, updateCustomerStatus, getLoyaltyCustomers, createLoyaltyCustomer, getRefunds, createRefund, deleteRefund, adminResetCustomerPassword, createAdminCustomer } from '../../api/api';
 import './AdminCustomermanagement.css';
 
 const PALETTE = ['#E03E1A','#2563eb','#16a34a','#7c3aed','#d97706','#0d9488','#db2777','#64748b'];

@@ -11,7 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/gst-invoices")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class GSTInvoiceController {
 
     @Autowired

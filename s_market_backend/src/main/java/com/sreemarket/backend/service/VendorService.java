@@ -2,6 +2,8 @@ package com.sreemarket.backend.service;
 
 import com.sreemarket.backend.model.Vendor;
 import com.sreemarket.backend.repository.VendorRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VendorService {
+
+    private static final Logger log = LoggerFactory.getLogger(VendorService.class);
 
     @Autowired
     private VendorRepository vendorRepository;
@@ -38,8 +42,8 @@ public class VendorService {
     }
 
     public Vendor registerVendor(Vendor vendor) {
-        System.out.println("Registering vendor: " + vendor.getFullName() + " with " +
-                (vendor.getStores() != null ? vendor.getStores().size() : 0) + " stores.");
+        log.info("Registering vendor: {} with {} stores", vendor.getFullName(),
+                vendor.getStores() != null ? vendor.getStores().size() : 0);
 
         if (vendorRepository.existsByEmail(vendor.getEmail())) {
             throw new RuntimeException("Email already in use by another vendor");
@@ -76,7 +80,9 @@ public class VendorService {
                     "vendor_registered",
                     "Vendor registered with email: " + savedVendor.getEmail(),
                     null);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            log.warn("Failed to log vendor activity for vendor {}: {}", savedVendor.getId(), e.getMessage());
+        }
 
         return savedVendor;
     }
@@ -125,7 +131,9 @@ public class VendorService {
                     "vendor_status_changed",
                     "Status changed from " + vendor.getStatus() + " to " + status,
                     null);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            log.warn("Failed to log vendor status change for vendor {}: {}", id, e.getMessage());
+        }
 
         return updated;
     }
@@ -189,6 +197,15 @@ public class VendorService {
         }
 
         vendor.setPassword(passwordEncoder.encode(newPassword));
+        vendorRepository.save(vendor);
+    }
+
+    @Transactional
+    public void softDeleteVendor(Long vendorId) {
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new RuntimeException("Vendor not found with id: " + vendorId));
+        vendor.setDeleted(true);
+        vendor.setDeletedAt(System.currentTimeMillis());
         vendorRepository.save(vendor);
     }
 

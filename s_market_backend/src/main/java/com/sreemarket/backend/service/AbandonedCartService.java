@@ -12,14 +12,19 @@ import com.sreemarket.backend.repository.ProductRepository;
 import com.sreemarket.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class AbandonedCartService {
+
+    private static final Logger log = LoggerFactory.getLogger(AbandonedCartService.class);
 
     @Autowired
     private AbandonedCartRepository abandonedCartRepository;
@@ -55,6 +60,7 @@ public class AbandonedCartService {
     /**
      * Scheduled task: scan for abandoned carts every 30 minutes
      */
+    @Transactional
     @Scheduled(fixedRate = 30 * 60 * 1000, initialDelay = 60 * 1000)
     public void detectAbandonedCarts() {
         try {
@@ -76,7 +82,7 @@ public class AbandonedCartService {
                 }
             }
         } catch (Exception e) {
-            // Log but don't throw - scheduled task should not crash
+            log.error("Failed to detect abandoned carts: {}", e.getMessage(), e);
         }
     }
 
@@ -117,6 +123,7 @@ public class AbandonedCartService {
         try {
             abandoned.setCartSummary(objectMapper.writeValueAsString(itemSummaries));
         } catch (Exception e) {
+            log.warn("Failed to serialize cart summary for cart {}: {}", cart.getId(), e.getMessage());
             abandoned.setCartSummary("[]");
         }
         abandoned.setStatus("PENDING");
@@ -319,6 +326,7 @@ public class AbandonedCartService {
             html.append("</table>");
             return html.toString();
         } catch (Exception e) {
+            log.warn("Failed to build cart items HTML: {}", e.getMessage());
             return "";
         }
     }

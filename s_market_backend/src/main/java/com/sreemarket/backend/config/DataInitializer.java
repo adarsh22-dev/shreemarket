@@ -4,6 +4,8 @@ import com.sreemarket.backend.model.*;
 import com.sreemarket.backend.model.wooai.*;
 import com.sreemarket.backend.repository.*;
 import com.sreemarket.backend.repository.wooai.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 
 @Configuration
 public class DataInitializer {
+
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
     @Bean
     public CommandLineRunner initData(RoleRepository roleRepository, UserRepository userRepository,
@@ -39,7 +43,7 @@ public class DataInitializer {
                 wholesaler.setDescription("Wholesale buyer");
                 roleRepository.save(wholesaler);
 
-                System.out.println("Default roles initialized: ADMIN (1), CUSTOMER (2), VENDOR (3), WHOLESALER (4)");
+                log.info("Default roles initialized: ADMIN (1), CUSTOMER (2), VENDOR (3), WHOLESALER (4)");
             }
 
             // Initialize Admin User
@@ -47,12 +51,16 @@ public class DataInitializer {
                 User admin = new User();
                 admin.setFullName("Admin");
                 admin.setEmail("admin@smarket.com");
-                String adminPassword = System.getenv("ADMIN_PASSWORD") != null ? System.getenv("ADMIN_PASSWORD") : "admin123";
+                String adminPassword = System.getenv("ADMIN_PASSWORD");
+                if (adminPassword == null || adminPassword.isBlank()) {
+                    adminPassword = java.util.UUID.randomUUID().toString().substring(0, 16);
+                    log.warn("ADMIN_PASSWORD env var not set. Generated temporary password for admin@smarket.com. Set ADMIN_PASSWORD env var and restart to use a custom password.");
+                }
                 admin.setPassword(passwordEncoder.encode(adminPassword));
                 admin.setRoleId(1L);
                 admin.setCreatedAt(System.currentTimeMillis());
                 userRepository.save(admin);
-                System.out.println("Default Admin User created: admin@smarket.com / " + adminPassword);
+                log.info("Default Admin User created: admin@smarket.com (password set via env or generated)");
             }
 
             // Initialize Default WooAI Quick Actions
@@ -91,7 +99,7 @@ public class DataInitializer {
             qa.setClicks(0);
             repo.save(qa);
         }
-        System.out.println("WooAI quick actions initialized: " + defaults.length + " actions");
+        log.info("WooAI quick actions initialized: {} actions", defaults.length);
     }
 
     private void initializePolicies(PolicyRepository repo) {
@@ -129,7 +137,7 @@ public class DataInitializer {
             p.setUpdatedAt(LocalDateTime.now());
             repo.save(p);
         }
-        System.out.println("WooAI policies initialized: " + defaults.length + " policies");
+        log.info("WooAI policies initialized: {} policies", defaults.length);
     }
 
     private void initializeRoutingRules(RoutingRuleRepository repo) {
@@ -158,7 +166,7 @@ public class DataInitializer {
             r.setActive(true);
             repo.save(r);
         }
-        System.out.println("WooAI routing rules initialized: " + defaults.length + " rules");
+        log.info("WooAI routing rules initialized: {} rules", defaults.length);
     }
 
     private void initializeAgents(AgentRepository repo) {
@@ -179,7 +187,7 @@ public class DataInitializer {
             a.setColor(d[5]);
             repo.save(a);
         }
-        System.out.println("WooAI agents initialized: " + defaults.length + " agents");
+        log.info("WooAI agents initialized: {} agents", defaults.length);
     }
 
 }

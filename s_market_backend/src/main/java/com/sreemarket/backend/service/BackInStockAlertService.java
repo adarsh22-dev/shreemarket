@@ -4,11 +4,15 @@ import com.sreemarket.backend.model.BackInStockAlert;
 import com.sreemarket.backend.model.Product;
 import com.sreemarket.backend.repository.BackInStockAlertRepository;
 import com.sreemarket.backend.repository.ProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
 public class BackInStockAlertService {
+
+    private static final Logger log = LoggerFactory.getLogger(BackInStockAlertService.class);
 
     private final BackInStockAlertRepository repository;
     private final ProductRepository productRepository;
@@ -55,7 +59,7 @@ public class BackInStockAlertService {
             try {
                 emailService.sendBackInStockNotification(alert.getEmail(), product.getName());
             } catch (Exception e) {
-                // Log error
+                log.error("Failed to send back-in-stock notification to {}: {}", alert.getEmail(), e.getMessage());
             }
             alert.setStatus("NOTIFIED");
             alert.setNotifiedAt(System.currentTimeMillis());

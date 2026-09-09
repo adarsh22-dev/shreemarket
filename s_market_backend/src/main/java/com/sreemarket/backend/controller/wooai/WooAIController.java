@@ -14,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/wooai")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class WooAIController {
 
     @Autowired

@@ -15,7 +15,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/wholesaler/rfqs")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class WholesalerRFQController {
 
     @Autowired

@@ -8,6 +8,8 @@ import com.sreemarket.backend.repository.ProductRepository;
 import com.sreemarket.backend.service.WholesalerService;
 import com.sreemarket.backend.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +19,9 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/wholesaler")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class WholesalerDashboardController {
+
+    private static final Logger log = LoggerFactory.getLogger(WholesalerDashboardController.class);
 
     @Autowired
     private WholesalerService wholesalerService;
@@ -174,11 +177,8 @@ public class WholesalerDashboardController {
             String productName = (String) body.getOrDefault("productName", "");
             Integer requestedQuantity = (Integer) body.getOrDefault("requestedQuantity", 0);
 
-            // In a real implementation, this would save to a bulk_inquiries table or send an email
-            System.out.println("Bulk inquiry from wholesaler " + userId +
-                    ": product=" + productName +
-                    ", qty=" + requestedQuantity +
-                    ", message=" + message);
+            log.info("Bulk inquiry from wholesaler {}: product={}, qty={}, message={}",
+                    userId, productName, requestedQuantity, message);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Bulk inquiry submitted successfully. Our team will contact you shortly."

@@ -21,7 +21,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class WholesalerAuthController {
 
     @Autowired

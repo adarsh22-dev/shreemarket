@@ -10,7 +10,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/payout-schedules")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class PayoutScheduleController {
 
     @Autowired

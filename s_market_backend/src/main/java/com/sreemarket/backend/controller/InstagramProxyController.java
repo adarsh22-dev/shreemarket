@@ -19,7 +19,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/instagram")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173", "http://localhost:3000"}, allowCredentials = "true")
 public class InstagramProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(InstagramProxyController.class);

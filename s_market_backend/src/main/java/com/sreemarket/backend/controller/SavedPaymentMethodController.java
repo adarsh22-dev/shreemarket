@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/payment-methods")
-@CrossOrigin(origins = {"http://localhost:5173", "https://localhost:5173", "http://localhost:5174", "https://localhost:5174"})
 public class SavedPaymentMethodController {
 
     private final SavedPaymentMethodService service;

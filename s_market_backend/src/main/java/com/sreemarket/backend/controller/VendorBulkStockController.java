@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/vendor/bulk-stock")
-@CrossOrigin(origins = {"http://localhost:5173", "https://localhost:5173", "http://localhost:5174", "https://localhost:5174"})
 public class VendorBulkStockController {
 
     private final BulkStockService bulkStockService;

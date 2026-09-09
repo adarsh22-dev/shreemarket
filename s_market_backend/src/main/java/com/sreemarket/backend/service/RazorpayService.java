@@ -7,6 +7,8 @@ import com.razorpay.Refund;
 import com.sreemarket.backend.model.PaymentGatewayLog;
 import jakarta.annotation.PostConstruct;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,8 @@ import java.util.Map;
 
 @Service
 public class RazorpayService {
+
+    private static final Logger log = LoggerFactory.getLogger(RazorpayService.class);
 
     @Value("${razorpay.key.id}")
     private String razorpayKeyId;
@@ -39,7 +43,7 @@ public class RazorpayService {
             razorpayClient = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
         } catch (RazorpayException e) {
             // Log warning but don't fail startup - keys may be placeholders
-            System.err.println("Warning: Failed to initialize Razorpay client: " + e.getMessage());
+            log.warn("Failed to initialize Razorpay client: {}", e.getMessage());
         }
     }
 

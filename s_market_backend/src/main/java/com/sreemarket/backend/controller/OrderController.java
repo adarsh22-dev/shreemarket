@@ -16,7 +16,6 @@ import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class OrderController {
 
     @Autowired

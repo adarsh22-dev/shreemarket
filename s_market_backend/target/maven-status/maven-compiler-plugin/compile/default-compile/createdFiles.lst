@@ -176,6 +176,7 @@ com/sreemarket/backend/service/CartService.class
 com/sreemarket/backend/model/Testimonial.class
 com/sreemarket/backend/model/Category.class
 com/sreemarket/backend/controller/NotificationController.class
+com/sreemarket/backend/service/PayoutService.class
 com/sreemarket/backend/repository/AddressRepository.class
 com/sreemarket/backend/model/VendorPerformance.class
 com/sreemarket/backend/model/wooai/ProductAssignment.class
@@ -314,6 +315,7 @@ com/sreemarket/backend/repository/CmsPageRepository.class
 com/sreemarket/backend/model/BlogPost.class
 com/sreemarket/backend/controller/SettingsController.class
 com/sreemarket/backend/model/InventoryAlert.class
+com/sreemarket/backend/service/StoreService.class
 com/sreemarket/backend/repository/GSTInvoiceRepository.class
 com/sreemarket/backend/repository/PincodeServiceabilityRepository.class
 com/sreemarket/backend/service/BackInStockAlertService.class

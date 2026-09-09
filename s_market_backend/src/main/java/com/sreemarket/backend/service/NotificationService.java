@@ -4,6 +4,7 @@ import com.sreemarket.backend.model.Notification;
 import com.sreemarket.backend.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class NotificationService {
         return notificationRepository.findByVendorIdAndTypeOrderByCreatedAtDesc(vendorId, type.toUpperCase());
     }
 
+    @Transactional
     public Notification createNotification(Notification notification) {
         if (notification.getCreatedAt() == null) {
             notification.setCreatedAt(System.currentTimeMillis());

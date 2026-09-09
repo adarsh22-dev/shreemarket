@@ -59,8 +59,10 @@ export const WishlistProvider = ({ children }) => {
              });
              setWishlistItems(products);
          } catch (error) {
-             console.error("Failed to load wishlist:", error);
-             toast.error("Failed to load wishlist");
+             if (!error.message?.includes('Session expired')) {
+                 console.error("Failed to load wishlist:", error);
+                 toast.error("Failed to load wishlist");
+             }
          } finally {
              setWishlistLoading(false);
          }

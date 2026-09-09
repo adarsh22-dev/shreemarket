@@ -9,7 +9,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/inventory-alerts")
-@CrossOrigin(origins = "http://localhost:5173")
 public class InventoryAlertController {
 
     @Autowired

@@ -16,7 +16,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/vendor/fulfillments")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VendorFulfillmentController {
 
     @Autowired

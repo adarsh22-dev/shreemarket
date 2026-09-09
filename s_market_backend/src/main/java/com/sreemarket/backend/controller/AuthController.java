@@ -9,6 +9,8 @@ import com.sreemarket.backend.service.UserService;
 import com.sreemarket.backend.service.VendorService;
 import com.sreemarket.backend.service.WholesalerService;
 import com.sreemarket.backend.service.UserDeviceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +31,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private UserService userService;
@@ -43,6 +46,9 @@ public class AuthController {
 
     @Autowired
     private VendorKYCRepository vendorKYCRepository;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @Autowired
     private UserDeviceService userDeviceService;
@@ -165,7 +171,7 @@ public class AuthController {
                 vendorKYCRepository.save(kyc);
             } catch (Exception e) {
                 // KYC creation is best-effort; don't fail registration
-                System.err.println("KYC auto-creation failed: " + e.getMessage());
+                log.warn("KYC auto-creation failed: {}", e.getMessage());
             }
 
             return ResponseEntity
@@ -199,9 +205,9 @@ public class AuthController {
                     throw new RuntimeException("Vendor account not found.");
                 }
 
-                com.sreemarket.backend.model.Vendor vendor = vendorRepository.findByEmail(email).get();
-                if (!new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().matches(password,
-                        vendor.getPassword())) {
+                com.sreemarket.backend.model.Vendor vendor = vendorRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("Vendor account not found."));
+                if (!passwordEncoder.matches(password, vendor.getPassword())) {
                     throw new RuntimeException("Invalid password");
                 }
 

@@ -14,7 +14,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/loyalty")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class LoyaltyController {
 
     @Autowired

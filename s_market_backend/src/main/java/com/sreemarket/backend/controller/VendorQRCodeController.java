@@ -17,7 +17,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/vendor/qr-codes")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VendorQRCodeController {
 
     @Autowired

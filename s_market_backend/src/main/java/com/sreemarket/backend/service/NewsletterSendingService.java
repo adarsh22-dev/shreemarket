@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -145,11 +146,10 @@ public class NewsletterSendingService {
     /**
      * Scheduled task to send pending scheduled campaigns.
      */
+    @Transactional
     @Scheduled(fixedRate = 60000) // Check every minute
     public void processScheduledCampaigns() {
-        List<NewsletterCampaign> scheduled = campaignRepository.findAll().stream()
-                .filter(c -> "scheduled".equalsIgnoreCase(c.getStatus()) && c.getScheduled() != null)
-                .toList();
+        List<NewsletterCampaign> scheduled = campaignRepository.findByStatus("scheduled");
 
         LocalDateTime now = LocalDateTime.now();
         for (NewsletterCampaign campaign : scheduled) {

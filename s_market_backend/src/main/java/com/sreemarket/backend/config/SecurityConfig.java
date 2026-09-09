@@ -44,7 +44,7 @@ public class SecurityConfig {
                                 "/api/reset-password",
                                 "/api/vendor/forgot-password", "/api/vendor/reset-password",
                                 "/api/wholesaler/forgot-password", "/api/wholesaler/reset-password",
-                                "/api/logout", "/api/settings", "/uploads/**",
+                                "/api/logout", "/uploads/**",
                                 "/api/contact", "/api/newsletter/subscribe")
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payment/create-order").authenticated()
@@ -69,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/announcements/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/bulk-stock/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/maintenance/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/marketplace-fees/calculate").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/vendors/**").permitAll()
                         .requestMatchers("/api/vendors/**").hasRole("ADMIN")
@@ -123,10 +124,7 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(
                 Arrays.asList(
                     "http://localhost:*", "https://localhost:*",
-                    "http://127.0.0.1:*", "https://127.0.0.1:*",
-                    "http://10.31.*:*", "https://10.31.*:*",
-                    "http://192.168.*", "https://192.168.*",
-                    "http://172.*", "https://172.*"));
+                    "http://127.0.0.1:*", "https://127.0.0.1:*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

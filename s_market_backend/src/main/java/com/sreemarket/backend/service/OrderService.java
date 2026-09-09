@@ -3,6 +3,8 @@ package com.sreemarket.backend.service;
 import com.sreemarket.backend.model.Order;
 import com.sreemarket.backend.repository.OrderRepository;
 import com.sreemarket.backend.repository.WholesalerRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class OrderService {
+
+        private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
         @Autowired
         private OrderRepository orderRepository;
@@ -83,7 +87,7 @@ public class OrderService {
                             order.setUserId(guestUser.getId());
                         } catch (Exception e) {
                             // Fallback: still allow order creation without user
-                            System.err.println("Failed to create guest user: " + e.getMessage());
+                            log.error("Failed to create guest user: {}", e.getMessage(), e);
                         }
                 }
                 if (order.getUserId() != null) {
@@ -197,7 +201,7 @@ public class OrderService {
                                                         "Order " + (order.getOrderNumber() != null ? order.getOrderNumber() : "#" + order.getId()),
                                                         "System",
                                                         "Stock deducted for new order");
-                                                } catch (Exception ignored) {}
+                                                } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
 
                                                 if (newStock == 0) {
                                                         product.setStatus("out");
@@ -250,7 +254,7 @@ public class OrderService {
                     }
                 } catch (Exception e) {
                     // Log but don't fail order creation if email sending fails
-                    System.err.println("Failed to send order confirmation email: " + e.getMessage());
+                    log.error("Failed to send order confirmation email: {}", e.getMessage(), e);
                 }
 
                 // Notify vendor about new order
@@ -265,7 +269,7 @@ public class OrderService {
                                 wsInfo = wholesalerRepository.findById(savedOrder.getWholesalerId())
                                     .map(w -> " from " + (w.getBusinessName() != null ? w.getBusinessName() : w.getFullName()))
                                     .orElse("");
-                            } catch (Exception ignored) {}
+                            } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
                         }
                         notification.setMessage("You have received a new " + (isWholesale ? "wholesale " : "") + "order "
                             + savedOrder.getOrderNumber() + wsInfo + ".");
@@ -302,7 +306,7 @@ public class OrderService {
                         }
                     }
                 } catch (Exception e) {
-                    System.err.println("Failed to send order status email: " + e.getMessage());
+                    log.error("Failed to send order status email: {}", e.getMessage(), e);
                 }
 
                 // Set deliveredAt timestamp when order is delivered
@@ -360,11 +364,11 @@ public class OrderService {
                                         notif.setType("PLATFORM");
                                         notificationService.createNotification(notif);
                                     }
-                                } catch (Exception ignored) {}
+                                } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
                             }
                         }
                     } catch (Exception e) {
-                        System.err.println("Failed to award loyalty points: " + e.getMessage());
+                        log.error("Failed to award loyalty points: {}", e.getMessage(), e);
                     }
                 }
 
@@ -474,7 +478,7 @@ public class OrderService {
                                                         "Cancellation " + (cancelledOrder.getOrderNumber() != null ? cancelledOrder.getOrderNumber() : "#" + cancelledOrder.getId()),
                                                         "System",
                                                         "Stock restored from cancelled order");
-                                                } catch (Exception ignored) {}
+                                                } catch (Exception e) { log.debug("Non-critical operation failed: {}", e.getMessage()); }
 
                                                 productRepository.save(product);
                                         }
@@ -508,7 +512,7 @@ public class OrderService {
                         }
                     }
                 } catch (Exception e) {
-                    System.err.println("Failed to send cancellation email: " + e.getMessage());
+                    log.error("Failed to send cancellation email: {}", e.getMessage(), e);
                 }
 
                 return cancelledOrder;

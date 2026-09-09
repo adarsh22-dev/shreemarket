@@ -153,13 +153,16 @@ public class CampaignService {
                         String contact = "EMAIL".equals(campaign.getType()) ? u.get().getEmail() : u.get().getPhone();
                         if (contact != null && !contact.isEmpty()) recipients.add(contact);
                     }
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid recipient ID in campaign {}: {}", campaign.getId(), idStr);
+                }
             }
             return recipients;
         }
         return Collections.emptyList();
     }
 
+    @Transactional
     @Scheduled(fixedRate = 30000)
     public void processScheduledCampaigns() {
         long now = System.currentTimeMillis();

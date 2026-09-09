@@ -13,7 +13,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vendor/coupons")
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class VendorCouponController {
 
     @Autowired

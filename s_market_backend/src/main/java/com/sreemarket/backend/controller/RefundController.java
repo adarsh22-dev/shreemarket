@@ -3,6 +3,8 @@ package com.sreemarket.backend.controller;
 import com.sreemarket.backend.model.Refund;
 import com.sreemarket.backend.service.AdminCmsService;
 import com.sreemarket.backend.service.RazorpayService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +14,9 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/refunds")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://localhost:4173"}, allowCredentials = "true")
 public class RefundController {
+
+    private static final Logger log = LoggerFactory.getLogger(RefundController.class);
 
     @Autowired
     private RazorpayService razorpayService;
@@ -69,7 +72,7 @@ public class RefundController {
                     }
                 } catch (Exception e) {
                     // Log but don't fail if refund record update fails
-                    System.err.println("Warning: Failed to update refund record: " + e.getMessage());
+                    log.warn("Failed to update refund record: {}", e.getMessage());
                 }
             }
 
