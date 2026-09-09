@@ -8,7 +8,8 @@ import {
     mergeUserCart,
     moveToSavedAPI,
     moveToCartFromSavedAPI,
-    PLACEHOLDER_IMG
+    PLACEHOLDER_IMG,
+    BACKEND_URL
 } from '../api/api';
 import { CartContext } from './CartContextValues';
 
@@ -16,8 +17,7 @@ import { CartContext } from './CartContextValues';
 const mapBackendItems = (backendItems) => {
     return backendItems.map(bItem => {
         const p = bItem.product || {};
-        const apiBaseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ? import.meta.env.VITE_API_BASE_URL : "http://localhost:8082/api";
-        const backendUrl = apiBaseUrl.replace(/\/api$/, '');
+        const backendUrl = BACKEND_URL;
         let image = PLACEHOLDER_IMG;
         const gallery = (p.media || []).filter(m => m.mediaType !== 'manufacturer');
         if (gallery.length > 0) {
@@ -218,8 +218,7 @@ export const CartProvider = ({ children }) => {
                     if (!finalImage) {
                         const gallery = (product.media || []).filter(m => m.mediaType !== 'manufacturer');
                         if (gallery.length > 0) {
-        const apiBaseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ? import.meta.env.VITE_API_BASE_URL : "http://localhost:8082/api";
-                            const backendUrl = apiBaseUrl.replace(/\/api$/, '');
+                            const backendUrl = BACKEND_URL;
                             const primaryMedia = gallery.find(m => m.isPrimary) || gallery[0];
                             finalImage = `${backendUrl}/uploads/products/${primaryMedia.fileName}`;
                         }

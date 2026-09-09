@@ -4,7 +4,8 @@ import {
     fetchUserWishlist,
     addToUserWishlist,
     removeUserWishlist,
-    PLACEHOLDER_IMG
+    PLACEHOLDER_IMG,
+    BACKEND_URL
 } from '../api/api';
 import { WishlistContext } from './WishlistContextValues';
 
@@ -47,9 +48,8 @@ export const WishlistProvider = ({ children }) => {
              // Backend returns list of Wishlist entity, we want the products
              const products = items.map(item => {
                  const p = item.product;
-                 const apiBaseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ? import.meta.env.VITE_API_BASE_URL : "http://localhost:8082/api";
-                 const backendUrl = apiBaseUrl.replace(/\/api$/, '');
-                 let image = PLACEHOLDER_IMG;
+                  const backendUrl = BACKEND_URL;
+                  let image = PLACEHOLDER_IMG;
                  const gallery = (p.media || []).filter(m => m.mediaType !== 'manufacturer');
                  if (gallery.length > 0) {
                      const primaryMedia = gallery.find(m => m.isPrimary) || gallery[0];

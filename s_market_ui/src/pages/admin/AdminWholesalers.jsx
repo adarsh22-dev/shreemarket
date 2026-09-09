@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Check, X, AlertTriangle, Eye, ChevronLeft, ChevronRight, Building2, Mail, Phone, MapPin, Calendar, FileText, Hash, KeyRound, Plus } from 'lucide-react';
-import { createAdminWholesaler } from '../../api/api';
+import { createAdminWholesaler, API_BASE_URL } from '../../api/api';
 import './AdminWholesalers.css';
 
-const API = window.API_BASE_URL || 'http://localhost:8082/api';
+const API = API_BASE_URL;
 
 const STATUSES = ['All', 'Pending', 'Active', 'Rejected', 'Suspended'];
 const STATUS_COLORS = {
