@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/register", "/api/register/vendor", "/api/register/wholesaler",
                                 "/api/login", "/api/login/wholesaler", "/api/google",
                                 "/api/forgot-password",
@@ -124,7 +125,11 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(
                 Arrays.asList(
                     "http://localhost:*", "https://localhost:*",
-                    "http://127.0.0.1:*", "https://127.0.0.1:*"));
+                    "http://localhost", "https://localhost",
+                    "http://127.0.0.1:*", "https://127.0.0.1:*",
+                    "http://10.31.*", "http://10.31.*:*",
+                    "http://192.168.*", "http://192.168.*:*",
+                    "http://172.*", "http://172.*:*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
